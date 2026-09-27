@@ -34,8 +34,8 @@ void Evaluate(vec4 surfaceColor, vec3 surfaceNormal, vec3 surfaceEmission, vec4 
         vec2 lightUv = (fragmentCoordinate.xy - viewRectangle.xy) * viewTexel.xy;
         if (u_lightSampling.x > 0.5)
             lightUv.y = 1.0 - lightUv.y;
-        vec3 lightColor = vec3(0.0);
-        vec4 lightDirection = vec4(0.0);
+        vec3 lightColor = vec3(0.0, 0.0, 0.0);
+        vec4 lightDirection = vec4(0.0, 0.0, 0.0, 0.0);
         if (mod(floor(lightMask), 2.0) > 0.5)
         {
             lightColor += texture2D(s_lightColor0, lightUv).rgb;

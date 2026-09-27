@@ -18,6 +18,7 @@ public sealed class Rendering2DPipeline : RenderPipeline
     private MaterialAsset? m_downsampleMaterial;
     private MaterialAsset? m_upsampleMaterial;
     private MaterialAsset? m_compositeMaterial;
+    private RenderTargetArtifactStatus m_frameMaterialStatus;
 
     private PipelineState state => m_state ??= new PipelineState();
 
@@ -56,8 +57,10 @@ public sealed class Rendering2DPipeline : RenderPipeline
                 Rendering2DIds.pipeline));
             return;
         }
+        PrewarmInternalMaterials(context, sequence);
         for (int frameIndex = 0; frameIndex < sequence.frames.Length; frameIndex++)
         {
+            m_frameMaterialStatus = RenderTargetArtifactStatus.Ready;
             Rendering2DFrame frame = sequence.frames[frameIndex];
             bool clearTarget = frame.clearTarget
                                && !context.preservePresentationTarget;
@@ -174,11 +177,46 @@ public sealed class Rendering2DPipeline : RenderPipeline
         }
     }
 
-    private static void PublishOutputUnavailable(RenderPipelineContext context, int frameIndex, string requirement)
+    private void PrewarmInternalMaterials(RenderPipelineContext context, Rendering2DFrameSequence sequence)
+    {
+        bool hasLights = false;
+        bool hasMasks = false;
+        bool hasPostProcess = false;
+        bool hasBloom = false;
+        foreach (Rendering2DFrame frame in sequence.frames)
+        {
+            hasLights |= frame.lights.Length > 0;
+            hasMasks |= frame.maskBatches.Length > 0;
+            hasPostProcess |= frame.postProcess is not null;
+            hasBloom |= frame.postProcess is { bloomIntensity: > 0f };
+        }
+        if (hasLights)
+            Prewarm(m_lightMaterial);
+        if (hasLights || hasMasks)
+            Prewarm(m_shadowMaterial);
+        if (hasPostProcess)
+            Prewarm(m_compositeMaterial);
+        if (hasBloom)
+        {
+            Prewarm(m_prefilterMaterial);
+            Prewarm(m_downsampleMaterial);
+            Prewarm(m_upsampleMaterial);
+        }
+
+        void Prewarm(MaterialAsset? material)
+        {
+            if (material?.shader is { isMissing: false })
+                context.resourceService.PrewarmMaterial(material);
+        }
+    }
+
+    private void PublishOutputUnavailable(RenderPipelineContext context, int frameIndex, string requirement)
         => context.diagnostics.Publish(new Diagnostic(
             "RENDERING_2D_OUTPUT_UNAVAILABLE",
             $"Camera {frameIndex + 1}: {requirement} is not ready. This output was not replaced by an unmasked or unprocessed render.",
-            DiagnosticSeverity.Error,
+            m_frameMaterialStatus == RenderTargetArtifactStatus.Pending
+                ? DiagnosticSeverity.Warning
+                : DiagnosticSeverity.Error,
             OutputDiagnosticId(context, frameIndex)));
 
     private static void ResolveOutputUnavailable(RenderPipelineContext context, int frameIndex)
@@ -246,7 +284,7 @@ public sealed class Rendering2DPipeline : RenderPipeline
         Rendering2DDrawBatch batch,
         out PreparedBatch? prepared)
     {
-        context.resourceService.PrewarmMaterial(batch.material);
+        RenderTargetArtifactStatus shaderStatus = context.resourceService.PrewarmMaterial(batch.material);
         if (batch.texture.directTexture is not null)
             context.resourceService.PrewarmTexture(batch.texture.directTexture);
         else if (batch.texture.artifact is RenderTextureArtifactReference artifact)
@@ -260,6 +298,9 @@ public sealed class Rendering2DPipeline : RenderPipeline
                 out RenderMaterialPass? materialPass)
             || materialPass is null)
         {
+            if (shaderStatus == RenderTargetArtifactStatus.Pending)
+                shaderStatus = context.resourceService.PrewarmMaterial(batch.material);
+            RecordMaterialFailure(shaderStatus);
             prepared = null;
             return false;
         }
@@ -1279,34 +1320,48 @@ public sealed class Rendering2DPipeline : RenderPipeline
         ShaderPassRoleId role, out RenderMaterialPass? materialPass)
     {
         materialPass = null;
+        string source = Rendering2DIds.pipeline + "/" + contract + "/" + role;
         if (material?.shader is not { isMissing: false })
         {
+            RecordMaterialFailure(RenderTargetArtifactStatus.Failed);
+            context.diagnostics.Resolve("RENDERING_2D_INTERNAL_SHADER_NOT_READY", source);
             context.diagnostics.Publish(new Diagnostic(
                 "RENDERING_2D_INTERNAL_SHADER_MISSING",
                 $"The 2D pipeline has no usable shader for contract '{contract}' and role '{role}'. Check the pipeline asset's shader references.",
                 DiagnosticSeverity.Error,
-                Rendering2DIds.pipeline + "/" + contract + "/" + role));
+                source));
             return false;
         }
-        context.resourceService.PrewarmMaterial(material);
+        context.diagnostics.Resolve("RENDERING_2D_INTERNAL_SHADER_MISSING", source);
+        RenderTargetArtifactStatus status = context.resourceService.PrewarmMaterial(material);
         bool ready = context.resourceService.TryResolveGraphicsMaterial(material, contract, role,
             state.vertexLayout, state.emptyOverrides, out materialPass);
         if (!ready)
         {
+            if (status == RenderTargetArtifactStatus.Pending)
+                status = context.resourceService.PrewarmMaterial(material);
+            RecordMaterialFailure(status);
             context.diagnostics.Publish(new Diagnostic(
                 "RENDERING_2D_INTERNAL_SHADER_NOT_READY",
-                $"The 2D pipeline shader '{material.shader.assetPath}' did not resolve contract '{contract}' and role '{role}'.",
-                DiagnosticSeverity.Error,
-                Rendering2DIds.pipeline + "/" + contract + "/" + role));
+                status == RenderTargetArtifactStatus.Pending
+                    ? $"The 2D pipeline shader '{material.shader.assetPath}' is compiling for contract '{contract}' and role '{role}'."
+                    : $"The 2D pipeline shader '{material.shader.assetPath}' could not resolve contract '{contract}' and role '{role}'.",
+                status == RenderTargetArtifactStatus.Pending ? DiagnosticSeverity.Warning : DiagnosticSeverity.Error,
+                source));
         }
         else
         {
-            context.diagnostics.Resolve("RENDERING_2D_INTERNAL_SHADER_MISSING",
-                Rendering2DIds.pipeline + "/" + contract + "/" + role);
-            context.diagnostics.Resolve("RENDERING_2D_INTERNAL_SHADER_NOT_READY",
-                Rendering2DIds.pipeline + "/" + contract + "/" + role);
+            context.diagnostics.Resolve("RENDERING_2D_INTERNAL_SHADER_NOT_READY", source);
         }
         return ready;
+    }
+
+    private void RecordMaterialFailure(RenderTargetArtifactStatus status)
+    {
+        if (status != RenderTargetArtifactStatus.Pending)
+            m_frameMaterialStatus = RenderTargetArtifactStatus.Failed;
+        else if (m_frameMaterialStatus != RenderTargetArtifactStatus.Failed)
+            m_frameMaterialStatus = RenderTargetArtifactStatus.Pending;
     }
 
     private static void AttachOutput(

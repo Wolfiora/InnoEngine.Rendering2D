@@ -24,6 +24,7 @@ A source-based 2D rendering plugin for [InnoEngine](https://github.com/FLwolfy/I
 - Straight alpha, premultiplied alpha, additive, multiply, and opaque material roles
 - CPU picking against the same immutable frame used by the Scene viewport
 - Scene and Game viewport integration, including pan, cursor-anchored zoom, framing, grid, and axes
+- The Scene contributor declares an `EditorViewportManipulationPlane.XY` contract; the Editor owns native handle presentation, without ImGuizmo types in this Plugin
 - Unified Asset Browser documents for atlases, animations, tile sets, tilemaps, post-processing, and particles
 - Deterministic MaxRects atlas composition with trim, rotation, extrusion, and named multi-page texture artifacts
 - Plugin-owned project settings and native asset importers
@@ -59,9 +60,11 @@ dotnet run --project ../InnoEngine/src/composition/editor/host/Inno.Editor.Appli
 
 The editor imports the authored content under `Assets/` and regenerates `Library/`, IDE project files, logs, and other local state. The same launch command accepts a project path with a trailing directory separator.
 
-The pipeline publishes diagnostics through `InnoEngine.Diagnostics.Diagnostic` and `DiagnosticSeverity`, using the reporter supplied by `RenderPipelineContext`. `Rendering2DModel` accepts host `RenderOutputSession` values and publishes Camera2D output. Scene input comes from the identity-backed content scope; the plugin does not require an engine-owned 2D scene bridge or a native backend API.
+The pipeline publishes diagnostics through `InnoEngine.Diagnostics.Diagnostic` and `DiagnosticSeverity`, using the reporter supplied by `RenderPipelineContext`. 尚未产生可用 Shader 目标产物时，灯光、阴影和后处理的 `NOT_READY` 与对应的输出不可用状态为 Warning；编译失败、缺失目标产物或契约/程序失败才报 Error，准备完成后解析临时诊断。`Rendering2DModel` accepts host `RenderOutputSession` values and publishes Camera2D output. Scene input comes from the identity-backed content scope; the plugin does not require an engine-owned 2D scene bridge or a native backend API.
 
 ## GPU validation
+
+Rendering2D 的 `.ishadersource` 使用 BGFX SC 的跨目标写法；向量常量显式写出所有分量，避免 macOS Metal 可编译但 Windows HLSL 拒绝的单参数 `vec3`/`vec4` 构造。Pipeline 在判断各阶段能否绘制前一次性预热当前帧需要的灯光、阴影与后处理材质，使冷启动的 shader 编译可并行推进；产物未准备好时不以降级画面冒充完整输出。安装两份插件包后的 `../TestProject/Tools/Shaders/ShaderCompatibilityProbe.csproj` 在 Windows 上逐一编译 D3D11、D3D12、Vulkan、OpenGL 和离线 Metal 的正式 Shader Graph。
 
 On macOS arm64, build the Editor and run the project through a finite Metal smoke session with:
 

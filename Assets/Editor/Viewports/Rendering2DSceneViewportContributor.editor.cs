@@ -114,7 +114,8 @@ public sealed class Rendering2DSceneViewportContributor : EditorViewportContribu
             manipulationSpace: new EditorViewportManipulationSpace(
                 m_latestFrame.viewMatrix,
                 m_latestFrame.projectionMatrix,
-                isOrthographic: true));
+                isOrthographic: true,
+                plane: EditorViewportManipulationPlane.XY));
     }
 
     /// <summary>

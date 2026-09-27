@@ -15,9 +15,6 @@ namespace Inno.Rendering2D;
 [EditorGizmoProviderExtension("inno.rendering2d.scene-gizmos")]
 public sealed class Rendering2DGizmoProvider : EditorGizmoProvider
 {
-    private static readonly Color S_CAMERA_COLOR = new(0.42f, 0.72f, 1f, 1f);
-    private static readonly Color S_LIGHT_COLOR = new(1f, 0.84f, 0.35f, 1f);
-
     /// <inheritdoc />
     public override void Collect(EditorGizmoContext context, IEditorGizmoSink sink)
     {
@@ -34,13 +31,13 @@ public sealed class Rendering2DGizmoProvider : EditorGizmoProvider
                 bool selected = owner.identity.runtimeIdentity == context.selected;
                 if (owner.TryGetComponent(out Camera2D? camera) && camera is { isActiveAndEnabled: true })
                 {
-                    sink.Icon(owner.identity, owner.transform.worldPosition, "C", S_CAMERA_COLOR);
+                    sink.Icon(owner.identity, owner.transform.worldPosition, "camera");
                     if (selected)
                         DrawCamera(camera, context, sink);
                 }
                 if (owner.TryGetComponent(out Light2D? light) && light is { isActiveAndEnabled: true })
                 {
-                    sink.Icon(owner.identity, owner.transform.worldPosition, "L", S_LIGHT_COLOR);
+                    sink.Icon(owner.identity, owner.transform.worldPosition, "light");
                     if (selected)
                         DrawLight(light, sink);
                 }
@@ -61,7 +58,7 @@ public sealed class Rendering2DGizmoProvider : EditorGizmoProvider
             camera.gameObject.transform.TransformPoint(new Vector3(-halfWidth, halfHeight, 0f))
         ];
         for (int index = 0; index < corners.Length; index++)
-            sink.Line(corners[index], corners[(index + 1) % corners.Length], S_CAMERA_COLOR);
+            sink.Line(corners[index], corners[(index + 1) % corners.Length]);
     }
 
     private static void DrawLight(Light2D light, IEditorGizmoSink sink)
@@ -76,7 +73,7 @@ public sealed class Rendering2DGizmoProvider : EditorGizmoProvider
                 Vector2 start = light.shape[index];
                 Vector2 end = light.shape[(index + 1) % light.shape.Length];
                 sink.Line(transform.TransformPoint(new Vector3(start.x, start.y, 0f)),
-                    transform.TransformPoint(new Vector3(end.x, end.y, 0f)), S_LIGHT_COLOR);
+                    transform.TransformPoint(new Vector3(end.x, end.y, 0f)));
             }
             return;
         }
@@ -87,7 +84,7 @@ public sealed class Rendering2DGizmoProvider : EditorGizmoProvider
             float angle = index * (2f * MathF.PI / segments);
             Vector3 next = transform.TransformPoint(new Vector3(
                 light.range * MathF.Cos(angle), light.range * MathF.Sin(angle), 0f));
-            sink.Line(previous, next, S_LIGHT_COLOR);
+            sink.Line(previous, next);
             previous = next;
         }
         if (light.kind == LightKind2D.Spot)
@@ -97,7 +94,7 @@ public sealed class Rendering2DGizmoProvider : EditorGizmoProvider
             foreach (float angle in new[] { -halfAngle, halfAngle })
             {
                 sink.Line(center, transform.TransformPoint(new Vector3(
-                    light.range * MathF.Cos(angle), light.range * MathF.Sin(angle), 0f)), S_LIGHT_COLOR);
+                    light.range * MathF.Cos(angle), light.range * MathF.Sin(angle), 0f)));
             }
         }
     }

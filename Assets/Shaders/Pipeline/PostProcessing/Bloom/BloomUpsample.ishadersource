@@ -2,7 +2,7 @@
 vec4 Evaluate(vec2 uv, sampler2D s_source, sampler2D s_auxiliary, vec4 u_texelSize, vec4 u_bloom)
 {
     vec4 highFrequency = texture2D(s_auxiliary, uv);
-    vec3 lowFrequency = vec3(0.0);
+    vec3 lowFrequency = vec3(0.0, 0.0, 0.0);
     lowFrequency += texture2D(s_source, uv + vec2(-1.0, -1.0) * u_texelSize.xy).rgb;
     lowFrequency += texture2D(s_source, uv + vec2( 1.0, -1.0) * u_texelSize.xy).rgb;
     lowFrequency += texture2D(s_source, uv + vec2(-1.0,  1.0) * u_texelSize.xy).rgb;
