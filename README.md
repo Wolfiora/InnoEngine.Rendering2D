@@ -25,6 +25,7 @@ A source-based 2D rendering plugin for [InnoEngine](https://github.com/FLwolfy/I
 - CPU picking against the same immutable frame used by the Scene viewport
 - Scene and Game viewport integration, including pan, cursor-anchored zoom, framing, grid, and axes
 - The Scene contributor declares an `EditorViewportManipulationPlane.XY` contract; the Editor owns native handle presentation, without ImGuizmo types in this Plugin
+- Selected Spot Light gizmos follow the rendered local +Y direction, including reflections from negative scale, and show the spot arc and two cone edges instead of a full point-light circle. Point and spot outlines use the same world-unit range as rendering.
 - Unified Asset Browser documents for atlases, animations, tile sets, tilemaps, post-processing, and particles
 - Deterministic MaxRects atlas composition with trim, rotation, extrusion, and named multi-page texture artifacts
 - Plugin-owned project settings and native asset importers

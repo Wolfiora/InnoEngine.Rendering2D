@@ -752,7 +752,10 @@ internal static class Rendering2DFrameCollector
                     continue;
                 }
                 Vector3 position = light.transform.worldPosition;
-                Vector2 direction = Vector2.Transform(Vector2.UNIT_Y, light.transform.worldRotation).normalized;
+                Vector3 forward = light.transform.TransformPoint(new Vector3(0f, 1f, 0f)) - position;
+                Vector2 direction = new Vector2(forward.x, forward.y).normalized;
+                if (direction.LengthSquared() <= 0.000001f)
+                    direction = Vector2.Transform(Vector2.UNIT_Y, light.transform.worldRotation).normalized;
                 float range = MathF.Max(0.0001f, light.range);
                 Vector2[] shape = CaptureLightShape(light, range);
                 if (light.kind != LightKind2D.Global

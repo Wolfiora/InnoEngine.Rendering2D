@@ -1,13 +1,7 @@
 using System;
-#if INNO_ENGINE_VALIDATION
-using Inno.Editor.Rendering;
-using Inno.Core.Mathematics;
-using Inno.Scene;
-#else
 using InnoEditor.Rendering;
 using InnoEngine.Mathematics;
 using InnoEngine.Scene;
-#endif
 
 namespace Inno.Rendering2D;
 
@@ -77,25 +71,51 @@ public sealed class Rendering2DGizmoProvider : EditorGizmoProvider
             }
             return;
         }
-        const int segments = 48;
-        Vector3 previous = transform.TransformPoint(new Vector3(light.range, 0f, 0f));
-        for (int index = 1; index <= segments; index++)
-        {
-            float angle = index * (2f * MathF.PI / segments);
-            Vector3 next = transform.TransformPoint(new Vector3(
-                light.range * MathF.Cos(angle), light.range * MathF.Sin(angle), 0f));
-            sink.Line(previous, next);
-            previous = next;
-        }
         if (light.kind == LightKind2D.Spot)
         {
             float halfAngle = light.spotAngle * MathF.PI / 360f;
             Vector3 center = transform.worldPosition;
-            foreach (float angle in new[] { -halfAngle, halfAngle })
+            Vector3 forward = transform.TransformPoint(new Vector3(0f, 1f, 0f)) - center;
+            float length = MathF.Sqrt(forward.x * forward.x + forward.y * forward.y);
+            if (length <= 0.000001f)
             {
-                sink.Line(center, transform.TransformPoint(new Vector3(
-                    light.range * MathF.Cos(angle), light.range * MathF.Sin(angle), 0f)));
+                forward = Vector3.Transform(new Vector3(0f, 1f, 0f), transform.worldRotation);
+                length = MathF.Sqrt(forward.x * forward.x + forward.y * forward.y);
+                if (length <= 0.000001f)
+                    return;
             }
+            float directionX = forward.x / length;
+            float directionY = forward.y / length;
+            const int arcSegments = 32;
+            Vector3 start = SpotArcPoint(center, directionX, directionY, light.range, -halfAngle);
+            Vector3 previous = start;
+            for (int index = 1; index <= arcSegments; index++)
+            {
+                float angle = -halfAngle + index * (2f * halfAngle / arcSegments);
+                Vector3 next = SpotArcPoint(center, directionX, directionY, light.range, angle);
+                sink.Line(previous, next);
+                previous = next;
+            }
+            sink.Line(center, start);
+            sink.Line(center, previous);
+            return;
+        }
+        const int segments = 48;
+        Vector3 origin = transform.worldPosition;
+        Vector3 circlePrevious = origin + new Vector3(light.range, 0f, 0f);
+        for (int index = 1; index <= segments; index++)
+        {
+            float angle = index * (2f * MathF.PI / segments);
+            Vector3 next = origin + new Vector3(
+                light.range * MathF.Cos(angle), light.range * MathF.Sin(angle), 0f);
+            sink.Line(circlePrevious, next);
+            circlePrevious = next;
         }
     }
+
+    private static Vector3 SpotArcPoint(
+        Vector3 center, float directionX, float directionY, float range, float angle)
+        => center + new Vector3(
+            range * (directionX * MathF.Cos(angle) - directionY * MathF.Sin(angle)),
+            range * (directionX * MathF.Sin(angle) + directionY * MathF.Cos(angle)), 0f);
 }
