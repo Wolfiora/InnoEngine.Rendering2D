@@ -5,15 +5,28 @@ using InnoEngine.Mathematics;
 
 namespace Inno.Rendering2D;
 
-/// <summary>Describes one stable pixel rectangle supplied to deterministic atlas packing.</summary>
+/// <summary>
+/// Describes one stable pixel rectangle supplied to deterministic atlas packing.
+/// </summary>
 public readonly record struct SpriteAtlasPackInput2D
 {
-    /// <summary>Creates one atlas packing input.</summary>
-    /// <param name="id">Unique stable source identity.</param>
-    /// <param name="width">Positive source width in pixels.</param>
-    /// <param name="height">Positive source height in pixels.</param>
-    public SpriteAtlasPackInput2D(string id, int width, int height)
-    {
+    /// <summary>
+    /// Creates one atlas packing input.
+    /// </summary>
+    /// <param name="id">
+    /// Unique stable source identity.
+    /// </param>
+    /// <param name="width">
+    /// Positive source width in pixels.
+    /// </param>
+    /// <param name="height">
+    /// Positive source height in pixels.
+    /// </param>
+    public SpriteAtlasPackInput2D(
+        string id,
+        int width,
+        int height
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(width);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(height);
@@ -22,60 +35,90 @@ public readonly record struct SpriteAtlasPackInput2D
         this.height = height;
     }
 
-    /// <summary>Gets the stable source identity.</summary>
+    /// <summary>
+    /// Gets the stable source identity.
+    /// </summary>
     public string id { get; }
 
-    /// <summary>Gets the source width in pixels.</summary>
+    /// <summary>
+    /// Gets the source width in pixels.
+    /// </summary>
     public int width { get; }
 
-    /// <summary>Gets the source height in pixels.</summary>
+    /// <summary>
+    /// Gets the source height in pixels.
+    /// </summary>
     public int height { get; }
 }
 
-/// <summary>Describes one deterministic packed source placement.</summary>
+/// <summary>
+/// Describes one deterministic packed source placement.
+/// </summary>
 public readonly record struct SpriteAtlasPlacement2D(
     string inputId,
     int pageIndex,
     Rect pixelRect,
-    bool rotatedClockwise);
+    bool rotatedClockwise
+);
 
-/// <summary>Describes one allocated atlas page and its occupied pixel extent.</summary>
+/// <summary>
+/// Describes one allocated atlas page and its occupied pixel extent.
+/// </summary>
 public readonly record struct SpriteAtlasPackPage2D(
     int width,
     int height,
     int occupiedWidth,
-    int occupiedHeight);
+    int occupiedHeight
+);
 
-/// <summary>Contains immutable pages and placements emitted by atlas packing.</summary>
+/// <summary>
+/// Contains immutable pages and placements emitted by atlas packing.
+/// </summary>
 public sealed class SpriteAtlasPackResult2D
 {
     internal SpriteAtlasPackResult2D(
         SpriteAtlasPackPage2D[] pages,
-        SpriteAtlasPlacement2D[] placements)
-    {
+        SpriteAtlasPlacement2D[] placements
+    ) {
         this.pages = pages;
         this.placements = placements;
     }
 
-    /// <summary>Gets pages in allocation order.</summary>
+    /// <summary>
+    /// Gets pages in allocation order.
+    /// </summary>
     public IReadOnlyList<SpriteAtlasPackPage2D> pages { get; }
 
-    /// <summary>Gets placements in stable input identity order.</summary>
+    /// <summary>
+    /// Gets placements in stable input identity order.
+    /// </summary>
     public IReadOnlyList<SpriteAtlasPlacement2D> placements { get; }
 }
 
-/// <summary>Packs source rectangles with a deterministic best-short-side-fit MaxRects policy.</summary>
+/// <summary>
+/// Packs source rectangles with a deterministic best-short-side-fit MaxRects policy.
+/// </summary>
 public static class SpriteAtlasMaxRectsPacker2D
 {
-    /// <summary>Packs a complete source set into the minimum pages found by the deterministic heuristic.</summary>
-    /// <param name="inputs">Complete unique source rectangles.</param>
-    /// <param name="settings">Page limits, padding, extrusion, and rotation policy.</param>
-    /// <returns>Allocated pages and stable placements.</returns>
-    /// <exception cref="ArgumentException">Thrown when inputs or settings are invalid.</exception>
+    /// <summary>
+    /// Packs a complete source set into the minimum pages found by the deterministic heuristic.
+    /// </summary>
+    /// <param name="inputs">
+    /// Complete unique source rectangles.
+    /// </param>
+    /// <param name="settings">
+    /// Page limits, padding, extrusion, and rotation policy.
+    /// </param>
+    /// <returns>
+    /// Allocated pages and stable placements.
+    /// </returns>
+    /// <exception cref="ArgumentException">
+    /// Thrown when inputs or settings are invalid.
+    /// </exception>
     public static SpriteAtlasPackResult2D Pack(
         IEnumerable<SpriteAtlasPackInput2D> inputs,
-        SpriteAtlasPackingSettings2D settings)
-    {
+        SpriteAtlasPackingSettings2D settings
+    ) {
         ArgumentNullException.ThrowIfNull(inputs);
         if (settings.maximumWidth <= 0 || settings.maximumHeight <= 0
             || settings.padding < 0 || settings.extrude < 0)
@@ -154,7 +197,8 @@ public static class SpriteAtlasMaxRectsPacker2D
     private static bool FitsPage(
         int width,
         int height,
-        SpriteAtlasPackingSettings2D settings)
+        SpriteAtlasPackingSettings2D settings
+    )
         => width <= settings.maximumWidth && height <= settings.maximumHeight
            || settings.allowRotation
            && height <= settings.maximumWidth && width <= settings.maximumHeight;
@@ -164,8 +208,8 @@ public static class SpriteAtlasMaxRectsPacker2D
         int pageIndex,
         int width,
         int height,
-        bool allowRotation)
-    {
+        bool allowRotation
+    ) {
         Candidate best = default;
         for (int index = 0; index < page.free.Count; index++)
         {
@@ -183,8 +227,8 @@ public static class SpriteAtlasMaxRectsPacker2D
         int width,
         int height,
         bool rotated,
-        ref Candidate best)
-    {
+        ref Candidate best
+    ) {
         if (width > free.width || height > free.height)
             return;
         int leftoverHorizontal = free.width - width;
@@ -205,8 +249,10 @@ public static class SpriteAtlasMaxRectsPacker2D
 
     private sealed class Page
     {
-        internal Page(int width, int height)
-        {
+        internal Page(
+            int width,
+            int height
+        ) {
             this.width = width;
             this.height = height;
             free.Add(new IntRect(0, 0, width, height));
@@ -229,13 +275,18 @@ public static class SpriteAtlasMaxRectsPacker2D
                 AddRemainders(available, used);
             }
             Prune();
-            free.Sort(static (left, right) => left.CompareTo(right));
+            free.Sort(static (
+                left,
+                right
+            ) => left.CompareTo(right));
             occupiedWidth = Math.Max(occupiedWidth, used.right);
             occupiedHeight = Math.Max(occupiedHeight, used.bottom);
         }
 
-        private void AddRemainders(IntRect available, IntRect used)
-        {
+        private void AddRemainders(
+            IntRect available,
+            IntRect used
+        ) {
             if (used.x > available.x)
                 free.Add(new IntRect(available.x, available.y, used.x - available.x, available.height));
             if (used.right < available.right)
@@ -265,16 +316,19 @@ public static class SpriteAtlasMaxRectsPacker2D
         }
     }
 
-    private readonly record struct IntRect(int x, int y, int width, int height) : IComparable<IntRect>
+    private readonly record struct IntRect(
+        int x,
+        int y,
+        int width,
+        int height
+    ) : IComparable<IntRect>
     {
         internal int right => x + width;
         internal int bottom => y + height;
 
-        internal bool Overlaps(IntRect other)
-            => x < other.right && right > other.x && y < other.bottom && bottom > other.y;
+        internal bool Overlaps(IntRect other) => x < other.right && right > other.x && y < other.bottom && bottom > other.y;
 
-        internal bool Contains(IntRect other)
-            => other.x >= x && other.y >= y && other.right <= right && other.bottom <= bottom;
+        internal bool Contains(IntRect other) => other.x >= x && other.y >= y && other.right <= right && other.bottom <= bottom;
 
         public int CompareTo(IntRect other)
         {
@@ -298,7 +352,8 @@ public static class SpriteAtlasMaxRectsPacker2D
         int height,
         bool rotated,
         int shortSide,
-        int longSide) : IComparable<Candidate>
+        int longSide
+    ) : IComparable<Candidate>
     {
         public int CompareTo(Candidate other)
         {

@@ -7,17 +7,25 @@ using InnoEditor.Annotations;
 
 namespace Inno.Rendering2D;
 
-/// <summary>Defines whether a 2D camera starts or extends a composited camera stack.</summary>
+/// <summary>
+/// Defines whether a 2D camera starts or extends a composited camera stack.
+/// </summary>
 public enum CameraComposition2D
 {
-    /// <summary>Starts a stack and optionally clears its target.</summary>
+    /// <summary>
+    /// Starts a stack and optionally clears its target.
+    /// </summary>
     Base,
 
-    /// <summary>Loads the selected base result and draws additional content over it.</summary>
+    /// <summary>
+    /// Loads the selected base result and draws additional content over it.
+    /// </summary>
     Overlay
 }
 
-/// <summary>Defines one orthographic 2D render view without modifying the engine's scene model.</summary>
+/// <summary>
+/// Defines one orthographic 2D render view without modifying the engine's scene model.
+/// </summary>
 [StableTypeId("fc1efc8e-54be-4233-83a7-bab21d520f64")]
 public sealed class Camera2D : GameBehavior
 {
@@ -27,7 +35,9 @@ public sealed class Camera2D : GameBehavior
     private float m_orthographicSize = 5f;
     private Vector2 m_referenceResolution = new(1920f, 1080f);
 
-    /// <summary>Gets or sets whether this camera starts or extends a composited camera stack.</summary>
+    /// <summary>
+    /// Gets or sets whether this camera starts or extends a composited camera stack.
+    /// </summary>
     [SerializableProperty]
     [Header("Composition", "Base cameras start a stack; Overlay cameras extend the matching stack.")]
     [Tooltip("Base starts a camera stack. Overlay preserves and extends a base camera with the same Stack ID.")]
@@ -45,13 +55,17 @@ public sealed class Camera2D : GameBehavior
         }
     }
 
-    /// <summary>Gets or sets the stable stack identity used to associate overlay cameras with one base.</summary>
+    /// <summary>
+    /// Gets or sets the stable stack identity used to associate overlay cameras with one base.
+    /// </summary>
     [SerializableProperty]
     [InspectorName("Stack ID")]
     [Tooltip("Stable identity used to associate overlay cameras with one base camera.")]
     public string stackId { get; set; } = "default";
 
-    /// <summary>Gets or sets whether this camera is preferred by automatic and Editor game views.</summary>
+    /// <summary>
+    /// Gets or sets whether this camera is preferred by automatic and Editor game views.
+    /// </summary>
     [SerializableProperty]
     [Header("Output", "A primary backbuffer camera is selected automatically by Game View and Player.")]
     [ShowIf(nameof(composition), CameraComposition2D.Base)]
@@ -62,13 +76,17 @@ public sealed class Camera2D : GameBehavior
         set => m_primary = value && composition == CameraComposition2D.Base;
     }
 
-    /// <summary>Gets or sets whether the automatic request provider targets the main backbuffer.</summary>
+    /// <summary>
+    /// Gets or sets whether the automatic request provider targets the main backbuffer.
+    /// </summary>
     [SerializableProperty]
     [ShowIf(nameof(composition), CameraComposition2D.Base)]
     [InspectorName("Render To Backbuffer")]
     public bool renderToBackbuffer { get; set; } = true;
 
-    /// <summary>Gets or sets whether a base camera clears its target before drawing.</summary>
+    /// <summary>
+    /// Gets or sets whether a base camera clears its target before drawing.
+    /// </summary>
     [SerializableProperty]
     [ShowIf(nameof(composition), CameraComposition2D.Base)]
     public bool clearTarget
@@ -77,13 +95,17 @@ public sealed class Camera2D : GameBehavior
         set => m_clearTarget = value && composition == CameraComposition2D.Base;
     }
 
-    /// <summary>Gets or sets the linear target clear color.</summary>
+    /// <summary>
+    /// Gets or sets the linear target clear color.
+    /// </summary>
     [SerializableProperty]
     [ShowIf(nameof(composition), CameraComposition2D.Base)]
     [ShowIf(nameof(clearTarget))]
     public Color clearColor { get; set; } = Color.DARKGRAY;
 
-    /// <summary>Gets or sets the vertical half-size of the orthographic view in world units.</summary>
+    /// <summary>
+    /// Gets or sets the vertical half-size of the orthographic view in world units.
+    /// </summary>
     [SerializableProperty]
     [Header("Lens & Visibility", "Orthographic Size is the vertical half-extent in world units.")]
     [InspectorName("Orthographic Size")]
@@ -94,16 +116,22 @@ public sealed class Camera2D : GameBehavior
         set => m_orthographicSize = float.IsFinite(value) && value > 0f ? value : 0.0001f;
     }
 
-    /// <summary>Gets or sets normalized destination viewport bounds.</summary>
+    /// <summary>
+    /// Gets or sets normalized destination viewport bounds.
+    /// </summary>
     [SerializableProperty]
     [Tooltip("Normalized destination rectangle within the camera target.")]
     public Rect viewport { get; set; } = new(0f, 0f, 1f, 1f);
 
-    /// <summary>Gets or sets the accepted GameObject layers.</summary>
+    /// <summary>
+    /// Gets or sets the accepted GameObject layers.
+    /// </summary>
     [SerializableProperty]
     public GameLayerMask cullingMask { get; set; } = GameLayerMask.everything;
 
-    /// <summary>Gets or sets ascending request priority.</summary>
+    /// <summary>
+    /// Gets or sets ascending request priority.
+    /// </summary>
     [SerializableProperty]
     public int priority { get; set; }
 
@@ -114,13 +142,17 @@ public sealed class Camera2D : GameBehavior
     [Header("Pixel Perfect", "Reference resolution controls camera snapping and optional integer presentation scaling.")]
     public bool pixelPerfect { get; set; }
 
-    /// <summary>Gets or sets whether Pixel Perfect rendering uses an integer presentation scale.</summary>
+    /// <summary>
+    /// Gets or sets whether Pixel Perfect rendering uses an integer presentation scale.
+    /// </summary>
     [SerializableProperty]
     [Header("Pixel Grid", "Use integer scaling for crisp pixel art without uneven texel sizes.")]
     [ShowIf(nameof(pixelPerfect))]
     public bool integerScale { get; set; } = true;
 
-    /// <summary>Gets or sets the positive reference resolution used by Pixel Perfect rendering.</summary>
+    /// <summary>
+    /// Gets or sets the positive reference resolution used by Pixel Perfect rendering.
+    /// </summary>
     [SerializableProperty]
     [ShowIf(nameof(pixelPerfect))]
     public Vector2 referenceResolution
@@ -131,7 +163,9 @@ public sealed class Camera2D : GameBehavior
             float.IsFinite(value.y) && value.y > 0f ? value.y : 1f);
     }
 
-    /// <summary>Gets or sets an optional post-process profile applied after this camera stack.</summary>
+    /// <summary>
+    /// Gets or sets an optional post-process profile applied after this camera stack.
+    /// </summary>
     [SerializableProperty]
     [Header("Post Processing", "The profile is evaluated after this camera stack is composed.")]
     [InspectorName("Post Process")]

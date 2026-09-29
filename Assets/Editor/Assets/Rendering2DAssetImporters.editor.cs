@@ -14,8 +14,8 @@ internal abstract class NativeRendering2DAssetImporter<TAsset> : AssetImporter<T
     protected sealed override async ValueTask ImportAsync(
         AssetImportContext context,
         AssetImportWriter<TAsset> output,
-        CancellationToken cancellationToken)
-    {
+        CancellationToken cancellationToken
+    ) {
         TAsset asset = NativeAssetSourceSerialization.Import<TAsset>(
             context.sourceBytes.Span,
             context.services,
@@ -30,25 +30,38 @@ internal abstract class NativeRendering2DAssetImporter<TAsset> : AssetImporter<T
     protected sealed override ValueTask<ReadOnlyMemory<byte>?> ExportAsync(
         AssetExportContext context,
         TAsset asset,
-        CancellationToken cancellationToken)
-    {
+        CancellationToken cancellationToken
+    ) {
         cancellationToken.ThrowIfCancellationRequested();
         return ValueTask.FromResult<ReadOnlyMemory<byte>?>(NativeAssetSourceSerialization.Export(
             asset,
             context.services));
     }
 
-    /// <summary>Writes asset-specific immutable outputs after the structured runtime payload.</summary>
-    /// <param name="context">Current isolated import context.</param>
-    /// <param name="output">Candidate output writer.</param>
-    /// <param name="asset">Imported managed asset.</param>
-    /// <param name="cancellationToken">Cancellation observed before committing additional outputs.</param>
-    /// <returns>An operation that completes after every additional output has been staged.</returns>
+    /// <summary>
+    /// Writes asset-specific immutable outputs after the structured runtime payload.
+    /// </summary>
+    /// <param name="context">
+    /// Current isolated import context.
+    /// </param>
+    /// <param name="output">
+    /// Candidate output writer.
+    /// </param>
+    /// <param name="asset">
+    /// Imported managed asset.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// Cancellation observed before committing additional outputs.
+    /// </param>
+    /// <returns>
+    /// An operation that completes after every additional output has been staged.
+    /// </returns>
     protected virtual ValueTask WriteAdditionalArtifactsAsync(
         AssetImportContext context,
         AssetImportWriter<TAsset> output,
         TAsset asset,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken
+    )
         => ValueTask.CompletedTask;
 }
 
@@ -63,8 +76,8 @@ internal sealed class SpriteAtlas2DImporter : NativeRendering2DAssetImporter<Spr
         AssetImportContext context,
         AssetImportWriter<SpriteAtlas2DAsset> output,
         SpriteAtlas2DAsset asset,
-        CancellationToken cancellationToken)
-    {
+        CancellationToken cancellationToken
+    ) {
         SpriteAtlasCompositionResult2D composition = SpriteAtlasComposer2D.Compose(
             asset,
             texture => context.ReadSourceBytes(texture.assetPath));

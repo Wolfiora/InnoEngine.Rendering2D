@@ -4,7 +4,9 @@ using InnoEngine.Rendering;
 
 namespace Inno.Rendering2D;
 
-/// <summary>Creates an empty authorable Sprite Atlas source.</summary>
+/// <summary>
+/// Creates an empty authorable Sprite Atlas source.
+/// </summary>
 [AssetCreationMenu(
     Rendering2DIds.spriteAtlasCreation,
     "Rendering 2D/Sprites/Sprite Atlas",
@@ -16,7 +18,9 @@ namespace Inno.Rendering2D;
 public sealed class SpriteAtlas2DAssetCreationTemplate
     : AssetCreationTemplate<SpriteAtlas2DAsset>;
 
-/// <summary>Creates an empty authorable Sprite Animation source.</summary>
+/// <summary>
+/// Creates an empty authorable Sprite Animation source.
+/// </summary>
 [AssetCreationMenu(
     Rendering2DIds.spriteAnimationCreation,
     "Rendering 2D/Sprites/Sprite Animation",
@@ -28,7 +32,9 @@ public sealed class SpriteAtlas2DAssetCreationTemplate
 public sealed class SpriteAnimation2DAssetCreationTemplate
     : AssetCreationTemplate<SpriteAnimation2DAsset>;
 
-/// <summary>Creates an empty authorable Tile Set source.</summary>
+/// <summary>
+/// Creates an empty authorable Tile Set source.
+/// </summary>
 [AssetCreationMenu(
     Rendering2DIds.tileSetCreation,
     "Rendering 2D/World/Tile Set",
@@ -40,7 +46,9 @@ public sealed class SpriteAnimation2DAssetCreationTemplate
 public sealed class TileSet2DAssetCreationTemplate
     : AssetCreationTemplate<TileSet2DAsset>;
 
-/// <summary>Creates an empty authorable Tilemap source.</summary>
+/// <summary>
+/// Creates an empty authorable Tilemap source.
+/// </summary>
 [AssetCreationMenu(
     Rendering2DIds.tilemapCreation,
     "Rendering 2D/World/Tilemap",
@@ -52,7 +60,9 @@ public sealed class TileSet2DAssetCreationTemplate
 public sealed class Tilemap2DAssetCreationTemplate
     : AssetCreationTemplate<Tilemap2DAsset>;
 
-/// <summary>Creates a Particle Effect source with deterministic defaults.</summary>
+/// <summary>
+/// Creates a Particle Effect source with deterministic defaults.
+/// </summary>
 [AssetCreationMenu(
     Rendering2DIds.particleEffectCreation,
     "Rendering 2D/Effects/Particle Effect",
@@ -64,7 +74,9 @@ public sealed class Tilemap2DAssetCreationTemplate
 public sealed class ParticleEffect2DAssetCreationTemplate
     : AssetCreationTemplate<ParticleEffect2DAsset>;
 
-/// <summary>Creates a Post Process Profile source with deterministic defaults.</summary>
+/// <summary>
+/// Creates a Post Process Profile source with deterministic defaults.
+/// </summary>
 [AssetCreationMenu(
     Rendering2DIds.postProcessCreation,
     "Rendering 2D/Effects/Post Process Profile",
@@ -76,7 +88,9 @@ public sealed class ParticleEffect2DAssetCreationTemplate
 public sealed class PostProcessProfile2DAssetCreationTemplate
     : AssetCreationTemplate<PostProcessProfile2DAsset>;
 
-/// <summary>Creates a Render Pipeline source already configured for Rendering2D.</summary>
+/// <summary>
+/// Creates a Render Pipeline source already configured for Rendering2D.
+/// </summary>
 [AssetCreationMenu(
     Rendering2DIds.pipelineCreation,
     "Rendering 2D/Render Pipeline",

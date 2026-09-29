@@ -15,17 +15,22 @@ using InnoEngine.Rendering;
 
 namespace Inno.Rendering2D;
 
-/// <summary>Registers the reload-safe headless document provider for native 2D assets.</summary>
+/// <summary>
+/// Registers the reload-safe headless document provider for native 2D assets.
+/// </summary>
 [EditorModule("rendering2d.asset-documents", order: 400)]
 public sealed class Rendering2DAssetDocumentModule(
     EditorInteractions interactions,
-    IEditorPreviewService previews) : EditorModule
+    IEditorPreviewService previews
+) : EditorModule
 {
     private IDisposable? m_registration;
     private Rendering2DAssetDocumentProvider? m_provider;
 
-    internal void DrawInspectorHeader(InspectionDrawContext context, AssetObject asset)
-    {
+    internal void DrawInspectorHeader(
+        InspectionDrawContext context,
+        AssetObject asset
+    ) {
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(asset);
         Rendering2DAssetDocumentProvider provider = m_provider
@@ -36,8 +41,10 @@ public sealed class Rendering2DAssetDocumentModule(
         provider.DrawInspectorHeader(document);
     }
 
-    internal void DrawInspectorHeader(InspectionDrawContext context, AssetFileEntry source)
-    {
+    internal void DrawInspectorHeader(
+        InspectionDrawContext context,
+        AssetFileEntry source
+    ) {
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(source);
         Rendering2DAssetDocumentProvider provider = m_provider
@@ -46,8 +53,10 @@ public sealed class Rendering2DAssetDocumentModule(
         provider.DrawInspectorHeader(document);
     }
 
-    internal void DrawInspector(InspectionDrawContext context, AssetObject asset)
-    {
+    internal void DrawInspector(
+        InspectionDrawContext context,
+        AssetObject asset
+    ) {
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(asset);
         Rendering2DAssetDocumentProvider provider = m_provider
@@ -58,8 +67,10 @@ public sealed class Rendering2DAssetDocumentModule(
         provider.DrawInspector(document, context);
     }
 
-    internal void DrawInspector(InspectionDrawContext context, AssetFileEntry source)
-    {
+    internal void DrawInspector(
+        InspectionDrawContext context,
+        AssetFileEntry source
+    ) {
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(source);
         Rendering2DAssetDocumentProvider provider = m_provider
@@ -72,20 +83,23 @@ public sealed class Rendering2DAssetDocumentModule(
 
     internal EditorHistoryAvailability QueryHistory(
         EditorHistoryChange change,
-        EditorHistoryDirection direction)
+        EditorHistoryDirection direction
+    )
         => m_provider?.QueryHistory(change, direction)
            ?? EditorHistoryAvailability.Unavailable("The 2D asset draft provider is reloading.");
 
     internal EditorHistoryResult ApplyHistory(
         EditorHistoryChange change,
-        EditorHistoryDirection direction)
+        EditorHistoryDirection direction
+    )
         => m_provider?.ApplyHistory(change, direction)
            ?? EditorHistoryResult.Failure("The 2D asset draft provider is reloading.");
 
     internal bool TryMergeHistory(
         EditorHistoryChange older,
         EditorHistoryChange newer,
-        out EditorHistoryChange? merged)
+        out EditorHistoryChange? merged
+    )
         => Rendering2DAssetDocumentProvider.TryMergeHistory(older, newer, out merged);
 
     /// <inheritdoc />
@@ -117,7 +131,9 @@ public sealed class Rendering2DAssetDocumentModule(
     }
 }
 
-/// <summary>Draws native Rendering2D authoring drafts through the shared Inspector.</summary>
+/// <summary>
+/// Draws native Rendering2D authoring drafts through the shared Inspector.
+/// </summary>
 [InspectionDrawer(typeof(SpriteAtlas2DAsset))]
 [InspectionDrawer(typeof(SpriteAnimation2DAsset))]
 [InspectionDrawer(typeof(TileSet2DAsset))]
@@ -132,12 +148,14 @@ public sealed class Rendering2DAssetInspectionDrawer : InspectionDrawer<AssetObj
     /// <inheritdoc />
     protected override (string, Action<string>?) BindName(
         InspectionDrawContext context,
-        AssetObject target)
-        => (target.name, null);
+        AssetObject target
+    ) => (target.name, null);
 
     /// <inheritdoc />
-    protected override void DrawHeader(InspectionDrawContext context, AssetObject target)
-    {
+    protected override void DrawHeader(
+        InspectionDrawContext context,
+        AssetObject target
+    ) {
         if (context.interactions.TryGetModule<Rendering2DAssetDocumentModule>(out var module)
             && module is not null)
         {
@@ -146,8 +164,10 @@ public sealed class Rendering2DAssetInspectionDrawer : InspectionDrawer<AssetObj
     }
 
     /// <inheritdoc />
-    protected override void Draw(InspectionDrawContext context, AssetObject target)
-    {
+    protected override void Draw(
+        InspectionDrawContext context,
+        AssetObject target
+    ) {
         if (context.interactions.TryGetModule<Rendering2DAssetDocumentModule>(out var module)
             && module is not null)
         {
@@ -156,10 +176,11 @@ public sealed class Rendering2DAssetInspectionDrawer : InspectionDrawer<AssetObj
     }
 }
 
-/// <summary>Draws selected Rendering2D source files through the same native asset drafts.</summary>
+/// <summary>
+/// Draws selected Rendering2D source files through the same native asset drafts.
+/// </summary>
 [InspectionDrawer(typeof(AssetFileEntry), priority: 100, conditional: true)]
-public sealed class Rendering2DAssetSourceInspectionDrawer(
-    IInspectionIconProvider<AssetFileEntry> icons) : InspectionDrawer<AssetFileEntry>
+public sealed class Rendering2DAssetSourceInspectionDrawer(IInspectionIconProvider<AssetFileEntry> icons) : InspectionDrawer<AssetFileEntry>
 {
     /// <inheritdoc />
     public override string icon => ImGuiIcon.File;
@@ -169,18 +190,23 @@ public sealed class Rendering2DAssetSourceInspectionDrawer(
         => !target.isDirectory && Rendering2DAssetDocumentProvider.Supports(target.extension);
 
     /// <inheritdoc />
-    protected override string GetIcon(InspectionDrawContext context, AssetFileEntry target)
-        => icons.GetIcon(target);
+    protected override string GetIcon(
+        InspectionDrawContext context,
+        AssetFileEntry target
+    ) => icons.GetIcon(target);
 
     /// <inheritdoc />
     protected override (string, Action<string>?) BindName(
         InspectionDrawContext context,
-        AssetFileEntry target)
+        AssetFileEntry target
+    )
         => (target.nameWithoutExtension, null);
 
     /// <inheritdoc />
-    protected override void DrawHeader(InspectionDrawContext context, AssetFileEntry target)
-    {
+    protected override void DrawHeader(
+        InspectionDrawContext context,
+        AssetFileEntry target
+    ) {
         if (context.interactions.TryGetModule<Rendering2DAssetDocumentModule>(out var module)
             && module is not null)
         {
@@ -189,8 +215,10 @@ public sealed class Rendering2DAssetSourceInspectionDrawer(
     }
 
     /// <inheritdoc />
-    protected override void Draw(InspectionDrawContext context, AssetFileEntry target)
-    {
+    protected override void Draw(
+        InspectionDrawContext context,
+        AssetFileEntry target
+    ) {
         if (context.interactions.TryGetModule<Rendering2DAssetDocumentModule>(out var module)
             && module is not null)
         {
@@ -202,7 +230,8 @@ public sealed class Rendering2DAssetSourceInspectionDrawer(
 internal sealed class Rendering2DAssetDocumentProvider(
     IEditorDocumentService documents,
     IEditorPreviewService previews,
-    IEditorHistory history) : EditorDocumentProvider
+    IEditorHistory history
+) : EditorDocumentProvider
 {
     private static readonly string[] S_EXTENSIONS =
     [
@@ -219,8 +248,7 @@ internal sealed class Rendering2DAssetDocumentProvider(
 
     public override string id => Rendering2DIds.assetDocumentProvider;
 
-    public override bool CanOpen(string assetPath)
-        => Supports(Path.GetExtension(assetPath));
+    public override bool CanOpen(string assetPath) => Supports(Path.GetExtension(assetPath));
 
     internal static bool Supports(string extension)
         => Array.Exists(
@@ -247,8 +275,8 @@ internal sealed class Rendering2DAssetDocumentProvider(
 
     internal void DrawInspector(
         EditorDocumentContext context,
-        InspectionDrawContext inspection)
-    {
+        InspectionDrawContext inspection
+    ) {
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(inspection);
         if (!m_drafts.TryGetValue(context.documentId, out Draft? draft))
@@ -296,7 +324,8 @@ internal sealed class Rendering2DAssetDocumentProvider(
         ArgumentNullException.ThrowIfNull(context);
         if (!m_drafts.TryGetValue(context.documentId, out Draft? draft))
             return false;
-        if (!draft.Save(AssetPath.Parse(context.assetPath))) return false;
+        if (!draft.Save(AssetPath.Parse(context.assetPath)))
+            return false;
         m_baselines[context.documentId] = draft.Capture();
         SynchronizeState(context, draft);
         return true;
@@ -323,8 +352,8 @@ internal sealed class Rendering2DAssetDocumentProvider(
 
     internal EditorHistoryAvailability QueryHistory(
         EditorHistoryChange change,
-        EditorHistoryDirection direction)
-    {
+        EditorHistoryDirection direction
+    ) {
         try
         {
             ChangeData data = DecodeChange(change);
@@ -343,8 +372,8 @@ internal sealed class Rendering2DAssetDocumentProvider(
 
     internal EditorHistoryResult ApplyHistory(
         EditorHistoryChange change,
-        EditorHistoryDirection direction)
-    {
+        EditorHistoryDirection direction
+    ) {
         try
         {
             ChangeData data = DecodeChange(change);
@@ -370,8 +399,8 @@ internal sealed class Rendering2DAssetDocumentProvider(
     internal static bool TryMergeHistory(
         EditorHistoryChange older,
         EditorHistoryChange newer,
-        out EditorHistoryChange? merged)
-    {
+        out EditorHistoryChange? merged
+    ) {
         merged = null;
         try
         {
@@ -380,7 +409,8 @@ internal sealed class Rendering2DAssetDocumentProvider(
             if (older.mergeKey is null
                 || !string.Equals(older.mergeKey, newer.mergeKey, StringComparison.Ordinal)
                 || first.documentId != second.documentId
-                || !first.after.AsSpan().SequenceEqual(second.before)) return false;
+                || !first.after.AsSpan().SequenceEqual(second.before))
+                return false;
             var combined = new ChangeData(first.documentId, second.assetPath, first.before, second.after);
             merged = new EditorHistoryChange(
                 Rendering2DIds.assetDraftHistory,
@@ -399,10 +429,11 @@ internal sealed class Rendering2DAssetDocumentProvider(
         Draft draft,
         byte[] before,
         string name,
-        string? mergeKey = null)
-    {
+        string? mergeKey = null
+    ) {
         byte[] after = draft.Capture();
-        if (before.AsSpan().SequenceEqual(after)) return;
+        if (before.AsSpan().SequenceEqual(after))
+            return;
         var data = new ChangeData(context.documentId, context.assetPath, before, after);
         var change = new EditorHistoryChange(
             Rendering2DIds.assetDraftHistory,
@@ -422,8 +453,10 @@ internal sealed class Rendering2DAssetDocumentProvider(
         }
     }
 
-    private void SynchronizeState(EditorDocumentContext context, Draft draft)
-    {
+    private void SynchronizeState(
+        EditorDocumentContext context,
+        Draft draft
+    ) {
         byte[] current = draft.Capture();
         byte[] baseline = m_baselines[context.documentId];
         context.SetViewParameter("draft", Convert.ToBase64String(current));
@@ -454,20 +487,28 @@ internal sealed class Rendering2DAssetDocumentProvider(
         string assetPath = reader.ReadString();
         byte[] before = ReadBytes(reader);
         byte[] after = ReadBytes(reader);
-        if (stream.Position != stream.Length) throw new FormatException("The 2D asset History payload has trailing data.");
+        if (stream.Position != stream.Length)
+            throw new FormatException("The 2D asset History payload has trailing data.");
         return new ChangeData(documentId, assetPath, before, after);
 
         static byte[] ReadBytes(BinaryReader reader)
         {
             int length = reader.ReadInt32();
-            if (length < 0 || length > 268_435_456) throw new FormatException("The 2D asset History payload length is invalid.");
+            if (length < 0 || length > 268_435_456)
+                throw new FormatException("The 2D asset History payload length is invalid.");
             byte[] bytes = reader.ReadBytes(length);
-            if (bytes.Length != length) throw new EndOfStreamException("The 2D asset History payload is incomplete.");
+            if (bytes.Length != length)
+                throw new EndOfStreamException("The 2D asset History payload is incomplete.");
             return bytes;
         }
     }
 
-    private sealed record ChangeData(Guid documentId, string assetPath, byte[] before, byte[] after);
+    private sealed record ChangeData(
+        Guid documentId,
+        string assetPath,
+        byte[] before,
+        byte[] after
+    );
 
     private Draft CreateDraft(EditorDocumentContext context)
     {
@@ -513,8 +554,8 @@ internal sealed class Rendering2DAssetDocumentProvider(
             InspectionDrawContext context,
             IEditorPreviewService previews,
             IInspectionPropertyEditService edits,
-            bool readOnly)
-        {
+            bool readOnly
+        ) {
             byte[] before = Capture();
             if (!readOnly && Draw(previews))
                 ((InspectorDraftEdits)edits).RecordApplied(before, "Edit 2D Asset");
@@ -537,14 +578,15 @@ internal sealed class Rendering2DAssetDocumentProvider(
         Rendering2DAssetDocumentProvider provider,
         EditorDocumentContext context,
         Draft draft,
-        bool readOnly) : IInspectionPropertyEditService
+        bool readOnly
+    ) : IInspectionPropertyEditService
     {
         public bool ChangeProperty(
             object owner,
             string propertyName,
             Action mutation,
-            string historyName)
-        {
+            string historyName
+        ) {
             if (readOnly)
                 return false;
             byte[] before = draft.Capture();
@@ -558,8 +600,10 @@ internal sealed class Rendering2DAssetDocumentProvider(
             return true;
         }
 
-        internal void RecordApplied(byte[] before, string historyName)
-            => provider.RecordApplied(context, draft, before, historyName);
+        internal void RecordApplied(
+            byte[] before,
+            string historyName
+        ) => provider.RecordApplied(context, draft, before, historyName);
     }
 
     private sealed class AtlasDraft(SpriteAtlas2DAsset asset) : Draft
@@ -805,7 +849,10 @@ internal sealed class Rendering2DAssetDocumentProvider(
             return true;
         }
 
-        private SpriteAtlasSlice2D CreateSlice(string name, InnoEngine.Mathematics.Rect rect)
+        private SpriteAtlasSlice2D CreateSlice(
+            string name,
+            InnoEngine.Mathematics.Rect rect
+        )
             => new()
             {
                 id = SpriteRegionId.Create(),
@@ -870,8 +917,7 @@ internal sealed class Rendering2DAssetDocumentProvider(
         private bool m_playing;
         private bool m_onionSkin;
 
-        internal override byte[] Capture()
-            => EditorAssets.EncodeNative(new SpriteAnimation2DAsset { clips = CloneClips(m_clips) });
+        internal override byte[] Capture() => EditorAssets.EncodeNative(new SpriteAnimation2DAsset { clips = CloneClips(m_clips) });
 
         internal override void Restore(byte[] bytes)
             => m_clips = CloneClips(EditorAssets.DecodeNative<SpriteAnimation2DAsset>(bytes).clips);
@@ -985,8 +1031,10 @@ internal sealed class Rendering2DAssetDocumentProvider(
             return result;
         }
 
-        private static int GetFrameIndex(SpriteAnimationFrame2D[] frames, float playhead)
-        {
+        private static int GetFrameIndex(
+            SpriteAnimationFrame2D[] frames,
+            float playhead
+        ) {
             if (frames.Length == 0)
                 return -1;
             float remaining = MathF.Max(0f, playhead);
@@ -1002,8 +1050,8 @@ internal sealed class Rendering2DAssetDocumentProvider(
         private static void DrawFramePreview(
             IEditorPreviewService previews,
             SpriteAnimationFrame2D frame,
-            string label)
-        {
+            string label
+        ) {
             ImGui.Text(label);
             if (frame.sprite.texture is not null
                 && previews.TryGetTexture(frame.sprite.texture, out EditorPreviewHandle texture))
@@ -1030,8 +1078,7 @@ internal sealed class Rendering2DAssetDocumentProvider(
     {
         private TileDefinition2D[] m_tiles = (TileDefinition2D[])asset.tiles.Clone();
 
-        internal override byte[] Capture()
-            => EditorAssets.EncodeNative(new TileSet2DAsset { tiles = (TileDefinition2D[])m_tiles.Clone() });
+        internal override byte[] Capture() => EditorAssets.EncodeNative(new TileSet2DAsset { tiles = (TileDefinition2D[])m_tiles.Clone() });
 
         internal override void Restore(byte[] bytes)
             => m_tiles = (TileDefinition2D[])EditorAssets.DecodeNative<TileSet2DAsset>(bytes).tiles.Clone();
@@ -1083,8 +1130,7 @@ internal sealed class Rendering2DAssetDocumentProvider(
         private int m_moveY;
         private int m_selectedCount;
 
-        internal override byte[] Capture()
-            => EditorAssets.EncodeNative(CreateAsset(normalize: false));
+        internal override byte[] Capture() => EditorAssets.EncodeNative(CreateAsset(normalize: false));
 
         internal override void Restore(byte[] bytes)
         {
@@ -1203,8 +1249,10 @@ internal sealed class Rendering2DAssetDocumentProvider(
                 m_x + Math.Max(1, m_width) - 1,
                 m_y + Math.Max(1, m_height) - 1);
 
-        private bool Record(string name, TilemapStroke2D stroke)
-        {
+        private bool Record(
+            string name,
+            TilemapStroke2D stroke
+        ) {
             if (!stroke.hasChanges)
                 return false;
             return true;
@@ -1282,8 +1330,8 @@ internal sealed class Rendering2DAssetDocumentProvider(
             InspectionDrawContext context,
             IEditorPreviewService previews,
             IInspectionPropertyEditService edits,
-            bool readOnly)
-        {
+            bool readOnly
+        ) {
             if (ImGuiWidget.SectionHeader(
                     "Color and Tone",
                     "Exposure, contrast, saturation, and tone mapping shape the complete camera result."))
@@ -1318,8 +1366,8 @@ internal sealed class Rendering2DAssetDocumentProvider(
                 Func<T> getter,
                 Action<T> setter,
                 double? minimum = null,
-                double? maximum = null)
-            {
+                double? maximum = null
+            ) {
                 context.properties.DrawValue(
                     context.editorContext,
                     this,
@@ -1428,8 +1476,8 @@ internal sealed class Rendering2DAssetDocumentProvider(
             InspectionDrawContext context,
             IEditorPreviewService previews,
             IInspectionPropertyEditService edits,
-            bool readOnly)
-        {
+            bool readOnly
+        ) {
             if (ImGuiWidget.SectionHeader(
                     "Rendering",
                     "Sprite, flipbook, Material, blending, and sampling define particle appearance."))
@@ -1480,8 +1528,8 @@ internal sealed class Rendering2DAssetDocumentProvider(
                 Func<T> getter,
                 Action<T> setter,
                 double? minimum = null,
-                double? maximum = null)
-            {
+                double? maximum = null
+            ) {
                 context.properties.DrawValue(
                     context.editorContext,
                     this,
@@ -1549,17 +1597,18 @@ internal sealed class Rendering2DAssetDocumentProvider(
     }
 }
 
-/// <summary>Interprets neutral, reload-safe History records for every native Rendering2D asset draft.</summary>
+/// <summary>
+/// Interprets neutral, reload-safe History records for every native Rendering2D asset draft.
+/// </summary>
 [EditorHistoryHandler(Rendering2DIds.assetDraftHistory)]
-public sealed class Rendering2DAssetDraftHistoryHandler(
-    Rendering2DAssetDocumentModule documents) : EditorHistoryHandler
+public sealed class Rendering2DAssetDraftHistoryHandler(Rendering2DAssetDocumentModule documents) : EditorHistoryHandler
 {
     /// <inheritdoc />
     protected override EditorHistoryAvailability Query(
         EditorHistoryContext context,
         EditorHistoryChange change,
-        EditorHistoryDirection direction)
-    {
+        EditorHistoryDirection direction
+    ) {
         ArgumentNullException.ThrowIfNull(context);
         return documents.QueryHistory(change, direction);
     }
@@ -1568,8 +1617,8 @@ public sealed class Rendering2DAssetDraftHistoryHandler(
     protected override EditorHistoryResult Apply(
         EditorHistoryContext context,
         EditorHistoryChange change,
-        EditorHistoryDirection direction)
-    {
+        EditorHistoryDirection direction
+    ) {
         ArgumentNullException.ThrowIfNull(context);
         return documents.ApplyHistory(change, direction);
     }
@@ -1578,6 +1627,7 @@ public sealed class Rendering2DAssetDraftHistoryHandler(
     protected override bool TryMerge(
         EditorHistoryChange older,
         EditorHistoryChange newer,
-        out EditorHistoryChange? merged)
+        out EditorHistoryChange? merged
+    )
         => documents.TryMergeHistory(older, newer, out merged);
 }

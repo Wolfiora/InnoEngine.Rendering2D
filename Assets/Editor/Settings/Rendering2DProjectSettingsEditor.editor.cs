@@ -7,7 +7,9 @@ using InnoEditor.Settings;
 
 namespace Inno.Rendering2D;
 
-/// <summary>Provides the renderer-limit section of the unified 2D Project Settings page.</summary>
+/// <summary>
+/// Provides the renderer-limit section of the unified 2D Project Settings page.
+/// </summary>
 [ProjectSettingPath("Project/Rendering/2D/Renderer")]
 public sealed class Rendering2DProjectSettingsEditor : ProjectSettingEditor<Rendering2DProjectSettings>
 {
@@ -17,8 +19,7 @@ public sealed class Rendering2DProjectSettingsEditor : ProjectSettingEditor<Rend
     public override string section => "Renderer";
 
     /// <inheritdoc />
-    public override string description
-        => "Configure project-wide 2D rendering pipeline and batching limits.";
+    public override string description => "Configure project-wide 2D rendering pipeline and batching limits.";
 
     /// <inheritdoc />
     protected override void OnDraw(Rendering2DProjectSettings setting)
@@ -31,11 +32,15 @@ public sealed class Rendering2DProjectSettingsEditor : ProjectSettingEditor<Rend
             try
             {
                 RenderPipelineAsset candidate = Assets.Load<RenderPipelineAsset>(AssetPath.Parse(m_pipelinePath));
-                if (candidate.pipelineTypeId != Rendering2DIds.pipeline) throw new InvalidOperationException("Choose a 2D Pipeline.");
+                if (candidate.pipelineTypeId != Rendering2DIds.pipeline)
+                    throw new InvalidOperationException("Choose a 2D Pipeline.");
                 setting.pipeline = candidate;
                 m_pipelineError = string.Empty;
             }
-            catch (Exception error) { m_pipelineError = error.Message; }
+            catch (Exception error)
+            {
+                m_pipelineError = error.Message;
+            }
         }
         if (ImGui.Button("Use Plugin Default Pipeline"))
         {
@@ -43,7 +48,8 @@ public sealed class Rendering2DProjectSettingsEditor : ProjectSettingEditor<Rend
             m_pipelinePath = setting.pipeline.assetPath.ToString();
             m_pipelineError = string.Empty;
         }
-        if (m_pipelineError.Length != 0) ImGui.Text(m_pipelineError);
+        if (m_pipelineError.Length != 0)
+            ImGui.Text(m_pipelineError);
 
         ImGui.Separator();
         float pixelsPerUnit = setting.defaultPixelsPerUnit;
@@ -63,7 +69,9 @@ public sealed class Rendering2DProjectSettingsEditor : ProjectSettingEditor<Rend
 
 }
 
-/// <summary>Provides the sorting-layer section of the unified 2D Project Settings page.</summary>
+/// <summary>
+/// Provides the sorting-layer section of the unified 2D Project Settings page.
+/// </summary>
 [ProjectSettingPath("Project/Rendering/2D/Sorting Layers", order: 100)]
 public sealed class Rendering2DSortingLayersProjectSettingsEditor
     : ProjectSettingEditor<Rendering2DProjectSettings>
@@ -75,8 +83,7 @@ public sealed class Rendering2DSortingLayersProjectSettingsEditor
     public override string section => "Sorting Layers";
 
     /// <inheritdoc />
-    public override string description
-        => "Configure sorting-layer names and order. IDs are generated automatically as projectId.name.";
+    public override string description => "Configure sorting-layer names and order. IDs are generated automatically as projectId.name.";
 
     /// <inheritdoc />
     protected override void OnDraw(Rendering2DProjectSettings setting)
@@ -117,8 +124,8 @@ public sealed class Rendering2DSortingLayersProjectSettingsEditor
 
     private static void TryApplyLayers(
         Rendering2DProjectSettings setting,
-        System.Collections.Generic.IEnumerable<SortingLayer2DDefinition> layers)
-    {
+        System.Collections.Generic.IEnumerable<SortingLayer2DDefinition> layers
+    ) {
         try
         {
             setting.SetSortingLayers(layers);

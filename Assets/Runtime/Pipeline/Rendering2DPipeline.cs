@@ -6,7 +6,9 @@ using InnoEngine.Rendering;
 
 namespace Inno.Rendering2D;
 
-/// <summary>Builds the bounded sprite and tile batch pass owned entirely by the 2D Plugin.</summary>
+/// <summary>
+/// Builds the bounded sprite and tile batch pass owned entirely by the 2D Plugin.
+/// </summary>
 [RenderPipelineExtension(Rendering2DIds.pipeline)]
 public sealed class Rendering2DPipeline : RenderPipeline
 {
@@ -22,12 +24,16 @@ public sealed class Rendering2DPipeline : RenderPipeline
 
     private PipelineState state => m_state ??= new PipelineState();
 
-    /// <summary>Gets the frame channel consumed by this pipeline.</summary>
+    /// <summary>
+    /// Gets the frame channel consumed by this pipeline.
+    /// </summary>
     public static RenderDataChannelId frameChannel => new("inno.rendering.2d.frame");
 
     /// <inheritdoc />
-    protected override void OnConfigure(SerializedRenderExtensionState configuration, RenderExtensionStateContext owner)
-    {
+    protected override void OnConfigure(
+        SerializedRenderExtensionState configuration,
+        RenderExtensionStateContext owner
+    ) {
         var settings = new Rendering2DPipelineSettings();
         configuration.Restore(settings, owner);
         m_lightMaterial = ForProgram(settings.lightAccumulation);
@@ -38,8 +44,7 @@ public sealed class Rendering2DPipeline : RenderPipeline
         m_compositeMaterial = ForProgram(settings.finalComposite);
     }
 
-    private static MaterialAsset? ForProgram(ShaderAsset? shader)
-        => shader is null ? null : new MaterialAsset { shader = shader };
+    private static MaterialAsset? ForProgram(ShaderAsset? shader) => shader is null ? null : new MaterialAsset { shader = shader };
 
     /// <inheritdoc />
     public override void Build(RenderPipelineContext context)
@@ -141,7 +146,8 @@ public sealed class Rendering2DPipeline : RenderPipeline
                 {
                     PublishOutputUnavailable(context, frameIndex, "Mask composition");
                 }
-                else ResolveOutputUnavailable(context, frameIndex);
+                else
+                    ResolveOutputUnavailable(context, frameIndex);
             }
             else if (frame.postProcess is not null)
             {
@@ -158,7 +164,8 @@ public sealed class Rendering2DPipeline : RenderPipeline
                 {
                     PublishOutputUnavailable(context, frameIndex, "Post-process composition");
                 }
-                else ResolveOutputUnavailable(context, frameIndex);
+                else
+                    ResolveOutputUnavailable(context, frameIndex);
             }
             else
             {
@@ -177,8 +184,10 @@ public sealed class Rendering2DPipeline : RenderPipeline
         }
     }
 
-    private void PrewarmInternalMaterials(RenderPipelineContext context, Rendering2DFrameSequence sequence)
-    {
+    private void PrewarmInternalMaterials(
+        RenderPipelineContext context,
+        Rendering2DFrameSequence sequence
+    ) {
         bool hasLights = false;
         bool hasMasks = false;
         bool hasPostProcess = false;
@@ -210,7 +219,11 @@ public sealed class Rendering2DPipeline : RenderPipeline
         }
     }
 
-    private void PublishOutputUnavailable(RenderPipelineContext context, int frameIndex, string requirement)
+    private void PublishOutputUnavailable(
+        RenderPipelineContext context,
+        int frameIndex,
+        string requirement
+    )
         => context.diagnostics.Publish(new Diagnostic(
             "RENDERING_2D_OUTPUT_UNAVAILABLE",
             $"Camera {frameIndex + 1}: {requirement} is not ready. This output was not replaced by an unmasked or unprocessed render.",
@@ -219,24 +232,31 @@ public sealed class Rendering2DPipeline : RenderPipeline
                 : DiagnosticSeverity.Error,
             OutputDiagnosticId(context, frameIndex)));
 
-    private static void ResolveOutputUnavailable(RenderPipelineContext context, int frameIndex)
+    private static void ResolveOutputUnavailable(
+        RenderPipelineContext context,
+        int frameIndex
+    )
         => context.diagnostics.Resolve("RENDERING_2D_OUTPUT_UNAVAILABLE", OutputDiagnosticId(context, frameIndex));
 
-    private static string OutputDiagnosticId(RenderPipelineContext context, int frameIndex)
+    private static string OutputDiagnosticId(
+        RenderPipelineContext context,
+        int frameIndex
+    )
         => context.request.name + "/camera/" + frameIndex;
 
     private static bool HasLitDrawables(Rendering2DFrame frame)
     {
         foreach (Rendering2DDrawBatch batch in frame.batches)
-            if (batch.lightBlendStyles != 0) return true;
+            if (batch.lightBlendStyles != 0)
+                return true;
         return false;
     }
 
     private PreparedBatch[] PrepareBatches(
         RenderPipelineContext context,
         IReadOnlyList<Rendering2DDrawBatch> batches,
-        Dictionary<Rendering2DDrawBatch, PreparedBatch> preparedByBatch)
-    {
+        Dictionary<Rendering2DDrawBatch, PreparedBatch> preparedByBatch
+    ) {
         var result = new List<PreparedBatch>(batches.Count);
         for (int index = 0; index < batches.Count; index++)
         {
@@ -253,8 +273,8 @@ public sealed class Rendering2DPipeline : RenderPipeline
     private static PreparedSceneDraw[] PrepareSceneDraws(
         RenderPipelineContext context,
         Rendering2DFrame frame,
-        IReadOnlyDictionary<Rendering2DDrawBatch, PreparedBatch> preparedByBatch)
-    {
+        IReadOnlyDictionary<Rendering2DDrawBatch, PreparedBatch> preparedByBatch
+    ) {
         var result = new List<PreparedSceneDraw>(frame.sceneDraws.Length);
         var view = new RenderView(
             $"2D/{frame.camera.identity.persistentId:D}",
@@ -282,8 +302,8 @@ public sealed class Rendering2DPipeline : RenderPipeline
     private bool TryPrepareBatch(
         RenderPipelineContext context,
         Rendering2DDrawBatch batch,
-        out PreparedBatch? prepared)
-    {
+        out PreparedBatch? prepared
+    ) {
         RenderTargetArtifactStatus shaderStatus = context.resourceService.PrewarmMaterial(batch.material);
         if (batch.texture.directTexture is not null)
             context.resourceService.PrewarmTexture(batch.texture.directTexture);
@@ -326,10 +346,7 @@ public sealed class Rendering2DPipeline : RenderPipeline
                 persistentId,
                 batch.instanceRevision,
                 new PersistentBufferDescriptor(
-                    new RenderBufferDescriptor(
-                        batch.instanceCount,
-                        state.instanceLayout.stride,
-                        RenderBufferUsage.Vertex),
+                    new RenderBufferDescriptor(batch.instanceCount, state.instanceLayout.stride, RenderBufferUsage.Vertex),
                     state.instanceLayout),
                 batch.instanceBytes,
                 $"2D tile chunk {persistentId.value}");
@@ -361,8 +378,8 @@ public sealed class Rendering2DPipeline : RenderPipeline
     private bool TryResolveTexture(
         RenderPipelineContext context,
         Rendering2DTextureSource source,
-        out PersistentTextureHandle texture)
-    {
+        out PersistentTextureHandle texture
+    ) {
         if (source.directTexture is TextureAsset directTexture)
             return context.resourceService.TryResolveTexture(directTexture, out texture);
         if (source.artifact is RenderTextureArtifactReference artifact)
@@ -371,8 +388,10 @@ public sealed class Rendering2DPipeline : RenderPipeline
         return true;
     }
 
-    private static void PrewarmTexture(RenderPipelineContext context, Rendering2DTextureSource source)
-    {
+    private static void PrewarmTexture(
+        RenderPipelineContext context,
+        Rendering2DTextureSource source
+    ) {
         if (source.directTexture is TextureAsset directTexture)
             context.resourceService.PrewarmTexture(directTexture);
         else if (source.artifact is RenderTextureArtifactReference artifact)
@@ -383,8 +402,8 @@ public sealed class Rendering2DPipeline : RenderPipeline
         RenderPipelineContext context,
         Rendering2DTextureSource source,
         PersistentTextureHandle fallback,
-        out PersistentTextureHandle texture)
-    {
+        out PersistentTextureHandle texture
+    ) {
         if (source.directTexture is null && source.artifact is null)
         {
             texture = fallback;
@@ -414,8 +433,8 @@ public sealed class Rendering2DPipeline : RenderPipeline
         Rendering2DFrame frame,
         int frameIndex,
         PersistentBufferHandle sharedVertices,
-        PersistentBufferHandle sharedIndices)
-    {
+        PersistentBufferHandle sharedIndices
+    ) {
         PipelineState pipelineState = state;
         if (frame.lights.Length == 0)
             return default;
@@ -563,7 +582,10 @@ public sealed class Rendering2DPipeline : RenderPipeline
                     $"2D Camera {frameIndex + 1} Light Layer {layer} Style {style}",
                     state.lightPhase,
                     passData,
-                    static (data, passContext) => ExecuteLights(data, passContext.commands));
+                    static (
+                        data,
+                        passContext
+                    ) => ExecuteLights(data, passContext.commands));
                 pass.SetViewTransform(frame.viewMatrix, frame.projectionMatrix);
                 pass.UseColorAttachment(
                     colors[slot],
@@ -603,7 +625,10 @@ public sealed class Rendering2DPipeline : RenderPipeline
                     $"2D Camera {frameIndex + 1} Light Layer {layer} Style {style} Direction Clear",
                     state.lightPhase,
                     0,
-                    static (_, _) => { });
+                    static (
+                        _,
+                        _
+                    ) => { });
                 clearDirection.UseColorAttachment(
                     directions[slot],
                     0,
@@ -630,8 +655,8 @@ public sealed class Rendering2DPipeline : RenderPipeline
         int style,
         bool supportsStencil,
         RenderMaterialPass lightMaterial,
-        RenderMaterialPass utilityMaterial)
-    {
+        RenderMaterialPass utilityMaterial
+    ) {
         var result = new List<LightDrawCommand>();
         for (int lightIndex = 0; lightIndex < frame.lights.Length; lightIndex++)
         {
@@ -706,8 +731,8 @@ public sealed class Rendering2DPipeline : RenderPipeline
     private static bool HasMatchingCaster(
         IReadOnlyList<Rendering2DShadowCaster> casters,
         Rendering2DLight light,
-        int style)
-    {
+        int style
+    ) {
         byte styleBit = (byte)(1 << style);
         for (int index = 0; index < casters.Count; index++)
         {
@@ -723,8 +748,8 @@ public sealed class Rendering2DPipeline : RenderPipeline
     private static byte[] CreateLightInstanceBytes(
         Rendering2DFrame frame,
         Rendering2DLight light,
-        float sampleWeight)
-    {
+        float sampleWeight
+    ) {
         int count = light.kind == LightKind2D.Freeform && light.shape.Length >= 3
             ? light.shape.Length - 2
             : 1;
@@ -774,8 +799,8 @@ public sealed class Rendering2DPipeline : RenderPipeline
         InnoEngine.Mathematics.Vector2 corner3,
         InnoEngine.Mathematics.Vector2 corner2,
         Rendering2DLight light,
-        float sampleWeight)
-    {
+        float sampleWeight
+    ) {
         int offset = index * C_INSTANCE_STRIDE;
         WriteVector2(destination, offset, corner0);
         WriteVector2(destination, offset + 8, corner1);
@@ -798,8 +823,8 @@ public sealed class Rendering2DPipeline : RenderPipeline
         Rendering2DLight light,
         int style,
         int sampleIndex,
-        int sampleCount)
-    {
+        int sampleCount
+    ) {
         byte styleBit = (byte)(1 << style);
         int count = 0;
         for (int index = 0; index < frame.shadowCasters.Length; index++)
@@ -873,8 +898,8 @@ public sealed class Rendering2DPipeline : RenderPipeline
         IReadOnlyList<InnoEngine.Mathematics.Vector2> shape,
         Rendering2DLight light,
         int sampleIndex,
-        int sampleCount)
-    {
+        int sampleCount
+    ) {
         float winding = GetSignedArea(shape);
         InnoEngine.Mathematics.Vector2 sampleOffset = GetShadowSampleOffset(sampleIndex, sampleCount)
             * (light.shadowSoftness * light.range * 0.035f);
@@ -906,8 +931,8 @@ public sealed class Rendering2DPipeline : RenderPipeline
         float winding,
         Rendering2DLight light,
         InnoEngine.Mathematics.Vector2 lightPosition,
-        InnoEngine.Mathematics.Vector2 globalDirection)
-    {
+        InnoEngine.Mathematics.Vector2 globalDirection
+    ) {
         InnoEngine.Mathematics.Vector2 edge = second - first;
         InnoEngine.Mathematics.Vector2 outward = winding >= 0f
             ? new InnoEngine.Mathematics.Vector2(edge.y, -edge.x)
@@ -933,8 +958,8 @@ public sealed class Rendering2DPipeline : RenderPipeline
     private static InnoEngine.Mathematics.Vector2 GetGlobalShadowDirection(
         Rendering2DLight light,
         int sampleIndex,
-        int sampleCount)
-    {
+        int sampleCount
+    ) {
         InnoEngine.Mathematics.Vector2 direction = NormalizeOr(
             light.direction,
             new InnoEngine.Mathematics.Vector2(0f, -1f));
@@ -953,8 +978,8 @@ public sealed class Rendering2DPipeline : RenderPipeline
         InnoEngine.Mathematics.Vector2 corner0,
         InnoEngine.Mathematics.Vector2 corner1,
         InnoEngine.Mathematics.Vector2 corner3,
-        InnoEngine.Mathematics.Vector2 corner2)
-    {
+        InnoEngine.Mathematics.Vector2 corner2
+    ) {
         int offset = index * C_INSTANCE_STRIDE;
         WriteVector2(destination, offset, corner0);
         WriteVector2(destination, offset + 8, corner1);
@@ -962,8 +987,10 @@ public sealed class Rendering2DPipeline : RenderPipeline
         WriteVector2(destination, offset + 24, corner2);
     }
 
-    private static InnoEngine.Mathematics.Vector2 GetShadowSampleOffset(int index, int count)
-    {
+    private static InnoEngine.Mathematics.Vector2 GetShadowSampleOffset(
+        int index,
+        int count
+    ) {
         if (count <= 1)
             return InnoEngine.Mathematics.Vector2.ZERO;
         return index switch
@@ -977,8 +1004,8 @@ public sealed class Rendering2DPipeline : RenderPipeline
 
     private static InnoEngine.Mathematics.Vector2 NormalizeOr(
         InnoEngine.Mathematics.Vector2 value,
-        InnoEngine.Mathematics.Vector2 fallback)
-    {
+        InnoEngine.Mathematics.Vector2 fallback
+    ) {
         float length = value.Length();
         return length > 0.0001f ? value / length : fallback;
     }
@@ -986,14 +1013,16 @@ public sealed class Rendering2DPipeline : RenderPipeline
     private static void WriteVector2(
         byte[] destination,
         int offset,
-        InnoEngine.Mathematics.Vector2 value)
-    {
+        InnoEngine.Mathematics.Vector2 value
+    ) {
         WriteFloat(destination, offset, value.x);
         WriteFloat(destination, offset + sizeof(float), value.y);
     }
 
-    private static void AddLightingReads(RasterPassBuilder pass, LightingFrameResources lighting)
-    {
+    private static void AddLightingReads(
+        RasterPassBuilder pass,
+        LightingFrameResources lighting
+    ) {
         if (!lighting.isValid)
             return;
         for (int slot = 0; slot < lighting.colors.Length; slot++)
@@ -1014,8 +1043,8 @@ public sealed class Rendering2DPipeline : RenderPipeline
         PreparedSceneDraw[] sceneDraws,
         LightingFrameResources lighting,
         PersistentBufferHandle sharedVertices,
-        PersistentBufferHandle sharedIndices)
-    {
+        PersistentBufferHandle sharedIndices
+    ) {
         var passData = new PassData(
             state,
             sceneDraws,
@@ -1027,7 +1056,10 @@ public sealed class Rendering2DPipeline : RenderPipeline
             $"2D Camera {frameIndex + 1}",
             state.phase,
             passData,
-            static (data, passContext) => Execute(data, passContext.commands));
+            static (
+                data,
+                passContext
+            ) => Execute(data, passContext.commands));
         pass.SetViewTransform(frame.viewMatrix, frame.projectionMatrix);
         AddLightingReads(pass, lighting);
         AttachOutput(context, pass, clearTarget, frame.clearColor);
@@ -1043,8 +1075,8 @@ public sealed class Rendering2DPipeline : RenderPipeline
         PreparedSceneDraw[] sceneDraws,
         LightingFrameResources lighting,
         PersistentBufferHandle sharedVertices,
-        PersistentBufferHandle sharedIndices)
-    {
+        PersistentBufferHandle sharedIndices
+    ) {
         RenderTextureFormat colorFormat = GetIntermediateColorFormat(context);
         RenderTextureHandle sceneColor = CreateIntermediateColor(
             context,
@@ -1063,7 +1095,10 @@ public sealed class Rendering2DPipeline : RenderPipeline
             $"2D Camera {frameIndex + 1} HDR",
             state.phase,
             passData,
-            static (data, passContext) => Execute(data, passContext.commands));
+            static (
+                data,
+                passContext
+            ) => Execute(data, passContext.commands));
         pass.SetViewTransform(frame.viewMatrix, frame.projectionMatrix);
         AddLightingReads(pass, lighting);
         pass.UseColorAttachment(
@@ -1093,8 +1128,8 @@ public sealed class Rendering2DPipeline : RenderPipeline
         PreparedSceneDraw[] sceneDraws,
         LightingFrameResources lighting,
         PersistentBufferHandle sharedVertices,
-        PersistentBufferHandle sharedIndices)
-    {
+        PersistentBufferHandle sharedIndices
+    ) {
         if (!context.capabilities.SupportsRenderTarget(RenderTextureFormat.Depth24Stencil8))
         {
             context.diagnostics.Publish(new Diagnostic(
@@ -1109,7 +1144,8 @@ public sealed class Rendering2DPipeline : RenderPipeline
         PreparedBatch?[] masks = new PreparedBatch?[frame.maskBatches.Length];
         for (int maskIndex = 0; maskIndex < frame.maskBatches.Length; maskIndex++)
         {
-            if (!TryPrepareBatch(context, frame.maskBatches[maskIndex], out masks[maskIndex])) return false;
+            if (!TryPrepareBatch(context, frame.maskBatches[maskIndex], out masks[maskIndex]))
+                return false;
         }
         if (!TryResolveInternalMaterial(context, m_shadowMaterial, Rendering2DIds.shadowContract, Rendering2DIds.opaqueRole,
                 out RenderMaterialPass? utilityMaterial)
@@ -1163,7 +1199,10 @@ public sealed class Rendering2DPipeline : RenderPipeline
             $"2D Camera {frameIndex + 1} Masked HDR",
             state.phase,
             maskedData,
-            static (data, passContext) => ExecuteMasked(data, passContext.commands));
+            static (
+                data,
+                passContext
+            ) => ExecuteMasked(data, passContext.commands));
         maskedPass.SetViewTransform(frame.viewMatrix, frame.projectionMatrix);
         AddLightingReads(maskedPass, lighting);
         maskedPass.UseColorAttachment(
@@ -1210,7 +1249,8 @@ public sealed class Rendering2DPipeline : RenderPipeline
         Rendering2DFrame frame,
         int frameIndex,
         RenderTextureFormat format,
-        string role)
+        string role
+    )
         => context.graph.CreateTexture(
             $"2D Camera {frameIndex + 1} {role}",
             new RenderTextureDescriptor(
@@ -1225,7 +1265,8 @@ public sealed class Rendering2DPipeline : RenderPipeline
         int width,
         int height,
         RenderTextureFormat format,
-        string role)
+        string role
+    )
         => context.graph.CreateTexture(
             $"2D Camera {frameIndex + 1} {role}",
             new RenderTextureDescriptor(
@@ -1242,18 +1283,20 @@ public sealed class Rendering2DPipeline : RenderPipeline
         RenderTextureFormat colorFormat,
         RenderTextureHandle sceneColor,
         PersistentBufferHandle sharedVertices,
-        PersistentBufferHandle sharedIndices)
-    {
+        PersistentBufferHandle sharedIndices
+    ) {
         ShaderPassRoleId finalRole = clearTarget ? Rendering2DIds.opaqueRole : Rendering2DIds.premultipliedRole;
         if (!TryResolveInternalMaterial(context, m_compositeMaterial, Rendering2DIds.postProcessContract, finalRole,
-                out RenderMaterialPass? finalMaterial) || finalMaterial is null) return false;
+                out RenderMaterialPass? finalMaterial) || finalMaterial is null)
+            return false;
         RenderTextureHandle bloomTexture = default;
         if (frame.postProcess is Rendering2DPostProcessSettings profile && profile.bloomIntensity > 0f)
         {
             if (!TryResolveInternalMaterial(context, m_prefilterMaterial, Rendering2DIds.postProcessContract, Rendering2DIds.opaqueRole, out var prefilter)
                 || !TryResolveInternalMaterial(context, m_downsampleMaterial, Rendering2DIds.postProcessContract, Rendering2DIds.opaqueRole, out var downsample)
                 || !TryResolveInternalMaterial(context, m_upsampleMaterial, Rendering2DIds.postProcessContract, Rendering2DIds.opaqueRole, out var upsample)
-                || prefilter is null || downsample is null || upsample is null) return false;
+                || prefilter is null || downsample is null || upsample is null)
+                return false;
             int levelCount = Math.Clamp(profile.bloomLevels, 1,
                 Math.Max(1, (int)MathF.Floor(MathF.Log2(Math.Max(2, Math.Min(frame.pixelWidth, frame.pixelHeight)))) - 1));
             var pyramid = new RenderTextureHandle[levelCount];
@@ -1294,31 +1337,52 @@ public sealed class Rendering2DPipeline : RenderPipeline
             sharedVertices, sharedIndices, context.request.viewport);
         RasterPassBuilder compositePass = context.graph.AddRasterPass(
             $"2D Camera {frameIndex + 1} Final Composite", state.compositePhase, compositeData,
-            static (data, passContext) => ExecuteComposite(data, passContext.commands));
+            static (
+                data,
+                passContext
+            ) => ExecuteComposite(data, passContext.commands));
         compositePass.ReadTexture(sceneColor);
-        if (bloomTexture.isValid) compositePass.ReadTexture(bloomTexture);
+        if (bloomTexture.isValid)
+            compositePass.ReadTexture(bloomTexture);
         AttachOutput(context, compositePass, clearTarget, frame.clearColor);
         compositePass.AllowParallelRecording();
         return true;
 
-        void AddEffect(string label, RenderMaterialPass material, RenderTextureHandle source, RenderTextureHandle auxiliary,
-            RenderTextureHandle output, int width, int height, CompositeKind kind, byte[] texel, byte[] bloom)
-        {
+        void AddEffect(
+            string label,
+            RenderMaterialPass material,
+            RenderTextureHandle source,
+            RenderTextureHandle auxiliary,
+            RenderTextureHandle output,
+            int width,
+            int height,
+            CompositeKind kind,
+            byte[] texel,
+            byte[] bloom
+        ) {
             var data = new CompositePassData(state, material, source, auxiliary, kind,
                 Pack(context.capabilities.originBottomLeft ? 1f : 0f), texel, bloom,
                 state.materialEffectNone, state.materialEffectNone, sharedVertices, sharedIndices, new(0, 0, width, height));
             RasterPassBuilder pass = context.graph.AddRasterPass($"2D Camera {frameIndex + 1} {label}",
-                state.compositePhase, data, static (value, passContext) => ExecuteComposite(value, passContext.commands));
+                state.compositePhase, data, static (
+                    value,
+                    passContext
+                ) => ExecuteComposite(value, passContext.commands));
             pass.ReadTexture(source);
-            if (auxiliary.isValid) pass.ReadTexture(auxiliary);
+            if (auxiliary.isValid)
+                pass.ReadTexture(auxiliary);
             pass.UseColorAttachment(output, 0, RenderLoadAction.Clear, RenderStoreAction.Store, default);
             pass.AllowParallelRecording();
         }
     }
 
-    private bool TryResolveInternalMaterial(RenderPipelineContext context, MaterialAsset? material, ShaderContractId contract,
-        ShaderPassRoleId role, out RenderMaterialPass? materialPass)
-    {
+    private bool TryResolveInternalMaterial(
+        RenderPipelineContext context,
+        MaterialAsset? material,
+        ShaderContractId contract,
+        ShaderPassRoleId role,
+        out RenderMaterialPass? materialPass
+    ) {
         materialPass = null;
         string source = Rendering2DIds.pipeline + "/" + contract + "/" + role;
         if (material?.shader is not { isMissing: false })
@@ -1368,8 +1432,8 @@ public sealed class Rendering2DPipeline : RenderPipeline
         RenderPipelineContext context,
         RasterPassBuilder pass,
         bool clearTarget,
-        RenderClearColor clearColor)
-    {
+        RenderClearColor clearColor
+    ) {
         if (context.outputTexture.isValid)
         {
             pass.UseColorAttachment(
@@ -1388,8 +1452,10 @@ public sealed class Rendering2DPipeline : RenderPipeline
         }
     }
 
-    private static void Execute(PassData data, RenderCommandEncoder commands)
-    {
+    private static void Execute(
+        PassData data,
+        RenderCommandEncoder commands
+    ) {
         RenderViewport viewport = data.viewport;
         commands.SetViewport(viewport.x, viewport.y, viewport.width, viewport.height);
         foreach (PreparedSceneDraw draw in data.draws)
@@ -1401,8 +1467,10 @@ public sealed class Rendering2DPipeline : RenderPipeline
         }
     }
 
-    private static void ExecuteLights(LightPassData data, RenderCommandEncoder commands)
-    {
+    private static void ExecuteLights(
+        LightPassData data,
+        RenderCommandEncoder commands
+    ) {
         RenderViewport viewport = data.viewport;
         commands.SetViewport(viewport.x, viewport.y, viewport.width, viewport.height);
         for (int index = 0; index < data.commands.Length; index++)
@@ -1441,8 +1509,10 @@ public sealed class Rendering2DPipeline : RenderPipeline
         }
     }
 
-    private static void ExecuteMasked(MaskedPassData data, RenderCommandEncoder commands)
-    {
+    private static void ExecuteMasked(
+        MaskedPassData data,
+        RenderCommandEncoder commands
+    ) {
         RenderViewport viewport = data.viewport;
         commands.SetViewport(viewport.x, viewport.y, viewport.width, viewport.height);
         ulong preparedMaskSet = 0;
@@ -1491,8 +1561,8 @@ public sealed class Rendering2DPipeline : RenderPipeline
         PreparedBatch batch,
         RenderStencilState stencil,
         MaskedPassData data,
-        RenderCommandEncoder commands)
-    {
+        RenderCommandEncoder commands
+    ) {
         batch.material.Bind(commands);
         commands.SetRasterState(data.state.maskWriteRasterState);
         commands.SetStencil(stencil);
@@ -1505,16 +1575,18 @@ public sealed class Rendering2DPipeline : RenderPipeline
         PipelineState state,
         PersistentBufferHandle sharedVertices,
         PersistentBufferHandle sharedIndices,
-        RenderCommandEncoder commands)
-    {
+        RenderCommandEncoder commands
+    ) {
         batch.material.Bind(commands);
         commands.SetRasterState(state.maskWriteRasterState);
         commands.SetStencil(stencil);
         BindGeometry(batch, sharedVertices, sharedIndices, state, commands);
     }
 
-    private static void ExecuteComposite(CompositePassData data, RenderCommandEncoder commands)
-    {
+    private static void ExecuteComposite(
+        CompositePassData data,
+        RenderCommandEncoder commands
+    ) {
         RenderViewport viewport = data.viewport;
         commands.SetViewport(viewport.x, viewport.y, viewport.width, viewport.height);
         data.material.Bind(commands);
@@ -1543,8 +1615,8 @@ public sealed class Rendering2DPipeline : RenderPipeline
         PersistentBufferHandle sharedIndices,
         PipelineState state,
         LightingFrameResources lighting,
-        RenderCommandEncoder commands)
-    {
+        RenderCommandEncoder commands
+    ) {
         batch.material.Bind(commands);
         commands.SetStencil(RenderStencilState.disabled);
         BindAndDraw(batch, sharedVertices, sharedIndices, state, lighting, commands);
@@ -1556,8 +1628,8 @@ public sealed class Rendering2DPipeline : RenderPipeline
         PersistentBufferHandle sharedIndices,
         PipelineState state,
         LightingFrameResources lighting,
-        RenderCommandEncoder commands)
-    {
+        RenderCommandEncoder commands
+    ) {
         BindLighting(batch.material, lighting, batch.lightingLayer, batch.lightBlendStyles, state, commands);
         BindGeometry(batch, sharedVertices, sharedIndices, state, commands);
     }
@@ -1567,8 +1639,8 @@ public sealed class Rendering2DPipeline : RenderPipeline
         PersistentBufferHandle sharedVertices,
         PersistentBufferHandle sharedIndices,
         PipelineState state,
-        RenderCommandEncoder commands)
-    {
+        RenderCommandEncoder commands
+    ) {
         if (batch.bindingKind == BatchBindingKind.Sprite)
         {
             SetUniform(batch.material, commands, state.materialEffectBinding, batch.materialEffect);
@@ -1596,8 +1668,8 @@ public sealed class Rendering2DPipeline : RenderPipeline
         int layer,
         byte lightBlendStyles,
         PipelineState state,
-        RenderCommandEncoder commands)
-    {
+        RenderCommandEncoder commands
+    ) {
         if (!lighting.isValid || lightBlendStyles == 0)
             return;
         for (int style = 0; style < 4; style++)
@@ -1623,23 +1695,34 @@ public sealed class Rendering2DPipeline : RenderPipeline
                 : state.lightSamplingNormal);
     }
 
-    private static void SetUniform(RenderMaterialPass material, RenderCommandEncoder commands,
-        RenderBindingId binding, ReadOnlySpan<byte> value)
-    {
+    private static void SetUniform(
+        RenderMaterialPass material,
+        RenderCommandEncoder commands,
+        RenderBindingId binding,
+        ReadOnlySpan<byte> value
+    ) {
         if (material.UsesBinding(binding, RenderShaderBindingKind.Uniform))
             commands.SetUniform(binding, value);
     }
 
-    private static void BindTexture(RenderMaterialPass material, RenderCommandEncoder commands,
-        RenderBindingId binding, RenderTextureHandle texture, RenderSamplerState sampler)
-    {
+    private static void BindTexture(
+        RenderMaterialPass material,
+        RenderCommandEncoder commands,
+        RenderBindingId binding,
+        RenderTextureHandle texture,
+        RenderSamplerState sampler
+    ) {
         if (material.UsesBinding(binding, RenderShaderBindingKind.Texture))
             commands.BindTexture(binding, texture, sampler);
     }
 
-    private static void BindTexture(RenderMaterialPass material, RenderCommandEncoder commands,
-        RenderBindingId binding, PersistentTextureHandle texture, RenderSamplerState sampler)
-    {
+    private static void BindTexture(
+        RenderMaterialPass material,
+        RenderCommandEncoder commands,
+        RenderBindingId binding,
+        PersistentTextureHandle texture,
+        RenderSamplerState sampler
+    ) {
         if (material.UsesBinding(binding, RenderShaderBindingKind.Texture))
             commands.BindTexture(binding, texture, sampler);
     }
@@ -1654,16 +1737,22 @@ public sealed class Rendering2DPipeline : RenderPipeline
         return result;
     }
 
-    private static byte[] Pack(float x, float y = 0f, float z = 0f, float w = 0f)
-    {
+    private static byte[] Pack(
+        float x,
+        float y = 0f,
+        float z = 0f,
+        float w = 0f
+    ) {
         var result = new byte[16];
         WriteFloat(result, 0, x); WriteFloat(result, 4, y);
         WriteFloat(result, 8, z); WriteFloat(result, 12, w);
         return result;
     }
 
-    private static byte[] CreateMaterialEffect(InnoEngine.Mathematics.Color emission, byte lightBlendStyles)
-    {
+    private static byte[] CreateMaterialEffect(
+        InnoEngine.Mathematics.Color emission,
+        byte lightBlendStyles
+    ) {
         var result = new byte[16];
         WriteFloat(result, 0, emission.r);
         WriteFloat(result, 4, emission.g);
@@ -1679,7 +1768,11 @@ public sealed class Rendering2DPipeline : RenderPipeline
         return result;
     }
 
-    private static void WriteFloat(byte[] destination, int offset, float value)
+    private static void WriteFloat(
+        byte[] destination,
+        int offset,
+        float value
+    )
         => BinaryPrimitives.WriteSingleLittleEndian(destination.AsSpan(offset), value);
 
     private static ShaderPassRoleId GetRole(SpriteBlendMode2D blendMode)
@@ -1895,7 +1988,8 @@ public sealed class Rendering2DPipeline : RenderPipeline
         LightingFrameResources lighting,
         PersistentBufferHandle sharedVertices,
         PersistentBufferHandle sharedIndices,
-        RenderViewport viewport);
+        RenderViewport viewport
+    );
 
     private sealed record MaskedPassData(
         PipelineState state,
@@ -1905,7 +1999,8 @@ public sealed class Rendering2DPipeline : RenderPipeline
         LightingFrameResources lighting,
         PersistentBufferHandle sharedVertices,
         PersistentBufferHandle sharedIndices,
-        RenderViewport viewport);
+        RenderViewport viewport
+    );
 
     private sealed record CompositePassData(
         PipelineState state,
@@ -1920,7 +2015,8 @@ public sealed class Rendering2DPipeline : RenderPipeline
         byte[] options,
         PersistentBufferHandle sharedVertices,
         PersistentBufferHandle sharedIndices,
-        RenderViewport viewport);
+        RenderViewport viewport
+    );
 
     private sealed record LightPassData(
         PipelineState state,
@@ -1929,9 +2025,13 @@ public sealed class Rendering2DPipeline : RenderPipeline
         bool supportsStencil,
         PersistentBufferHandle sharedVertices,
         PersistentBufferHandle sharedIndices,
-        RenderViewport viewport);
+        RenderViewport viewport
+    );
 
-    private sealed record LightDrawCommand(PreparedBatch light, PreparedBatch? shadow);
+    private sealed record LightDrawCommand(
+        PreparedBatch light,
+        PreparedBatch? shadow
+    );
 
     private readonly record struct LightingFrameResources(
         RenderTextureHandle[] colors,
@@ -1941,8 +2041,8 @@ public sealed class Rendering2DPipeline : RenderPipeline
         bool supportsStencil,
         bool supportsMrt,
         int lightDrawCount,
-        int shadowDrawCount)
-    {
+        int shadowDrawCount
+    ) {
         internal bool isValid => colors is { Length: 128 } && directions is { Length: 128 };
     }
 
@@ -1960,11 +2060,13 @@ public sealed class Rendering2DPipeline : RenderPipeline
         byte[] materialEffect,
         int lightingLayer,
         byte lightBlendStyles,
-        BatchBindingKind bindingKind = BatchBindingKind.Sprite);
+        BatchBindingKind bindingKind = BatchBindingKind.Sprite
+    );
 
     private readonly record struct PreparedSceneDraw(
         PreparedBatch? batch,
-        IPreparedViewDrawable? drawable);
+        IPreparedViewDrawable? drawable
+    );
 
     private enum CompositeKind { Prefilter, Downsample, Upsample, Final }
 

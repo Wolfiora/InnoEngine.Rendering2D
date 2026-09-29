@@ -11,29 +11,45 @@ using InnoEngine.Rendering;
 
 namespace Inno.Rendering2D;
 
-/// <summary>Contains one composed atlas page and its portable color and optional lighting-map artifacts.</summary>
+/// <summary>
+/// Contains one composed atlas page and its portable color and optional lighting-map artifacts.
+/// </summary>
 public sealed record SpriteAtlasComposedPage2D(
     SpriteAtlasPage2D page,
     byte[] colorPngBytes,
     byte[]? normalPngBytes,
-    byte[]? emissionPngBytes);
+    byte[]? emissionPngBytes
+);
 
-/// <summary>Contains generated pages and stable runtime regions for one deterministic atlas import.</summary>
+/// <summary>
+/// Contains generated pages and stable runtime regions for one deterministic atlas import.
+/// </summary>
 public sealed record SpriteAtlasCompositionResult2D(
     IReadOnlyList<SpriteAtlasComposedPage2D> pages,
-    IReadOnlyList<SpriteRegion2D> regions);
+    IReadOnlyList<SpriteRegion2D> regions
+);
 
-/// <summary>Trims and composes authored PNG or TGA slices into deterministic multi-page atlas artifacts.</summary>
+/// <summary>
+/// Trims and composes authored PNG or TGA slices into deterministic multi-page atlas artifacts.
+/// </summary>
 public static class SpriteAtlasComposer2D
 {
-    /// <summary>Composes a complete atlas without retaining decoder or runtime GPU objects.</summary>
-    /// <param name="atlas">Authored atlas settings, sources, and optional explicit slices.</param>
-    /// <param name="readSource">Reads immutable bytes for one source texture.</param>
-    /// <returns>Generated page metadata, PNG bytes, and stable regions.</returns>
+    /// <summary>
+    /// Composes a complete atlas without retaining decoder or runtime GPU objects.
+    /// </summary>
+    /// <param name="atlas">
+    /// Authored atlas settings, sources, and optional explicit slices.
+    /// </param>
+    /// <param name="readSource">
+    /// Reads immutable bytes for one source texture.
+    /// </param>
+    /// <returns>
+    /// Generated page metadata, PNG bytes, and stable regions.
+    /// </returns>
     public static SpriteAtlasCompositionResult2D Compose(
         SpriteAtlas2DAsset atlas,
-        Func<TextureAsset, ReadOnlyMemory<byte>> readSource)
-    {
+        Func<TextureAsset, ReadOnlyMemory<byte>> readSource
+    ) {
         ArgumentNullException.ThrowIfNull(atlas);
         ArgumentNullException.ThrowIfNull(readSource);
         if (atlas.sources.Length == 0)
@@ -201,8 +217,8 @@ public static class SpriteAtlasComposer2D
         byte red,
         byte green,
         byte blue,
-        string role)
-    {
+        string role
+    ) {
         if (companion is null)
         {
             var fallback = new AtlasRaster2D(color.width, color.height);
@@ -222,8 +238,8 @@ public static class SpriteAtlasComposer2D
 
     private static SpriteAtlasSlice2D[] CreateWholeSourceSlices(
         SpriteAtlasSource2D[] sources,
-        AtlasRaster2D[] rasters)
-    {
+        AtlasRaster2D[] rasters
+    ) {
         var result = new SpriteAtlasSlice2D[sources.Length];
         for (int index = 0; index < sources.Length; index++)
         {
@@ -244,8 +260,10 @@ public static class SpriteAtlasComposer2D
         return result;
     }
 
-    private static void ValidateSlices(SpriteAtlasSlice2D[] slices, AtlasRaster2D[] rasters)
-    {
+    private static void ValidateSlices(
+        SpriteAtlasSlice2D[] slices,
+        AtlasRaster2D[] rasters
+    ) {
         if (slices.Select(static slice => slice.id).Distinct().Count() != slices.Length)
             throw new InvalidDataException("Atlas slice identities must be unique.");
         foreach (SpriteAtlasSlice2D slice in slices)
@@ -272,11 +290,13 @@ public static class SpriteAtlasComposer2D
         }
     }
 
-    private static bool IsInteger(float value)
-        => float.IsFinite(value) && value == MathF.Truncate(value);
+    private static bool IsInteger(float value) => float.IsFinite(value) && value == MathF.Truncate(value);
 
-    private static TrimmedSlice Trim(SpriteAtlasSlice2D slice, AtlasRaster2D source, bool trimTransparent)
-    {
+    private static TrimmedSlice Trim(
+        SpriteAtlasSlice2D slice,
+        AtlasRaster2D source,
+        bool trimTransparent
+    ) {
         int sourceX = checked((int)slice.pixelRect.x);
         int sourceY = checked((int)slice.pixelRect.y);
         int sourceWidth = checked((int)slice.pixelRect.width);
@@ -319,8 +339,8 @@ public static class SpriteAtlasComposer2D
         TrimmedSlice slice,
         AtlasRaster2D destination,
         SpriteAtlasPlacement2D placement,
-        int extrude)
-    {
+        int extrude
+    ) {
         int targetX = checked((int)placement.pixelRect.x);
         int targetY = checked((int)placement.pixelRect.y);
         int packedWidth = checked((int)placement.pixelRect.width);
@@ -353,8 +373,10 @@ public static class SpriteAtlasComposer2D
         }
     }
 
-    private static Vector2[] BuildAutomaticOutline(TrimmedSlice slice, AtlasRaster2D source)
-    {
+    private static Vector2[] BuildAutomaticOutline(
+        TrimmedSlice slice,
+        AtlasRaster2D source
+    ) {
         var points = new List<PixelPoint>(checked(slice.height * 4));
         for (int localY = slice.trimY; localY < slice.trimY + slice.height; localY++)
         {
@@ -409,12 +431,15 @@ public static class SpriteAtlasComposer2D
         return result;
     }
 
-    private static long Cross(PixelPoint origin, PixelPoint first, PixelPoint second)
+    private static long Cross(
+        PixelPoint origin,
+        PixelPoint first,
+        PixelPoint second
+    )
         => (long)(first.x - origin.x) * (second.y - origin.y)
            - (long)(first.y - origin.y) * (second.x - origin.x);
 
-    private static Vector2[] RectangleOutline()
-        => [Vector2.ZERO, new Vector2(1f, 0f), Vector2.ONE, new Vector2(0f, 1f)];
+    private static Vector2[] RectangleOutline() => [Vector2.ZERO, new Vector2(1f, 0f), Vector2.ONE, new Vector2(0f, 1f)];
 
     private sealed record TrimmedSlice(
         SpriteAtlasSlice2D slice,
@@ -425,9 +450,13 @@ public static class SpriteAtlasComposer2D
         int trimX,
         int trimY,
         int width,
-        int height);
+        int height
+    );
 
-    private readonly record struct PixelPoint(int x, int y) : IComparable<PixelPoint>
+    private readonly record struct PixelPoint(
+        int x,
+        int y
+    ) : IComparable<PixelPoint>
     {
         public int CompareTo(PixelPoint other)
         {
@@ -439,13 +468,19 @@ public static class SpriteAtlasComposer2D
 
 internal sealed class AtlasRaster2D
 {
-    internal AtlasRaster2D(int width, int height)
+    internal AtlasRaster2D(
+        int width,
+        int height
+    )
         : this(width, height, new byte[checked(width * height * 4)])
     {
     }
 
-    internal AtlasRaster2D(int width, int height, byte[] pixels)
-    {
+    internal AtlasRaster2D(
+        int width,
+        int height,
+        byte[] pixels
+    ) {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(width);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(height);
         if (pixels.Length != checked(width * height * 4))
@@ -459,10 +494,17 @@ internal sealed class AtlasRaster2D
     internal int height { get; }
     internal byte[] pixels { get; }
 
-    internal byte GetAlpha(int x, int y) => pixels[(y * width + x) * 4 + 3];
+    internal byte GetAlpha(
+        int x,
+        int y
+    ) => pixels[(y * width + x) * 4 + 3];
 
-    internal void Fill(byte red, byte green, byte blue, byte alpha)
-    {
+    internal void Fill(
+        byte red,
+        byte green,
+        byte blue,
+        byte alpha
+    ) {
         for (int offset = 0; offset < pixels.Length; offset += 4)
         {
             pixels[offset] = red;
@@ -472,8 +514,13 @@ internal sealed class AtlasRaster2D
         }
     }
 
-    internal void SetPixel(int x, int y, AtlasRaster2D source, int sourceX, int sourceY)
-    {
+    internal void SetPixel(
+        int x,
+        int y,
+        AtlasRaster2D source,
+        int sourceX,
+        int sourceY
+    ) {
         if ((uint)x >= (uint)width || (uint)y >= (uint)height)
             throw new InvalidDataException("Atlas extrusion exceeded its allocated page bounds.");
         int destinationOffset = (y * width + x) * 4;
@@ -486,7 +533,10 @@ internal static class AtlasImageCodec2D
 {
     private static readonly byte[] S_PNG_SIGNATURE = [137, 80, 78, 71, 13, 10, 26, 10];
 
-    internal static AtlasRaster2D Decode(ReadOnlySpan<byte> bytes, string sourceFormat)
+    internal static AtlasRaster2D Decode(
+        ReadOnlySpan<byte> bytes,
+        string sourceFormat
+    )
         => sourceFormat.ToLowerInvariant() switch
         {
             "png" => DecodePng(bytes),
@@ -643,8 +693,12 @@ internal static class AtlasImageCodec2D
         return new AtlasRaster2D(width, height, rgba);
     }
 
-    private static byte[] Unfilter(byte[] filtered, int width, int height, int bytesPerPixel)
-    {
+    private static byte[] Unfilter(
+        byte[] filtered,
+        int width,
+        int height,
+        int bytesPerPixel
+    ) {
         int rowBytes = checked(width * bytesPerPixel);
         byte[] result = new byte[checked(rowBytes * height)];
         int sourceOffset = 0;
@@ -675,8 +729,11 @@ internal static class AtlasImageCodec2D
         return result;
     }
 
-    private static int Paeth(int left, int up, int upperLeft)
-    {
+    private static int Paeth(
+        int left,
+        int up,
+        int upperLeft
+    ) {
         int estimate = left + up - upperLeft;
         int leftDistance = Math.Abs(estimate - left);
         int upDistance = Math.Abs(estimate - up);
@@ -773,8 +830,11 @@ internal static class AtlasImageCodec2D
         return new AtlasRaster2D(width, height, rgba);
     }
 
-    private static void WriteChunk(Stream output, string type, ReadOnlySpan<byte> data)
-    {
+    private static void WriteChunk(
+        Stream output,
+        string type,
+        ReadOnlySpan<byte> data
+    ) {
         Span<byte> length = stackalloc byte[4];
         BinaryPrimitives.WriteUInt32BigEndian(length, checked((uint)data.Length));
         output.Write(length);
@@ -786,8 +846,10 @@ internal static class AtlasImageCodec2D
         output.Write(crc);
     }
 
-    private static uint ComputeCrc(ReadOnlySpan<byte> type, ReadOnlySpan<byte> data)
-    {
+    private static uint ComputeCrc(
+        ReadOnlySpan<byte> type,
+        ReadOnlySpan<byte> data
+    ) {
         uint crc = uint.MaxValue;
         foreach (byte value in type)
             crc = UpdateCrc(crc, value);
@@ -796,8 +858,10 @@ internal static class AtlasImageCodec2D
         return ~crc;
     }
 
-    private static uint UpdateCrc(uint crc, byte value)
-    {
+    private static uint UpdateCrc(
+        uint crc,
+        byte value
+    ) {
         crc ^= value;
         for (int bit = 0; bit < 8; bit++)
             crc = (crc & 1) != 0 ? crc >> 1 ^ 0xedb88320u : crc >> 1;

@@ -38,8 +38,10 @@ internal sealed class Rendering2DFrame
     internal required Rendering2DPickRecord[] pickRecords { get; init; }
     internal required string[] diagnostics { get; init; }
 
-    internal GameObject? Pick(float normalizedX, float normalizedY)
-    {
+    internal GameObject? Pick(
+        float normalizedX,
+        float normalizedY
+    ) {
         float localX = (normalizedX * 2f - 1f) * viewHalfWidth;
         float localY = (1f - normalizedY * 2f) * viewHalfHeight;
         Vector2 rotated = Vector2.Transform(
@@ -68,7 +70,8 @@ internal readonly record struct Rendering2DPostProcessSettings(
     int bloomLevels,
     float bloomScatter,
     float vignette,
-    int pixelation);
+    int pixelation
+);
 
 internal sealed record Rendering2DDrawBatch(
     MaterialAsset material,
@@ -85,17 +88,31 @@ internal sealed record Rendering2DDrawBatch(
     SpriteMaskInteraction2D maskInteraction,
     Color emissionColor,
     int lightingLayer,
-    byte lightBlendStyles);
+    byte lightBlendStyles
+);
 
 internal readonly record struct Rendering2DSceneDraw(
     Rendering2DDrawBatch? batch,
     ViewContentItem? content,
-    IReadOnlyList<Rendering2DQuad>? pointerOccluders = null);
+    IReadOnlyList<Rendering2DQuad>? pointerOccluders = null
+);
 
-internal sealed record Rendering2DPickRecord(GameObject gameObject, Rect bounds, Rendering2DSortKey sortKey);
+internal sealed record Rendering2DPickRecord(
+    GameObject gameObject,
+    Rect bounds,
+    Rendering2DSortKey sortKey
+);
 
-internal readonly record struct Rendering2DSortKey(int domain, int layer, int order, float depth, int sequence,
-    Guid groupId = default, int childLayer = 0, int childOrder = 0)
+internal readonly record struct Rendering2DSortKey(
+    int domain,
+    int layer,
+    int order,
+    float depth,
+    int sequence,
+    Guid groupId = default,
+    int childLayer = 0,
+    int childOrder = 0
+)
     : IComparable<Rendering2DSortKey>
 {
     public int CompareTo(Rendering2DSortKey other)
@@ -130,7 +147,8 @@ internal readonly record struct Rendering2DVertex(
     float u,
     float v,
     uint color,
-    float shape);
+    float shape
+);
 
 internal sealed record Rendering2DQuad(
     MaterialAsset material,
@@ -142,8 +160,8 @@ internal sealed record Rendering2DQuad(
     Rendering2DVertex bottomLeft,
     Rendering2DVertex bottomRight,
     Rendering2DVertex topRight,
-    Rendering2DVertex topLeft)
-{
+    Rendering2DVertex topLeft
+) {
     internal string? persistentGroupId { get; init; }
     internal float alphaCutoff { get; init; } = 0.001f;
     internal ulong maskSet { get; init; }
@@ -166,15 +184,13 @@ internal sealed record Rendering2DQuad(
 
 internal readonly record struct Rendering2DTextureSource(
     TextureAsset? directTexture,
-    RenderTextureArtifactReference? artifact)
-{
+    RenderTextureArtifactReference? artifact
+) {
     internal static Rendering2DTextureSource none => default;
 
-    internal static Rendering2DTextureSource FromTexture(TextureAsset texture)
-        => new(texture, null);
+    internal static Rendering2DTextureSource FromTexture(TextureAsset texture) => new(texture, null);
 
-    internal static Rendering2DTextureSource FromArtifact(RenderTextureArtifactReference artifact)
-        => new(null, artifact);
+    internal static Rendering2DTextureSource FromArtifact(RenderTextureArtifactReference artifact) => new(null, artifact);
 }
 
 internal readonly record struct Rendering2DLight(
@@ -192,13 +208,15 @@ internal readonly record struct Rendering2DLight(
     bool castShadows,
     float shadowSoftness,
     float normalIntensity,
-    GameLayerMask layers);
+    GameLayerMask layers
+);
 
 internal readonly record struct Rendering2DShadowCaster(
     Vector2[] shape,
     byte lightBlendStyles,
     bool selfShadows,
-    GameLayer layer);
+    GameLayer layer
+);
 
 internal static class Rendering2DFrameCollector
 {
@@ -208,8 +226,8 @@ internal static class Rendering2DFrameCollector
         Camera2D camera,
         int pixelWidth,
         int pixelHeight,
-        Rendering2DViewportOptions? options)
-    {
+        Rendering2DViewportOptions? options
+    ) {
         var hash = new Rendering2DFingerprintBuilder();
         hash.Add(pixelWidth);
         hash.Add(pixelHeight);
@@ -256,8 +274,10 @@ internal static class Rendering2DFrameCollector
         return hash.Build();
     }
 
-    private static void AddCamera(ref Rendering2DFingerprintBuilder hash, Camera2D camera)
-    {
+    private static void AddCamera(
+        ref Rendering2DFingerprintBuilder hash,
+        Camera2D camera
+    ) {
         hash.Add(camera.gameObject.identity.persistentId);
         hash.Add(camera.isActiveAndEnabled);
         AddTransform(ref hash, camera.transform);
@@ -290,8 +310,10 @@ internal static class Rendering2DFrameCollector
         }
     }
 
-    private static void AddDrawable(ref Rendering2DFingerprintBuilder hash, Rendering2DDrawable drawable)
-    {
+    private static void AddDrawable(
+        ref Rendering2DFingerprintBuilder hash,
+        Rendering2DDrawable drawable
+    ) {
         GameObject owner = drawable.owner;
         hash.Add(owner.identity.persistentId);
         hash.Add(owner.activeInHierarchy);
@@ -367,8 +389,10 @@ internal static class Rendering2DFrameCollector
         }
     }
 
-    private static void AddLight(ref Rendering2DFingerprintBuilder hash, Light2D light)
-    {
+    private static void AddLight(
+        ref Rendering2DFingerprintBuilder hash,
+        Light2D light
+    ) {
         hash.Add(light.gameObject.identity.persistentId);
         hash.Add(light.isActiveAndEnabled);
         AddTransform(ref hash, light.transform);
@@ -387,8 +411,10 @@ internal static class Rendering2DFrameCollector
         hash.Add(light.cullingMask.GetHashCode());
     }
 
-    private static void AddShadowCaster(ref Rendering2DFingerprintBuilder hash, ShadowCaster2D caster)
-    {
+    private static void AddShadowCaster(
+        ref Rendering2DFingerprintBuilder hash,
+        ShadowCaster2D caster
+    ) {
         hash.Add(caster.gameObject.identity.persistentId);
         hash.Add(caster.isActiveAndEnabled);
         hash.Add(caster.gameObject.layer.index);
@@ -398,8 +424,10 @@ internal static class Rendering2DFrameCollector
         hash.Add(caster.selfShadows);
     }
 
-    private static void AddMask(ref Rendering2DFingerprintBuilder hash, Rendering2DMask snapshot)
-    {
+    private static void AddMask(
+        ref Rendering2DFingerprintBuilder hash,
+        Rendering2DMask snapshot
+    ) {
         SpriteMask2D mask = snapshot.mask;
         hash.Add(snapshot.owner.identity.persistentId);
         hash.Add(snapshot.owner.activeInHierarchy);
@@ -422,15 +450,19 @@ internal static class Rendering2DFrameCollector
         hash.Add(mask.alphaCutoff);
     }
 
-    private static void AddSpriteReference(ref Rendering2DFingerprintBuilder hash, SpriteReference2D sprite)
-    {
+    private static void AddSpriteReference(
+        ref Rendering2DFingerprintBuilder hash,
+        SpriteReference2D sprite
+    ) {
         AddAsset(ref hash, sprite.atlas);
         hash.Add(sprite.regionId.value);
         AddAsset(ref hash, sprite.texture);
     }
 
-    private static void AddAsset(ref Rendering2DFingerprintBuilder hash, AssetObject? asset)
-    {
+    private static void AddAsset(
+        ref Rendering2DFingerprintBuilder hash,
+        AssetObject? asset
+    ) {
         if (asset is null)
         {
             hash.Add(false);
@@ -443,8 +475,8 @@ internal static class Rendering2DFrameCollector
 
     private static void AddPoints(
         ref Rendering2DFingerprintBuilder hash,
-        IReadOnlyList<Vector2>? points)
-    {
+        IReadOnlyList<Vector2>? points
+    ) {
         hash.Add(points?.Count ?? 0);
         if (points is null)
             return;
@@ -452,8 +484,10 @@ internal static class Rendering2DFrameCollector
             hash.Add(points[index]);
     }
 
-    private static void AddTransform(ref Rendering2DFingerprintBuilder hash, Transform transform)
-    {
+    private static void AddTransform(
+        ref Rendering2DFingerprintBuilder hash,
+        Transform transform
+    ) {
         Matrix matrix = transform.localToWorldMatrix;
         hash.Add(matrix.m11); hash.Add(matrix.m12); hash.Add(matrix.m13); hash.Add(matrix.m14);
         hash.Add(matrix.m21); hash.Add(matrix.m22); hash.Add(matrix.m23); hash.Add(matrix.m24);
@@ -466,8 +500,8 @@ internal static class Rendering2DFrameCollector
         Camera2D camera,
         int pixelWidth,
         int pixelHeight,
-        Rendering2DViewportOptions? options)
-    {
+        Rendering2DViewportOptions? options
+    ) {
         ArgumentNullException.ThrowIfNull(scope);
         ArgumentNullException.ThrowIfNull(camera);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(pixelWidth);
@@ -584,7 +618,10 @@ internal static class Rendering2DFrameCollector
         if (quads.Count >= outputLimit)
             diagnostics.Add($"2D request reached the configured {settings.maximumQuadsPerFrame} quad limit.");
 
-        quads.Sort(static (left, right) => left.sortKey.CompareTo(right.sortKey));
+        quads.Sort(static (
+            left,
+            right
+        ) => left.sortKey.CompareTo(right.sortKey));
         (Rendering2DDrawBatch[] batches, Rendering2DSceneDraw[] sceneDraws) =
             BuildSceneDraws(quads, externalItems, settings, camera,
                 Math.Max(1, settings.maximumQuadsPerBatch));
@@ -623,8 +660,8 @@ internal static class Rendering2DFrameCollector
         int pixelHeight,
         float pixelsPerUnit,
         List<string> diagnostics,
-        Rendering2DViewportOptions? options)
-    {
+        Rendering2DViewportOptions? options
+    ) {
         CameraState state = CreateCameraState(camera, pixelWidth, pixelHeight, pixelsPerUnit);
         return new Rendering2DFrame
         {
@@ -655,8 +692,7 @@ internal static class Rendering2DFrameCollector
         };
     }
 
-    private static Rendering2DProjectSettings GetSettings()
-        => Rendering2DRenderer.projectSettings;
+    private static Rendering2DProjectSettings GetSettings() => Rendering2DRenderer.projectSettings;
 
     private static Rendering2DPostProcessSettings? CapturePostProcess(PostProcessProfile2DAsset? profile)
     {
@@ -675,8 +711,11 @@ internal static class Rendering2DFrameCollector
             Math.Max(1, profile.pixelation));
     }
 
-    internal static RenderView DescribeView(Camera2D camera, int width, int height)
-    {
+    internal static RenderView DescribeView(
+        Camera2D camera,
+        int width,
+        int height
+    ) {
         CameraState state = CreateCameraState(camera, width, height,
             GetSettings().defaultPixelsPerUnit);
         return new RenderView($"2D/{camera.identity.persistentId:D}",
@@ -688,8 +727,8 @@ internal static class Rendering2DFrameCollector
         Camera2D camera,
         int width,
         int height,
-        float projectPixelsPerUnit)
-    {
+        float projectPixelsPerUnit
+    ) {
         float pixelsPerUnit = MathF.Max(0.001f, projectPixelsPerUnit);
         float halfHeight = MathF.Max(0.001f, camera.orthographicSize);
         Vector3 cameraWorld = camera.transform.worldPosition;
@@ -738,8 +777,8 @@ internal static class Rendering2DFrameCollector
     private static Rendering2DLight[] CollectLights(
         Rendering2DSceneScope scope,
         Camera2D camera,
-        Rect cameraBounds)
-    {
+        Rect cameraBounds
+    ) {
         var lights = new List<Rendering2DLight>();
         foreach (Rendering2DSceneEntry entry in scope.entries)
         {
@@ -790,8 +829,8 @@ internal static class Rendering2DFrameCollector
     private static Rendering2DShadowCaster[] CollectShadowCasters(
         Rendering2DSceneScope scope,
         Camera2D camera,
-        Rect cameraBounds)
-    {
+        Rect cameraBounds
+    ) {
         var result = new List<Rendering2DShadowCaster>();
         foreach (Rendering2DSceneEntry entry in scope.entries)
         {
@@ -821,8 +860,10 @@ internal static class Rendering2DFrameCollector
         return result.ToArray();
     }
 
-    private static Vector2[] CaptureLightShape(Light2D light, float range)
-    {
+    private static Vector2[] CaptureLightShape(
+        Light2D light,
+        float range
+    ) {
         if (light.kind != LightKind2D.Freeform || light.shape is not { Length: >= 3 })
             return [];
         var result = new Vector2[light.shape.Length];
@@ -835,7 +876,8 @@ internal static class Rendering2DFrameCollector
         LightKind2D kind,
         Vector2 position,
         float range,
-        IReadOnlyList<Vector2> shape)
+        IReadOnlyList<Vector2> shape
+    )
         => kind == LightKind2D.Freeform && shape.Count >= 3
             ? GetPolygonBounds(shape)
             : new Rect(position.x - range, position.y - range, range * 2f, range * 2f);
@@ -863,12 +905,13 @@ internal static class Rendering2DFrameCollector
         Rect cameraBounds,
         MaterialAsset? defaultMaterial,
         List<string> diagnostics,
-        out bool unavailable)
-    {
+        out bool unavailable
+    ) {
         unavailable = false;
         var result = new List<MaskSnapshot>();
         Dictionary<string, List<int>> consumers = CollectMaskConsumers(scope, camera, settings, cameraBounds);
-        if (consumers.Count == 0) return result;
+        if (consumers.Count == 0)
+            return result;
         foreach (Rendering2DSceneEntry entry in scope.entries)
         {
             Rendering2DMask[] indexedMasks = entry.snapshot.masks;
@@ -883,10 +926,13 @@ internal static class Rendering2DFrameCollector
                 {
                     continue;
                 }
-                if (!consumers.TryGetValue(mask.sortingLayer, out List<int>? orders)) continue;
+                if (!consumers.TryGetValue(mask.sortingLayer, out List<int>? orders))
+                    continue;
                 int first = orders.BinarySearch(mask.frontOrder);
-                if (first < 0) first = ~first;
-                if (first == orders.Count || orders[first] > mask.backOrder) continue;
+                if (first < 0)
+                    first = ~first;
+                if (first == orders.Count || orders[first] > mask.backOrder)
+                    continue;
                 if (!TryResolveMask(mask, out SpriteSource source))
                 {
                     diagnostics.Add($"Sprite mask '{owner.name}' has no valid texture or atlas region.");
@@ -973,8 +1019,8 @@ internal static class Rendering2DFrameCollector
     private static ulong GetMaskSet(
         string sortingLayer,
         int orderInLayer,
-        IReadOnlyList<MaskSnapshot> masks)
-    {
+        IReadOnlyList<MaskSnapshot> masks
+    ) {
         ulong result = 0;
         for (int index = 0; index < masks.Count; index++)
         {
@@ -995,8 +1041,8 @@ internal static class Rendering2DFrameCollector
         MaterialAsset? material,
         Rendering2DViewportOptions? options,
         List<Rendering2DQuad> output,
-        ref int sequence)
-    {
+        ref int sequence
+    ) {
         if (material is null || options is null || (!options.drawGrid && !options.drawAxes))
             return;
 
@@ -1075,8 +1121,8 @@ internal static class Rendering2DFrameCollector
         Vector2 maximum,
         Color color,
         Rendering2DSortKey sortKey,
-        List<Rendering2DQuad> output)
-    {
+        List<Rendering2DQuad> output
+    ) {
         uint packed = PackColor(color);
         float shape = (float)SpritePrimitive2D.Square;
         output.Add(new Rendering2DQuad(
@@ -1092,8 +1138,7 @@ internal static class Rendering2DFrameCollector
             new Rendering2DVertex(minimum.x, maximum.y, 0f, 0f, 0f, packed, shape)));
     }
 
-    private static RenderClearColor ToRenderClearColor(Color color)
-        => new(color.r, color.g, color.b, color.a);
+    private static RenderClearColor ToRenderClearColor(Color color) => new(color.r, color.g, color.b, color.a);
 
     private static void CollectSprite(
         GameObject owner,
@@ -1105,8 +1150,8 @@ internal static class Rendering2DFrameCollector
         List<Rendering2DQuad> output,
         List<string> diagnostics,
         int outputLimit,
-        ref int sequence)
-    {
+        ref int sequence
+    ) {
         if (!TryResolveSprite(sprite, out SpriteSource source))
         {
             diagnostics.Add($"Sprite '{owner.name}' has no valid texture or atlas region.");
@@ -1136,7 +1181,10 @@ internal static class Rendering2DFrameCollector
         Color tint = sprite.color;
         MaterialAsset? material = sprite.material;
         if (material is null || material.isMissing)
-        { diagnostics.Add($"Sprite '{owner.name}' has no explicitly assigned Material."); return; }
+        {
+            diagnostics.Add($"Sprite '{owner.name}' has no explicitly assigned Material.");
+            return;
+        }
         int before = output.Count;
         bool supportsCrossFade = sprite.blendMode is SpriteBlendMode2D.Alpha
             or SpriteBlendMode2D.Premultiplied
@@ -1224,7 +1272,8 @@ internal static class Rendering2DFrameCollector
         GameObject owner,
         SpriteRenderer2D sprite,
         Rendering2DProjectSettings settings,
-        int sequence)
+        int sequence
+    )
         => CreateGroupedSortKey(owner, settings, sprite.sortingLayer, sprite.orderInLayer, sequence);
 
     private static void AddSpriteGeometry(
@@ -1237,8 +1286,8 @@ internal static class Rendering2DFrameCollector
         Color tint,
         Rendering2DSortKey sortKey,
         int maximumTiledSpriteQuads,
-        List<Rendering2DQuad> output)
-    {
+        List<Rendering2DQuad> output
+    ) {
         switch (source.primitive != SpritePrimitive2D.None ? SpriteDrawMode2D.Simple : sprite.drawMode)
         {
             case SpriteDrawMode2D.Simple:
@@ -1263,8 +1312,11 @@ internal static class Rendering2DFrameCollector
         }
     }
 
-    private static Color WithCrossFadeWeight(Color color, float weight, SpriteBlendMode2D blendMode)
-    {
+    private static Color WithCrossFadeWeight(
+        Color color,
+        float weight,
+        SpriteBlendMode2D blendMode
+    ) {
         float value = Math.Clamp(weight, 0f, 1f);
         return blendMode is SpriteBlendMode2D.Premultiplied or SpriteBlendMode2D.Additive
             ? new Color(color.r * value, color.g * value, color.b * value, color.a * value)
@@ -1281,8 +1333,8 @@ internal static class Rendering2DFrameCollector
         List<Rendering2DQuad> output,
         List<string> diagnostics,
         int outputLimit,
-        ref int sequence)
-    {
+        ref int sequence
+    ) {
         Tilemap2DAsset? map = renderer.tilemap;
         TileSet2DAsset? tileSet = map?.tileSet;
         if (map is null || tileSet is null)
@@ -1292,7 +1344,10 @@ internal static class Rendering2DFrameCollector
         }
         MaterialAsset? material = renderer.material ?? defaultMaterial;
         if (material is null || material.isMissing)
-        { diagnostics.Add($"Tilemap '{owner.name}' has no available material."); return; }
+        {
+            diagnostics.Add($"Tilemap '{owner.name}' has no available material.");
+            return;
+        }
         Vector2 cellSize = new(MathF.Max(0.0001f, map.cellSize.x), MathF.Max(0.0001f, map.cellSize.y));
         foreach (TilemapChunk2D chunk in map.chunks)
         {
@@ -1381,8 +1436,8 @@ internal static class Rendering2DFrameCollector
         TilemapRenderer2D renderer,
         Tilemap2DAsset map,
         TileSet2DAsset tileSet,
-        TilemapChunk2D chunk)
-    {
+        TilemapChunk2D chunk
+    ) {
         if (map.identity.persistentId == Guid.Empty
             || owner.identity.persistentId == Guid.Empty)
         {
@@ -1404,8 +1459,8 @@ internal static class Rendering2DFrameCollector
         Tilemap2DAsset map,
         int layerId,
         TilemapCell2D cell,
-        TileDefinition2D tile)
-    {
+        TileDefinition2D tile
+    ) {
         TileVisualRule2D[] rules = tile.rules ?? [];
         int bestPriority = int.MinValue;
         SpriteReference2D best = default;
@@ -1443,8 +1498,8 @@ internal static class Rendering2DFrameCollector
         Tilemap2DAsset map,
         int layerId,
         TilemapCell2D cell,
-        TileNeighborCondition2D[] conditions)
-    {
+        TileNeighborCondition2D[] conditions
+    ) {
         for (int index = 0; index < conditions.Length; index++)
         {
             TileNeighborCondition2D condition = conditions[index];
@@ -1473,15 +1528,18 @@ internal static class Rendering2DFrameCollector
         List<Rendering2DQuad> output,
         List<string> diagnostics,
         int outputLimit,
-        ref int sequence)
-    {
+        ref int sequence
+    ) {
         ParticleEffect2DAsset? effect = system.effect;
         if (effect is null)
             return;
         ReadOnlySpan<ParticleState2D> particles = system.particles;
         MaterialAsset? material = effect.material ?? defaultMaterial;
         if (material is null || material.isMissing)
-        { diagnostics.Add($"Particle system '{owner.name}' has no available material."); return; }
+        {
+            diagnostics.Add($"Particle system '{owner.name}' has no available material.");
+            return;
+        }
         for (int index = 0; index < particles.Length && output.Count < outputLimit; index++)
         {
             ParticleState2D particle = particles[index];
@@ -1504,8 +1562,10 @@ internal static class Rendering2DFrameCollector
         }
     }
 
-    private static SpriteReference2D SelectParticleSprite(ParticleEffect2DAsset effect, ParticleState2D particle)
-    {
+    private static SpriteReference2D SelectParticleSprite(
+        ParticleEffect2DAsset effect,
+        ParticleState2D particle
+    ) {
         SpriteReference2D[] frames = effect.flipbookFrames ?? [];
         if (frames.Length == 0 || effect.flipbookFramesPerSecond <= 0f)
             return effect.sprite;
@@ -1523,12 +1583,15 @@ internal static class Rendering2DFrameCollector
         ParticleEffect2DAsset effect,
         Color tint,
         Rendering2DSortKey sortKey,
-        List<Rendering2DQuad> output)
-    {
+        List<Rendering2DQuad> output
+    ) {
         float half = size * 0.5f;
         float cosine = MathF.Cos(rotation);
         float sine = MathF.Sin(rotation);
-        Vector2 Rotate(float x, float y) => center + new Vector2(x * cosine - y * sine, x * sine + y * cosine);
+        Vector2 Rotate(
+            float x,
+            float y
+        ) => center + new Vector2(x * cosine - y * sine, x * sine + y * cosine);
         Vector2 bottomLeft = Rotate(-half, -half);
         Vector2 bottomRight = Rotate(half, -half);
         Vector2 topRight = Rotate(half, half);
@@ -1552,8 +1615,10 @@ internal static class Rendering2DFrameCollector
             new Rendering2DVertex(topLeft.x, topLeft.y, z, uvTopLeft.x, uvTopLeft.y, packed, 0f)));
     }
 
-    private static bool TryResolveSprite(SpriteRenderer2D sprite, out SpriteSource source)
-    {
+    private static bool TryResolveSprite(
+        SpriteRenderer2D sprite,
+        out SpriteSource source
+    ) {
         if (TryResolveSprite(sprite.sprite, sprite.pivot, out source))
             return true;
         if (sprite.primitive != SpritePrimitive2D.None)
@@ -1563,16 +1628,16 @@ internal static class Rendering2DFrameCollector
                 Rendering2DTextureSource.none,
                 Rendering2DTextureSource.none,
                 new SpriteRegion2D
-            {
-                id = new SpriteRegionId($"builtin:{sprite.primitive}"),
-                name = $"Built-in {sprite.primitive}",
-                uvRect = new Rect(0f, 0f, 1f, 1f),
-                sourceSizePixels = Vector2.ONE,
-                trimmedSizePixels = Vector2.ONE,
-                trimOffsetPixels = Vector2.ZERO,
-                pivot = sprite.pivot,
-                borderPixels = default,
-                outline = []
+                {
+                    id = new SpriteRegionId($"builtin:{sprite.primitive}"),
+                    name = $"Built-in {sprite.primitive}",
+                    uvRect = new Rect(0f, 0f, 1f, 1f),
+                    sourceSizePixels = Vector2.ONE,
+                    trimmedSizePixels = Vector2.ONE,
+                    trimOffsetPixels = Vector2.ZERO,
+                    pivot = sprite.pivot,
+                    borderPixels = default,
+                    outline = []
                 },
                 sprite.primitive);
             return true;
@@ -1581,8 +1646,10 @@ internal static class Rendering2DFrameCollector
         return false;
     }
 
-    private static bool TryResolveMask(SpriteMask2D mask, out SpriteSource source)
-    {
+    private static bool TryResolveMask(
+        SpriteMask2D mask,
+        out SpriteSource source
+    ) {
         if (TryResolveSprite(mask.sprite, mask.pivot, out source))
             return true;
         if (mask.primitive != SpritePrimitive2D.None)
@@ -1592,16 +1659,16 @@ internal static class Rendering2DFrameCollector
                 Rendering2DTextureSource.none,
                 Rendering2DTextureSource.none,
                 new SpriteRegion2D
-            {
-                id = new SpriteRegionId($"builtin:mask:{mask.primitive}"),
-                name = $"Built-in Mask {mask.primitive}",
-                uvRect = new Rect(0f, 0f, 1f, 1f),
-                sourceSizePixels = Vector2.ONE,
-                trimmedSizePixels = Vector2.ONE,
-                trimOffsetPixels = Vector2.ZERO,
-                pivot = mask.pivot,
-                borderPixels = default,
-                outline = []
+                {
+                    id = new SpriteRegionId($"builtin:mask:{mask.primitive}"),
+                    name = $"Built-in Mask {mask.primitive}",
+                    uvRect = new Rect(0f, 0f, 1f, 1f),
+                    sourceSizePixels = Vector2.ONE,
+                    trimmedSizePixels = Vector2.ONE,
+                    trimOffsetPixels = Vector2.ZERO,
+                    pivot = mask.pivot,
+                    borderPixels = default,
+                    outline = []
                 },
                 mask.primitive);
             return true;
@@ -1613,8 +1680,8 @@ internal static class Rendering2DFrameCollector
     private static bool TryResolveSprite(
         SpriteReference2D sprite,
         Vector2 fallbackPivot,
-        out SpriteSource source)
-    {
+        out SpriteSource source
+    ) {
         if (sprite.atlas is SpriteAtlas2DAsset atlas
             && atlas.TryGetRegion(sprite.regionId, out SpriteRegion2D region))
         {
@@ -1645,16 +1712,16 @@ internal static class Rendering2DFrameCollector
                 Rendering2DTextureSource.none,
                 Rendering2DTextureSource.none,
                 new SpriteRegion2D
-            {
-                id = new SpriteRegionId("direct"),
-                name = "Standalone Texture",
-                uvRect = new Rect(0f, 0f, 1f, 1f),
-                sourceSizePixels = new Vector2(texture.width, texture.height),
-                trimmedSizePixels = new Vector2(texture.width, texture.height),
-                trimOffsetPixels = Vector2.ZERO,
-                pivot = fallbackPivot,
-                borderPixels = default,
-                outline = []
+                {
+                    id = new SpriteRegionId("direct"),
+                    name = "Standalone Texture",
+                    uvRect = new Rect(0f, 0f, 1f, 1f),
+                    sourceSizePixels = new Vector2(texture.width, texture.height),
+                    trimmedSizePixels = new Vector2(texture.width, texture.height),
+                    trimOffsetPixels = Vector2.ZERO,
+                    pivot = fallbackPivot,
+                    borderPixels = default,
+                    outline = []
                 },
                 SpritePrimitive2D.None);
             return true;
@@ -1671,8 +1738,8 @@ internal static class Rendering2DFrameCollector
         MaterialAsset material,
         Color tint,
         Rendering2DSortKey sortKey,
-        List<Rendering2DQuad> output)
-    {
+        List<Rendering2DQuad> output
+    ) {
         SpriteRegion2D region = source.region;
         Vector2 sourceSize = region.sourceSizePixels;
         float scaleX = size.x / sourceSize.x;
@@ -1709,8 +1776,8 @@ internal static class Rendering2DFrameCollector
         MaterialAsset material,
         Color tint,
         Rendering2DSortKey sortKey,
-        List<Rendering2DQuad> output)
-    {
+        List<Rendering2DQuad> output
+    ) {
         SpriteRegion2D region = source.region;
         System.Numerics.Vector4 border = region.borderPixels;
         if (border.X + border.Z <= 0f || border.Y + border.W <= 0f)
@@ -1767,8 +1834,8 @@ internal static class Rendering2DFrameCollector
         Color tint,
         Rendering2DSortKey sortKey,
         int maximumQuads,
-        List<Rendering2DQuad> output)
-    {
+        List<Rendering2DQuad> output
+    ) {
         Vector2 tileSize = source.region.sourceSizePixels / pixelsPerUnit;
         tileSize = new Vector2(MathF.Max(0.0001f, tileSize.x), MathF.Max(0.0001f, tileSize.y));
         Vector2 origin = new(-source.region.pivot.x * size.x, -source.region.pivot.y * size.y);
@@ -1823,8 +1890,8 @@ internal static class Rendering2DFrameCollector
         int quarterTurns,
         Color tint,
         List<Rendering2DQuad> output,
-        Rect? sourceSubset = null)
-    {
+        Rect? sourceSubset = null
+    ) {
         Vector2 localBottomLeft = new(localMinimum.x, localMinimum.y);
         Vector2 localBottomRight = new(localMaximum.x, localMinimum.y);
         Vector2 localTopRight = new(localMaximum.x, localMaximum.y);
@@ -1859,8 +1926,8 @@ internal static class Rendering2DFrameCollector
         float sourceY,
         bool flipX,
         bool flipY,
-        int quarterTurns)
-    {
+        int quarterTurns
+    ) {
         float x = flipX ? 1f - sourceX : sourceX;
         float y = flipY ? 1f - sourceY : sourceY;
         int turns = ((quarterTurns % 4) + 4) % 4;
@@ -1878,33 +1945,42 @@ internal static class Rendering2DFrameCollector
             region.uvRect.y + topY * region.uvRect.height);
     }
 
-    private static Dictionary<string, List<int>> CollectMaskConsumers(Rendering2DSceneScope scope, Camera2D camera,
-        Rendering2DProjectSettings settings, Rect cameraBounds)
-    {
+    private static Dictionary<string, List<int>> CollectMaskConsumers(
+        Rendering2DSceneScope scope,
+        Camera2D camera,
+        Rendering2DProjectSettings settings,
+        Rect cameraBounds
+    ) {
         var consumers = new Dictionary<string, List<int>>(StringComparer.Ordinal);
         foreach (Rendering2DSceneEntry entry in scope.entries)
-        foreach (Rendering2DDrawable drawable in entry.snapshot.drawables)
-        {
-            if (!drawable.owner.activeInHierarchy || !camera.cullingMask.Contains(drawable.owner.layer)
-                || drawable.sprite is not { isActiveAndEnabled: true } sprite
-                || sprite.maskInteraction == SpriteMaskInteraction2D.None
-                || sprite.material is not { isMissing: false }
-                || !TryResolveSprite(sprite, out SpriteSource source)) continue;
-            float pixelsPerUnit = sprite.pixelsPerUnit > 0f ? sprite.pixelsPerUnit : MathF.Max(0.001f, settings.defaultPixelsPerUnit);
-            Vector2 naturalSize = source.primitive == SpritePrimitive2D.None ? source.region.sourceSizePixels / pixelsPerUnit : Vector2.ONE;
-            Vector2 size = new(sprite.size.x > 0f ? sprite.size.x : naturalSize.x, sprite.size.y > 0f ? sprite.size.y : naturalSize.y);
-            if (!GetTransformedBounds(drawable.owner.transform, new Rect(-source.region.pivot.x * size.x,
-                    -source.region.pivot.y * size.y, size.x, size.y), sprite.boundsPadding).Overlaps(cameraBounds)) continue;
-            if (!consumers.TryGetValue(sprite.sortingLayer, out List<int>? orders))
-                consumers.Add(sprite.sortingLayer, orders = new());
-            orders.Add(sprite.orderInLayer);
-        }
-        foreach (List<int> orders in consumers.Values) orders.Sort();
+            foreach (Rendering2DDrawable drawable in entry.snapshot.drawables)
+            {
+                if (!drawable.owner.activeInHierarchy || !camera.cullingMask.Contains(drawable.owner.layer)
+                    || drawable.sprite is not { isActiveAndEnabled: true } sprite
+                    || sprite.maskInteraction == SpriteMaskInteraction2D.None
+                    || sprite.material is not { isMissing: false }
+                    || !TryResolveSprite(sprite, out SpriteSource source))
+                    continue;
+                float pixelsPerUnit = sprite.pixelsPerUnit > 0f ? sprite.pixelsPerUnit : MathF.Max(0.001f, settings.defaultPixelsPerUnit);
+                Vector2 naturalSize = source.primitive == SpritePrimitive2D.None ? source.region.sourceSizePixels / pixelsPerUnit : Vector2.ONE;
+                Vector2 size = new(sprite.size.x > 0f ? sprite.size.x : naturalSize.x, sprite.size.y > 0f ? sprite.size.y : naturalSize.y);
+                if (!GetTransformedBounds(drawable.owner.transform, new Rect(-source.region.pivot.x * size.x,
+                        -source.region.pivot.y * size.y, size.x, size.y), sprite.boundsPadding).Overlaps(cameraBounds))
+                    continue;
+                if (!consumers.TryGetValue(sprite.sortingLayer, out List<int>? orders))
+                    consumers.Add(sprite.sortingLayer, orders = new());
+                orders.Add(sprite.orderInLayer);
+            }
+        foreach (List<int> orders in consumers.Values)
+            orders.Sort();
         return consumers;
     }
 
-    private static Rect GetTransformedBounds(Transform transform, Rect local, float padding = 0f)
-    {
+    private static Rect GetTransformedBounds(
+        Transform transform,
+        Rect local,
+        float padding = 0f
+    ) {
         Vector2[] corners =
         [
             TransformPoint(transform, new Vector2(local.left, local.top)),
@@ -1920,22 +1996,26 @@ internal static class Rendering2DFrameCollector
             maximumX - minimumX + 2f * padding, maximumY - minimumY + 2f * padding);
     }
 
-    private static Vector2 TransformPoint(Transform transform, Vector2 local)
-    {
+    private static Vector2 TransformPoint(
+        Transform transform,
+        Vector2 local
+    ) {
         Vector3 world = transform.TransformPoint(new Vector3(local.x, local.y, 0f));
         return new Vector2(world.x, world.y);
     }
 
-    private static Color Multiply(Color left, Color right)
-        => new(left.r * right.r, left.g * right.g, left.b * right.b, left.a * right.a);
+    private static Color Multiply(
+        Color left,
+        Color right
+    ) => new(left.r * right.r, left.g * right.g, left.b * right.b, left.a * right.a);
 
     private static (Rendering2DDrawBatch[] batches, Rendering2DSceneDraw[] draws) BuildSceneDraws(
         IReadOnlyList<Rendering2DQuad> quads,
         IReadOnlyList<ViewContentItem> externalItems,
         Rendering2DProjectSettings settings,
         Camera2D camera,
-        int maximumQuadsPerBatch)
-    {
+        int maximumQuadsPerBatch
+    ) {
         var candidates = new List<SceneDrawCandidate>(quads.Count + externalItems.Count);
         foreach (Rendering2DQuad quad in quads)
             candidates.Add(new SceneDrawCandidate(quad.sortKey, quad, null));
@@ -1950,7 +2030,10 @@ internal static class Rendering2DFrameCollector
                 null,
                 item));
         }
-        candidates.Sort(static (left, right) => left.key.CompareTo(right.key));
+        candidates.Sort(static (
+            left,
+            right
+        ) => left.key.CompareTo(right.key));
         var batches = new List<Rendering2DDrawBatch>();
         var draws = new List<Rendering2DSceneDraw>();
         var run = new List<Rendering2DQuad>();
@@ -1990,11 +2073,16 @@ internal static class Rendering2DFrameCollector
     private readonly record struct SceneDrawCandidate(
         Rendering2DSortKey key,
         Rendering2DQuad? quad,
-        ViewContentItem? content);
+        ViewContentItem? content
+    );
 
-    private static Rendering2DSortKey CreateGroupedSortKey(GameObject owner,
-        Rendering2DProjectSettings settings, string layer, int order, int sequence)
-    {
+    private static Rendering2DSortKey CreateGroupedSortKey(
+        GameObject owner,
+        Rendering2DProjectSettings settings,
+        string layer,
+        int order,
+        int sequence
+    ) {
         for (Transform? cursor = owner.transform; cursor is not null; cursor = cursor.parent)
         {
             if (!cursor.gameObject.TryGetComponent(out SortingGroup2D? group)
@@ -2013,8 +2101,8 @@ internal static class Rendering2DFrameCollector
     private static Rendering2DDrawBatch[] BuildBatches(
         IReadOnlyList<Rendering2DQuad> quads,
         int maximumQuadsPerBatch,
-        Dictionary<string, int>? persistentSegments = null)
-    {
+        Dictionary<string, int>? persistentSegments = null
+    ) {
         var result = new List<Rendering2DDrawBatch>();
         persistentSegments ??= new Dictionary<string, int>(StringComparer.Ordinal);
         int start = 0;
@@ -2117,8 +2205,11 @@ internal static class Rendering2DFrameCollector
         return records.OrderBy(static record => record.sortKey).ToArray();
     }
 
-    private static void WriteInstance(byte[] destination, int index, Rendering2DQuad quad)
-    {
+    private static void WriteInstance(
+        byte[] destination,
+        int index,
+        Rendering2DQuad quad
+    ) {
         Span<byte> bytes = destination.AsSpan(index * C_INSTANCE_STRIDE, C_INSTANCE_STRIDE);
         WriteVector2(bytes, 0, quad.bottomLeft.x, quad.bottomLeft.y);
         WriteVector2(bytes, 8, quad.bottomRight.x, quad.bottomRight.y);
@@ -2136,8 +2227,12 @@ internal static class Rendering2DFrameCollector
         BinaryPrimitives.WriteSingleLittleEndian(bytes[76..], ((color >> 24) & 0xffu) / 255f);
     }
 
-    private static void WriteVector2(Span<byte> destination, int offset, float x, float y)
-    {
+    private static void WriteVector2(
+        Span<byte> destination,
+        int offset,
+        float x,
+        float y
+    ) {
         BinaryPrimitives.WriteSingleLittleEndian(destination[offset..], x);
         BinaryPrimitives.WriteSingleLittleEndian(destination[(offset + sizeof(float))..], y);
     }
@@ -2178,21 +2273,27 @@ internal static class Rendering2DFrameCollector
         Vector2 center,
         float halfWidth,
         float halfHeight,
-        Quaternion rotation);
+        Quaternion rotation
+    );
     private readonly record struct SpriteSource(
         Rendering2DTextureSource texture,
         Rendering2DTextureSource normalMap,
         Rendering2DTextureSource emissionMap,
         SpriteRegion2D region,
-        SpritePrimitive2D primitive);
+        SpritePrimitive2D primitive
+    );
     private readonly record struct MaskSnapshot(
         string sortingLayer,
         int frontOrder,
         int backOrder,
-        Rendering2DQuad writer);
+        Rendering2DQuad writer
+    );
 }
 
-internal readonly record struct Rendering2DFrameFingerprint(ulong first, ulong second);
+internal readonly record struct Rendering2DFrameFingerprint(
+    ulong first,
+    ulong second
+);
 
 internal struct Rendering2DFingerprintBuilder
 {
@@ -2280,8 +2381,10 @@ internal struct Rendering2DFingerprintBuilder
             ^ 0xc2b2ae3d27d4eb4fUL;
     }
 
-    private static ulong RotateLeft(ulong value, int offset)
-        => (value << offset) | (value >> (64 - offset));
+    private static ulong RotateLeft(
+        ulong value,
+        int offset
+    ) => (value << offset) | (value >> (64 - offset));
 
     internal readonly Rendering2DFrameFingerprint Build() => new(m_first, m_second);
 }

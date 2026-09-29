@@ -7,7 +7,9 @@ using InnoEditor.Annotations;
 
 namespace Inno.Rendering2D;
 
-/// <summary>Advances stable sprite animation frames through the normal scene behavior lifecycle.</summary>
+/// <summary>
+/// Advances stable sprite animation frames through the normal scene behavior lifecycle.
+/// </summary>
 [StableTypeId("39d67e26-7076-4998-8862-2c65d427f668")]
 public sealed class SpriteAnimator2D : GameBehavior
 {
@@ -18,7 +20,9 @@ public sealed class SpriteAnimator2D : GameBehavior
     private float m_crossFadeElapsed;
     private float m_speed = 1f;
 
-    /// <summary>Gets or sets the animation library.</summary>
+    /// <summary>
+    /// Gets or sets the animation library.
+    /// </summary>
     [SerializableProperty]
     [Header("Animation", "Assign a frame-animation library before selecting its stable clip identifier.")]
     [HelpBox(
@@ -27,18 +31,24 @@ public sealed class SpriteAnimator2D : GameBehavior
         InspectorCondition.Null)]
     public SpriteAnimation2DAsset? animation { get; set; }
 
-    /// <summary>Gets or sets the clip selected for playback.</summary>
+    /// <summary>
+    /// Gets or sets the clip selected for playback.
+    /// </summary>
     [SerializableProperty]
     [ShowIf(nameof(animation), InspectorCondition.NotNull)]
     [InspectorName("Clip ID")]
     public string clipId { get; set; } = string.Empty;
 
-    /// <summary>Gets or sets whether playback starts when the behavior starts.</summary>
+    /// <summary>
+    /// Gets or sets whether playback starts when the behavior starts.
+    /// </summary>
     [SerializableProperty]
     [Header("Playback", "Playback updates the SpriteRenderer2D on the same GameObject.")]
     public bool playOnStart { get; set; } = true;
 
-    /// <summary>Gets or sets non-negative playback speed.</summary>
+    /// <summary>
+    /// Gets or sets non-negative playback speed.
+    /// </summary>
     [SerializableProperty]
     public float speed
     {
@@ -46,21 +56,35 @@ public sealed class SpriteAnimator2D : GameBehavior
         set => m_speed = float.IsFinite(value) ? MathF.Max(0f, value) : 0f;
     }
 
-    /// <summary>Gets whether playback is advancing.</summary>
+    /// <summary>
+    /// Gets whether playback is advancing.
+    /// </summary>
     public bool isPlaying => m_playing;
 
-    /// <summary>Gets the current zero-based frame index.</summary>
+    /// <summary>
+    /// Gets the current zero-based frame index.
+    /// </summary>
     public int currentFrameIndex => m_frameIndex;
 
-    /// <summary>Gets the stable event identity of the current frame, or an empty value.</summary>
+    /// <summary>
+    /// Gets the stable event identity of the current frame, or an empty value.
+    /// </summary>
     public string currentFrameEvent { get; private set; } = string.Empty;
 
-    /// <summary>Occurs when playback enters a frame containing a non-empty stable event identity.</summary>
+    /// <summary>
+    /// Occurs when playback enters a frame containing a non-empty stable event identity.
+    /// </summary>
     public event Action<string>? frameEvent;
 
-    /// <summary>Starts one clip from its first frame.</summary>
-    /// <param name="id">Stable clip identity.</param>
-    /// <exception cref="ArgumentException">Thrown when the clip identity is empty.</exception>
+    /// <summary>
+    /// Starts one clip from its first frame.
+    /// </summary>
+    /// <param name="id">
+    /// Stable clip identity.
+    /// </param>
+    /// <exception cref="ArgumentException">
+    /// Thrown when the clip identity is empty.
+    /// </exception>
     public void Play(string id)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
@@ -72,11 +96,19 @@ public sealed class SpriteAnimator2D : GameBehavior
         ApplyFrame();
     }
 
-    /// <summary>Starts one clip while fading from the currently displayed sprite.</summary>
-    /// <param name="id">Stable destination clip identity.</param>
-    /// <param name="duration">Non-negative transition duration in seconds.</param>
-    public void CrossFade(string id, float duration)
-    {
+    /// <summary>
+    /// Starts one clip while fading from the currently displayed sprite.
+    /// </summary>
+    /// <param name="id">
+    /// Stable destination clip identity.
+    /// </param>
+    /// <param name="duration">
+    /// Non-negative transition duration in seconds.
+    /// </param>
+    public void CrossFade(
+        string id,
+        float duration
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         ArgumentOutOfRangeException.ThrowIfNegative(duration);
         if (duration <= 0f
@@ -97,13 +129,19 @@ public sealed class SpriteAnimator2D : GameBehavior
         renderer.SetCrossFade(source, source.isAssigned ? 1f : 0f);
     }
 
-    /// <summary>Pauses playback while preserving the current frame and elapsed time.</summary>
+    /// <summary>
+    /// Pauses playback while preserving the current frame and elapsed time.
+    /// </summary>
     public void Pause() => m_playing = false;
 
-    /// <summary>Resumes the currently selected clip.</summary>
+    /// <summary>
+    /// Resumes the currently selected clip.
+    /// </summary>
     public void Resume() => m_playing = true;
 
-    /// <summary>Stops playback and rewinds to the first frame.</summary>
+    /// <summary>
+    /// Stops playback and rewinds to the first frame.
+    /// </summary>
     public void Stop()
     {
         m_playing = false;

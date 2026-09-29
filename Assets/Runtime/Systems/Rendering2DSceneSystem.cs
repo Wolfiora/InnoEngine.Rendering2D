@@ -77,20 +77,17 @@ public sealed class Rendering2DSceneSystem : GameSystem
     /// <summary>
     /// Rebuilds the extraction index during scene update when structure changed since the previous frame.
     /// </summary>
-    protected override void OnUpdate()
-        => _ = Capture();
+    protected override void OnUpdate() => _ = Capture();
 
     /// <summary>
     /// Releases all component references before this system or its Plugin generation becomes inactive.
     /// </summary>
-    protected override void OnDisable()
-        => Clear();
+    protected override void OnDisable() => Clear();
 
     /// <summary>
     /// Releases all component references before this system is destroyed.
     /// </summary>
-    protected override void OnDestroy()
-        => Clear();
+    protected override void OnDestroy() => Clear();
 
     private void Clear()
     {
@@ -104,8 +101,8 @@ internal readonly record struct Rendering2DSceneSnapshot(
     Rendering2DDrawable[] drawables,
     Light2D[] lights,
     ShadowCaster2D[] shadowCasters,
-    Rendering2DMask[] masks)
-{
+    Rendering2DMask[] masks
+) {
     internal static Rendering2DSceneSnapshot empty { get; } = new([], [], [], [], []);
 }
 
@@ -113,6 +110,10 @@ internal readonly record struct Rendering2DDrawable(
     GameObject owner,
     SpriteRenderer2D? sprite,
     TilemapRenderer2D? tilemap,
-    ParticleSystem2D? particles);
+    ParticleSystem2D? particles
+);
 
-internal readonly record struct Rendering2DMask(GameObject owner, SpriteMask2D mask);
+internal readonly record struct Rendering2DMask(
+    GameObject owner,
+    SpriteMask2D mask
+);

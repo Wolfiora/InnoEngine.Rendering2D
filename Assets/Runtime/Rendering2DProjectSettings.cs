@@ -9,40 +9,66 @@ using InnoEngine.Rendering;
 
 namespace Inno.Rendering2D;
 
-/// <summary>Defines one project-local 2D sorting layer.</summary>
+/// <summary>
+/// Defines one project-local 2D sorting layer.
+/// </summary>
 public struct SortingLayer2DDefinition
 {
     [SerializableProperty]
     private string m_localId;
 
-    /// <summary>Creates a sorting layer and derives its stable local identity from the name.</summary>
-    /// <param name="name">The user-facing layer name.</param>
-    /// <param name="order">The global sorting order.</param>
-    public SortingLayer2DDefinition(string name, int order)
-    {
+    /// <summary>
+    /// Creates a sorting layer and derives its stable local identity from the name.
+    /// </summary>
+    /// <param name="name">
+    /// The user-facing layer name.
+    /// </param>
+    /// <param name="order">
+    /// The global sorting order.
+    /// </param>
+    public SortingLayer2DDefinition(
+        string name,
+        int order
+    ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         m_localId = CreateLocalId(name);
         this.name = name.Trim();
         this.order = order;
     }
 
-    /// <summary>Gets the stable project-independent identity.</summary>
+    /// <summary>
+    /// Gets the stable project-independent identity.
+    /// </summary>
     public string localId => m_localId ?? string.Empty;
 
-    /// <summary>Gets or sets the user-facing layer name.</summary>
+    /// <summary>
+    /// Gets or sets the user-facing layer name.
+    /// </summary>
     [SerializableProperty]
     public string name { get; set; }
 
-    /// <summary>Gets or sets the global sorting order.</summary>
+    /// <summary>
+    /// Gets or sets the global sorting order.
+    /// </summary>
     [SerializableProperty]
     public int order { get; set; }
 
-    /// <summary>Creates an edited copy while preserving the generated local identity.</summary>
-    /// <param name="name">The new display name.</param>
-    /// <param name="order">The new global order.</param>
-    /// <returns>The edited definition.</returns>
-    public SortingLayer2DDefinition With(string name, int order)
-        => new(m_localId, name, order, preserveLocalId: true);
+    /// <summary>
+    /// Creates an edited copy while preserving the generated local identity.
+    /// </summary>
+    /// <param name="name">
+    /// The new display name.
+    /// </param>
+    /// <param name="order">
+    /// The new global order.
+    /// </param>
+    /// <returns>
+    /// The edited definition.
+    /// </returns>
+    public SortingLayer2DDefinition With(
+        string name,
+        int order
+    ) => new(m_localId, name, order, preserveLocalId: true);
 
     internal void Validate()
     {
@@ -52,8 +78,12 @@ public struct SortingLayer2DDefinition
             throw new ArgumentException("Sorting-layer names must be trimmed.", nameof(name));
     }
 
-    private SortingLayer2DDefinition(string localId, string name, int order, bool preserveLocalId)
-    {
+    private SortingLayer2DDefinition(
+        string localId,
+        string name,
+        int order,
+        bool preserveLocalId
+    ) {
         _ = preserveLocalId;
         ArgumentException.ThrowIfNullOrWhiteSpace(localId);
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
@@ -110,7 +140,9 @@ public struct SortingLayer2DDefinition
     }
 }
 
-/// <summary>Stores project-wide limits and ordering definitions for the 2D renderer.</summary>
+/// <summary>
+/// Stores project-wide limits and ordering definitions for the 2D renderer.
+/// </summary>
 [StableTypeId("26a75fc8-54bc-4558-9e12-a8035b9176d6")]
 [ProjectSettingDefinition(Rendering2DIds.projectSettings)]
 public sealed class Rendering2DProjectSettings : ISerializable
@@ -120,26 +152,38 @@ public sealed class Rendering2DProjectSettings : ISerializable
         new SortingLayer2DDefinition("Default", 0)
     ];
 
-    /// <summary>Gets the stable project setting protocol identity.</summary>
+    /// <summary>
+    /// Gets the stable project setting protocol identity.
+    /// </summary>
     public static ProjectSettingId id => new(Rendering2DIds.projectSettings);
 
-    /// <summary>Gets or sets the project-wide pixels represented by one world unit.</summary>
+    /// <summary>
+    /// Gets or sets the project-wide pixels represented by one world unit.
+    /// </summary>
     [SerializableProperty]
     public float defaultPixelsPerUnit { get; set; } = 100f;
 
-    /// <summary>Gets or sets the maximum generated quads accepted in one request.</summary>
+    /// <summary>
+    /// Gets or sets the maximum generated quads accepted in one request.
+    /// </summary>
     [SerializableProperty]
     public int maximumQuadsPerFrame { get; set; } = 262_144;
 
-    /// <summary>Gets or sets the maximum adjacent quads grouped into one draw batch.</summary>
+    /// <summary>
+    /// Gets or sets the maximum adjacent quads grouped into one draw batch.
+    /// </summary>
     [SerializableProperty]
     public int maximumQuadsPerBatch { get; set; } = 16_384;
 
-    /// <summary>Gets or sets the maximum quads generated by one tiled sprite.</summary>
+    /// <summary>
+    /// Gets or sets the maximum quads generated by one tiled sprite.
+    /// </summary>
     [SerializableProperty]
     public int maximumTiledSpriteQuads { get; set; } = 4_096;
 
-    /// <summary>Gets or sets stable sorting layers in arbitrary authoring order.</summary>
+    /// <summary>
+    /// Gets or sets stable sorting layers in arbitrary authoring order.
+    /// </summary>
     [SerializableProperty]
     public SortingLayer2DDefinition[] sortingLayers
     {
@@ -153,9 +197,15 @@ public sealed class Rendering2DProjectSettings : ISerializable
     [SerializableProperty]
     public RenderPipelineAsset? pipeline { get; set; }
 
-    /// <summary>Gets the effective order of a project-local sorting layer.</summary>
-    /// <param name="localId">The stable project-independent identity.</param>
-    /// <returns>The configured order, or zero when the layer is undefined.</returns>
+    /// <summary>
+    /// Gets the effective order of a project-local sorting layer.
+    /// </summary>
+    /// <param name="localId">
+    /// The stable project-independent identity.
+    /// </param>
+    /// <returns>
+    /// The configured order, or zero when the layer is undefined.
+    /// </returns>
     public int GetSortingLayerOrder(string localId)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(localId);
@@ -168,9 +218,15 @@ public sealed class Rendering2DProjectSettings : ISerializable
         return 0;
     }
 
-    /// <summary>Gets a sorting layer definition by its display name.</summary>
-    /// <param name="name">The user-facing name.</param>
-    /// <returns>The matching definition.</returns>
+    /// <summary>
+    /// Gets a sorting layer definition by its display name.
+    /// </summary>
+    /// <param name="name">
+    /// The user-facing name.
+    /// </param>
+    /// <returns>
+    /// The matching definition.
+    /// </returns>
     public SortingLayer2DDefinition GetSortingLayer(string name)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
@@ -182,8 +238,12 @@ public sealed class Rendering2DProjectSettings : ISerializable
         throw new KeyNotFoundException($"Sorting layer '{name}' is not defined.");
     }
 
-    /// <summary>Replaces all sorting layers after validating automatic local identities.</summary>
-    /// <param name="definitions">The complete sorting-layer set.</param>
+    /// <summary>
+    /// Replaces all sorting layers after validating automatic local identities.
+    /// </summary>
+    /// <param name="definitions">
+    /// The complete sorting-layer set.
+    /// </param>
     public void SetSortingLayers(IEnumerable<SortingLayer2DDefinition> definitions)
     {
         ArgumentNullException.ThrowIfNull(definitions);

@@ -10,7 +10,9 @@ using InnoEditor.Rendering.Shaders;
 
 namespace Inno.Rendering2D;
 
-/// <summary>Creates a complete explicit-stage Sprite Shader from graph-authored reusable nodes.</summary>
+/// <summary>
+/// Creates a complete explicit-stage Sprite Shader from graph-authored reusable nodes.
+/// </summary>
 [ShaderGraphTemplate(Rendering2DIds.spriteShaderTemplate, "2D / Sprite")]
 public sealed class SpriteShaderTemplate : ShaderGraphTemplate
 {
@@ -19,7 +21,10 @@ public sealed class SpriteShaderTemplate : ShaderGraphTemplate
     private const string surfaceNodePath = "Shaders/Sprite/Nodes/SpriteSurface.ishader";
 
     /// <inheritdoc />
-    public override GraphDocument Create(SerializationRegistry serialization, SerializationContext context)
+    public override GraphDocument Create(
+        SerializationRegistry serialization,
+        SerializationContext context
+    )
         => Create(
             Assets.Load<ShaderAsset>(Assets.LocalPath(vertexNodePath)),
             Assets.Load<ShaderAsset>(Assets.LocalPath(textureNodePath)),
@@ -27,14 +32,16 @@ public sealed class SpriteShaderTemplate : ShaderGraphTemplate
             serialization,
             context);
 
-    /// <summary>Creates the Sprite template with explicitly resolved graph-node assets.</summary>
+    /// <summary>
+    /// Creates the Sprite template with explicitly resolved graph-node assets.
+    /// </summary>
     public static GraphDocument Create(
         ShaderAsset vertexNode,
         ShaderAsset textureNode,
         ShaderAsset surfaceNode,
         SerializationRegistry serialization,
-        SerializationContext context)
-    {
+        SerializationContext context
+    ) {
         Validate(vertexNode, nameof(vertexNode));
         Validate(textureNode, nameof(textureNode));
         Validate(surfaceNode, nameof(surfaceNode));
@@ -168,15 +175,20 @@ public sealed class SpriteShaderTemplate : ShaderGraphTemplate
             ShaderStage stage,
             ShaderGraphOutput[] outputs,
             float x,
-            float y)
-        {
+            float y
+        ) {
             GraphNodeRecord node = Node(id, ShaderGraphDocument.outputDefinitionId, id, x, y);
             Set(node, ShaderGraphDocument.settingsKey, new ShaderGraphStageSettings { stage = stage, outputs = outputs });
             return node;
         }
 
-        GraphNodeRecord Node(string id, string definitionId, string stage, float x, float y)
-        {
+        GraphNodeRecord Node(
+            string id,
+            string definitionId,
+            string stage,
+            float x,
+            float y
+        ) {
             var node = new GraphNodeRecord(new(id), definitionId) { position = new(x, y) };
             graph.AddNode(node);
             Set(node, ShaderGraphDocument.stageKey, stage);
@@ -190,8 +202,8 @@ public sealed class SpriteShaderTemplate : ShaderGraphTemplate
             ShaderGraphNodeInterface nodeInterface,
             string stage,
             float x,
-            float y)
-        {
+            float y
+        ) {
             GraphNodeRecord node = Node(id, ShaderGraphNodes.callDefinitionId, stage, x, y);
             Set(node, "sourceId", asset.identity.persistentId);
             Set(node, "sourcePath", path);
@@ -199,10 +211,19 @@ public sealed class SpriteShaderTemplate : ShaderGraphTemplate
             return node;
         }
 
-        void Set<T>(GraphNodeRecord node, string key, T value)
+        void Set<T>(
+            GraphNodeRecord node,
+            string key,
+            T value
+        )
             => node.SetValue(key, ShaderGraphDocument.Encode(value, serialization, context));
 
-        void Connect(GraphNodeRecord from, string fromPort, GraphNodeRecord to, string toPort)
+        void Connect(
+            GraphNodeRecord from,
+            string fromPort,
+            GraphNodeRecord to,
+            string toPort
+        )
             => graph.AddEdge(new(
                 new(from.id.value + "." + fromPort + "->" + to.id.value + "." + toPort),
                 new(from.id, new(fromPort)),
@@ -270,18 +291,25 @@ public sealed class SpriteShaderTemplate : ShaderGraphTemplate
             outputs = [Port("color", "float4")]
         };
 
-    private static ShaderGraphNodePortDefinition Port(string id, string type, bool required = true)
+    private static ShaderGraphNodePortDefinition Port(
+        string id,
+        string type,
+        bool required = true
+    )
         => new() { id = id, type = new() { id = type }, required = required };
 
     private static ShaderGraphOutput Output(
         string id,
         ShaderIrOutputKind kind,
         string semantic = "",
-        int location = 0)
+        int location = 0
+    )
         => new() { id = id, kind = kind, semantic = semantic, location = location };
 
-    private static void Validate(ShaderAsset asset, string parameter)
-    {
+    private static void Validate(
+        ShaderAsset asset,
+        string parameter
+    ) {
         ArgumentNullException.ThrowIfNull(asset, parameter);
         if (asset.isMissing || asset.identity.persistentId == Guid.Empty)
             throw new ArgumentException("Choose an imported graph-node Shader.", parameter);

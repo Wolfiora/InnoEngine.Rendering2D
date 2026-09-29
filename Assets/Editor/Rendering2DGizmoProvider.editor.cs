@@ -5,13 +5,17 @@ using InnoEngine.Scene;
 
 namespace Inno.Rendering2D;
 
-/// <summary>Contributes selectable 2D camera and light icons with selected influence outlines.</summary>
+/// <summary>
+/// Contributes selectable 2D camera and light icons with selected influence outlines.
+/// </summary>
 [EditorGizmoProviderExtension("inno.rendering2d.scene-gizmos")]
 public sealed class Rendering2DGizmoProvider : EditorGizmoProvider
 {
     /// <inheritdoc />
-    public override void Collect(EditorGizmoContext context, IEditorGizmoSink sink)
-    {
+    public override void Collect(
+        EditorGizmoContext context,
+        IEditorGizmoSink sink
+    ) {
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(sink);
         foreach (GameScene scene in context.content.GetValues<GameScene>())
@@ -39,8 +43,11 @@ public sealed class Rendering2DGizmoProvider : EditorGizmoProvider
         }
     }
 
-    private static void DrawCamera(Camera2D camera, EditorGizmoContext context, IEditorGizmoSink sink)
-    {
+    private static void DrawCamera(
+        Camera2D camera,
+        EditorGizmoContext context,
+        IEditorGizmoSink sink
+    ) {
         float halfHeight = camera.orthographicSize;
         float aspect = (float)context.pixelWidth / Math.Max(1, context.pixelHeight);
         float halfWidth = halfHeight * aspect;
@@ -55,8 +62,10 @@ public sealed class Rendering2DGizmoProvider : EditorGizmoProvider
             sink.Line(corners[index], corners[(index + 1) % corners.Length]);
     }
 
-    private static void DrawLight(Light2D light, IEditorGizmoSink sink)
-    {
+    private static void DrawLight(
+        Light2D light,
+        IEditorGizmoSink sink
+    ) {
         if (light.kind == LightKind2D.Global)
             return;
         Transform transform = light.gameObject.transform;
@@ -114,7 +123,12 @@ public sealed class Rendering2DGizmoProvider : EditorGizmoProvider
     }
 
     private static Vector3 SpotArcPoint(
-        Vector3 center, float directionX, float directionY, float range, float angle)
+        Vector3 center,
+        float directionX,
+        float directionY,
+        float range,
+        float angle
+    )
         => center + new Vector3(
             range * (directionX * MathF.Cos(angle) - directionY * MathF.Sin(angle)),
             range * (directionX * MathF.Sin(angle) + directionY * MathF.Cos(angle)), 0f);

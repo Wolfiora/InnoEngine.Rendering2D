@@ -6,7 +6,9 @@ using InnoEditor.Shaders;
 
 namespace Inno.Rendering2D;
 
-/// <summary>Provides a neutral unlit Sprite swatch without creating a Scene or altering a Material asset.</summary>
+/// <summary>
+/// Provides a neutral unlit Sprite swatch without creating a Scene or altering a Material asset.
+/// </summary>
 [ShaderPreviewProvider("inno.rendering.2d.sprite")]
 public sealed class SpriteShaderPreview : ShaderPreviewProvider
 {
@@ -20,13 +22,19 @@ public sealed class SpriteShaderPreview : ShaderPreviewProvider
     }
 }
 
-/// <summary>Renders the isolated compiled candidate through the ordinary material binder and Render Graph.</summary>
+/// <summary>
+/// Renders the isolated compiled candidate through the ordinary material binder and Render Graph.
+/// </summary>
 [RenderPipelineExtension(pipelineId)]
 public sealed class SpritePreviewPipeline : RenderPipeline
 {
-    /// <summary>Identifies the Editor-only preview pipeline; runtime packages do not carry this implementation.</summary>
+    /// <summary>
+    /// Identifies the Editor-only preview pipeline; runtime packages do not carry this implementation.
+    /// </summary>
     public const string pipelineId = "inno.rendering.2d.sprite-preview";
-    /// <summary>Gets the frame-only domain preview input channel.</summary>
+    /// <summary>
+    /// Gets the frame-only domain preview input channel.
+    /// </summary>
     public static RenderDataChannelId channel => new(pipelineId);
 
     private static readonly RenderBindingId s_materialBinding = new("u_spriteMaterial");
@@ -55,10 +63,12 @@ public sealed class SpritePreviewPipeline : RenderPipeline
     {
         if (!context.request.data.TryGet(channel, out ShaderPreviewContext? preview) || preview is null)
             throw new InvalidOperationException("Sprite preview input is missing.");
-        if (!context.outputTexture.isValid) throw new InvalidOperationException("A preview requires an offscreen output.");
+        if (!context.outputTexture.isValid)
+            throw new InvalidOperationException("A preview requires an offscreen output.");
         if (!context.resourceService.TryResolveMaterialArtifact(preview.resourceId, preview.artifact, preview.material,
             Rendering2DIds.spriteContract, Rendering2DIds.alphaRole, ShaderProgramKind.Raster, m_vertices, null,
-            preview.diagnostics, out RenderMaterialPass? material) || material is null) return;
+            preview.diagnostics, out RenderMaterialPass? material) || material is null)
+            return;
         var resources = context.resourceService;
         PersistentBufferHandle vertices = resources.AcquireBuffer(new(pipelineId + "/vertices"), 1,
             new(new(4, 8, RenderBufferUsage.Vertex), m_vertices), m_vertexBytes, "Preview quad vertices");
@@ -71,17 +81,25 @@ public sealed class SpritePreviewPipeline : RenderPipeline
         PersistentTextureHandle normal = Texture("normal", [128, 128, 255, 255]);
         var data = new DrawData(material, vertices, indices, instances, white, black, normal,
             m_material, m_zero, context.request.viewport);
-        RasterPassBuilder pass = context.graph.AddRasterPass("Sprite draft preview", new(pipelineId), data, static (value, render) => Draw(value, render.commands));
+        RasterPassBuilder pass = context.graph.AddRasterPass("Sprite draft preview", new(pipelineId), data, static (
+            value,
+            render
+        ) => Draw(value, render.commands));
         pass.SetViewTransform(m_identity, m_identity);
         pass.UseColorAttachment(context.outputTexture, 0, RenderLoadAction.Clear, RenderStoreAction.Store, new(.055f, .055f, .065f, 1));
         context.graph.MarkOutput(context.outputTexture);
 
-        PersistentTextureHandle Texture(string name, byte[] rgba) => resources.AcquireTexture(new(pipelineId + "/" + name), 1,
+        PersistentTextureHandle Texture(
+            string name,
+            byte[] rgba
+        ) => resources.AcquireTexture(new(pipelineId + "/" + name), 1,
             new(1, 1, RenderTextureFormat.RGBA8, RenderTextureUsage.Sampled), [new(0, 0, rgba)], "Preview " + name);
     }
 
-    private static void Draw(DrawData data, RenderCommandEncoder commands)
-    {
+    private static void Draw(
+        DrawData data,
+        RenderCommandEncoder commands
+    ) {
         commands.SetViewport(0, 0, data.viewport.width, data.viewport.height);
         data.material.Bind(commands);
         SetUniform(data.material, commands, s_materialBinding, data.parameters);
@@ -100,16 +118,22 @@ public sealed class SpritePreviewPipeline : RenderPipeline
         commands.DrawIndexed(6);
     }
 
-    private static void SetUniform(RenderMaterialPass material, RenderCommandEncoder commands,
-        RenderBindingId binding, ReadOnlySpan<byte> value)
-    {
+    private static void SetUniform(
+        RenderMaterialPass material,
+        RenderCommandEncoder commands,
+        RenderBindingId binding,
+        ReadOnlySpan<byte> value
+    ) {
         if (material.UsesBinding(binding, RenderShaderBindingKind.Uniform))
             commands.SetUniform(binding, value);
     }
 
-    private static void BindTexture(RenderMaterialPass material, RenderCommandEncoder commands,
-        RenderBindingId binding, PersistentTextureHandle texture)
-    {
+    private static void BindTexture(
+        RenderMaterialPass material,
+        RenderCommandEncoder commands,
+        RenderBindingId binding,
+        PersistentTextureHandle texture
+    ) {
         if (material.UsesBinding(binding, RenderShaderBindingKind.Texture))
             commands.BindTexture(binding, texture, new());
     }
@@ -117,11 +141,21 @@ public sealed class SpritePreviewPipeline : RenderPipeline
     private static byte[] Floats(float[] values)
     {
         var bytes = new byte[values.Length * 4];
-        for (int index = 0; index < values.Length; index++) BinaryPrimitives.WriteSingleLittleEndian(bytes.AsSpan(index * 4, 4), values[index]);
+        for (int index = 0; index < values.Length; index++)
+            BinaryPrimitives.WriteSingleLittleEndian(bytes.AsSpan(index * 4, 4), values[index]);
         return bytes;
     }
 
-    private sealed record DrawData(RenderMaterialPass material, PersistentBufferHandle vertices, PersistentBufferHandle indices,
-        PersistentBufferHandle instances, PersistentTextureHandle white, PersistentTextureHandle black, PersistentTextureHandle normal,
-        byte[] parameters, byte[] zero, RenderViewport viewport);
+    private sealed record DrawData(
+        RenderMaterialPass material,
+        PersistentBufferHandle vertices,
+        PersistentBufferHandle indices,
+        PersistentBufferHandle instances,
+        PersistentTextureHandle white,
+        PersistentTextureHandle black,
+        PersistentTextureHandle normal,
+        byte[] parameters,
+        byte[] zero,
+        RenderViewport viewport
+    );
 }

@@ -13,44 +13,72 @@ using InnoEngine.Scene;
 
 namespace Inno.Rendering2D;
 
-/// <summary>Configures host presentation helpers for one explicitly collected 2D viewport.</summary>
+/// <summary>
+/// Configures host presentation helpers for one explicitly collected 2D viewport.
+/// </summary>
 public sealed class Rendering2DViewportOptions
 {
-    /// <summary>Gets or sets the stable host output session identity.</summary>
+    /// <summary>
+    /// Gets or sets the stable host output session identity.
+    /// </summary>
     public string sessionId { get; set; } = "primary";
 
-    /// <summary>Gets or sets the model-independent content collector for this output.</summary>
+    /// <summary>
+    /// Gets or sets the model-independent content collector for this output.
+    /// </summary>
     public IViewContentCollector? viewContent { get; set; }
-    /// <summary>Gets or sets the sibling views in this camera stack.</summary>
+    /// <summary>
+    /// Gets or sets the sibling views in this camera stack.
+    /// </summary>
     public IReadOnlyList<RenderView>? views { get; set; }
-    /// <summary>Gets or sets viewport-local pointer and keyboard input.</summary>
+    /// <summary>
+    /// Gets or sets viewport-local pointer and keyboard input.
+    /// </summary>
     public RenderOutputInput input { get; set; } = RenderOutputInput.empty;
 
-    /// <summary>Gets or sets the frame-scoped roots passed to world-content sources.</summary>
+    /// <summary>
+    /// Gets or sets the frame-scoped roots passed to world-content sources.
+    /// </summary>
     public ContentReadScope? content { get; set; }
 
-    /// <summary>Gets or sets the shared output frame index.</summary>
+    /// <summary>
+    /// Gets or sets the shared output frame index.
+    /// </summary>
     public ulong frameIndex { get; set; }
 
-    /// <summary>Gets or sets elapsed frame time in seconds.</summary>
+    /// <summary>
+    /// Gets or sets elapsed frame time in seconds.
+    /// </summary>
     public float deltaTime { get; set; }
 
-    /// <summary>Gets or sets an optional clear-color override for this viewport only.</summary>
+    /// <summary>
+    /// Gets or sets an optional clear-color override for this viewport only.
+    /// </summary>
     public Color? clearColorOverride { get; set; }
 
-    /// <summary>Gets or sets an optional load/clear override for camera composition.</summary>
+    /// <summary>
+    /// Gets or sets an optional load/clear override for camera composition.
+    /// </summary>
     public bool? clearTargetOverride { get; set; }
 
-    /// <summary>Gets or sets diagnostics contributed by camera selection or viewport composition.</summary>
+    /// <summary>
+    /// Gets or sets diagnostics contributed by camera selection or viewport composition.
+    /// </summary>
     public IReadOnlyList<string>? additionalDiagnostics { get; set; }
 
-    /// <summary>Gets or sets whether only cameras explicitly targeting the backbuffer participate in stack selection.</summary>
+    /// <summary>
+    /// Gets or sets whether only cameras explicitly targeting the backbuffer participate in stack selection.
+    /// </summary>
     public bool backbufferOnly { get; set; }
 
-    /// <summary>Gets or sets whether an adaptive world-space grid is drawn behind scene content.</summary>
+    /// <summary>
+    /// Gets or sets whether an adaptive world-space grid is drawn behind scene content.
+    /// </summary>
     public bool drawGrid { get; set; }
 
-    /// <summary>Gets or sets whether world-space X and Y axes are drawn behind scene content.</summary>
+    /// <summary>
+    /// Gets or sets whether world-space X and Y axes are drawn behind scene content.
+    /// </summary>
     public bool drawAxes { get; set; }
 }
 
@@ -136,7 +164,8 @@ public sealed class Rendering2DSceneScope
 internal readonly record struct Rendering2DSceneEntry(
     GameScene scene,
     Rendering2DSceneSystem extraction,
-    Rendering2DSceneSnapshot snapshot);
+    Rendering2DSceneSnapshot snapshot
+);
 
 /// <summary>
 /// Reuses a 2D scene scope while host-selected content generations and scene system membership remain unchanged.
@@ -151,8 +180,12 @@ public sealed class Rendering2DSceneScopeCache
     /// Resolves the current content roots and refreshes structure-indexed 2D snapshots without allocating in
     /// the stable-content path.
     /// </summary>
-    /// <param name="content">Frame-scoped host content.</param>
-    /// <returns>The reusable scope matching the current root generations and system snapshots.</returns>
+    /// <param name="content">
+    /// Frame-scoped host content.
+    /// </param>
+    /// <returns>
+    /// The reusable scope matching the current root generations and system snapshots.
+    /// </returns>
     public Rendering2DSceneScope Get(ContentReadScope content)
     {
         ArgumentNullException.ThrowIfNull(content);
@@ -213,7 +246,9 @@ public sealed class Rendering2DSceneScopeCache
     }
 }
 
-/// <summary>Creates explicit 2D requests while keeping camera ownership in the Plugin.</summary>
+/// <summary>
+/// Creates explicit 2D requests while keeping camera ownership in the Plugin.
+/// </summary>
 public static class Rendering2DRenderer
 {
     private static readonly ConditionalWeakTable<Camera2D, ViewportFrameCache> S_VIEWPORT_FRAMES = new();
@@ -244,8 +279,12 @@ public static class Rendering2DRenderer
         }
     }
 
-    /// <summary>Resolves the explicitly configured Pipeline shared by Scene, Game and Player.</summary>
-    /// <returns>The canonical Pipeline asset owned by the current settings context.</returns>
+    /// <summary>
+    /// Resolves the explicitly configured Pipeline shared by Scene, Game and Player.
+    /// </summary>
+    /// <returns>
+    /// The canonical Pipeline asset owned by the current settings context.
+    /// </returns>
     public static RenderPipelineAsset ResolvePipeline()
     {
         RenderPipelineAsset? pipeline = projectSettings.pipeline;
@@ -297,35 +336,61 @@ public static class Rendering2DRenderer
         internal Rendering2DPipelineSettings? value;
     }
 
-    /// <summary>Builds immutable frame data for one 2D camera and destination size.</summary>
-    /// <param name="scope">Explicit ordered scenes visible to this operation.</param>
-    /// <param name="camera">Camera whose scoped view should be collected.</param>
-    /// <param name="pixelWidth">Positive target width.</param>
-    /// <param name="pixelHeight">Positive target height.</param>
-    /// <param name="options">Optional viewport-only presentation helpers.</param>
-    /// <returns>Frame-only data accepted by the 2D pipeline.</returns>
+    /// <summary>
+    /// Builds immutable frame data for one 2D camera and destination size.
+    /// </summary>
+    /// <param name="scope">
+    /// Explicit ordered scenes visible to this operation.
+    /// </param>
+    /// <param name="camera">
+    /// Camera whose scoped view should be collected.
+    /// </param>
+    /// <param name="pixelWidth">
+    /// Positive target width.
+    /// </param>
+    /// <param name="pixelHeight">
+    /// Positive target height.
+    /// </param>
+    /// <param name="options">
+    /// Optional viewport-only presentation helpers.
+    /// </param>
+    /// <returns>
+    /// Frame-only data accepted by the 2D pipeline.
+    /// </returns>
     public static RenderFrameData CreateFrameData(
         Rendering2DSceneScope scope,
         Camera2D camera,
         int pixelWidth,
         int pixelHeight,
-        Rendering2DViewportOptions? options = null)
-    {
+        Rendering2DViewportOptions? options = null
+    ) {
         return CreateViewportFrame(scope, camera, pixelWidth, pixelHeight, options).data;
     }
 
-    /// <summary>Builds one composited Base/Overlay frame sequence for an explicit scene scope.</summary>
-    /// <param name="scope">Explicit ordered scenes visible to this operation.</param>
-    /// <param name="pixelWidth">Positive target width.</param>
-    /// <param name="pixelHeight">Positive target height.</param>
-    /// <param name="options">Optional viewport-only presentation helpers.</param>
-    /// <returns>A frame wrapper containing the deterministic selected camera stack.</returns>
+    /// <summary>
+    /// Builds one composited Base/Overlay frame sequence for an explicit scene scope.
+    /// </summary>
+    /// <param name="scope">
+    /// Explicit ordered scenes visible to this operation.
+    /// </param>
+    /// <param name="pixelWidth">
+    /// Positive target width.
+    /// </param>
+    /// <param name="pixelHeight">
+    /// Positive target height.
+    /// </param>
+    /// <param name="options">
+    /// Optional viewport-only presentation helpers.
+    /// </param>
+    /// <returns>
+    /// A frame wrapper containing the deterministic selected camera stack.
+    /// </returns>
     public static Rendering2DViewportFrame CreateCameraStackFrame(
         Rendering2DSceneScope scope,
         int pixelWidth,
         int pixelHeight,
-        Rendering2DViewportOptions? options = null)
-    {
+        Rendering2DViewportOptions? options = null
+    ) {
         ArgumentNullException.ThrowIfNull(scope);
         scope.Refresh();
         bool backbufferOnly = options?.backbufferOnly ?? false;
@@ -410,20 +475,34 @@ public static class Rendering2DRenderer
         return result;
     }
 
-    /// <summary>Collects one immutable 2D viewport frame for rendering and CPU picking.</summary>
-    /// <param name="scope">Explicit ordered scenes visible to this operation.</param>
-    /// <param name="camera">Camera whose scoped view should be collected.</param>
-    /// <param name="pixelWidth">Positive target width.</param>
-    /// <param name="pixelHeight">Positive target height.</param>
-    /// <param name="options">Optional viewport-only presentation helpers.</param>
-    /// <returns>A frame wrapper whose data can be submitted and whose pick method uses the same snapshot.</returns>
+    /// <summary>
+    /// Collects one immutable 2D viewport frame for rendering and CPU picking.
+    /// </summary>
+    /// <param name="scope">
+    /// Explicit ordered scenes visible to this operation.
+    /// </param>
+    /// <param name="camera">
+    /// Camera whose scoped view should be collected.
+    /// </param>
+    /// <param name="pixelWidth">
+    /// Positive target width.
+    /// </param>
+    /// <param name="pixelHeight">
+    /// Positive target height.
+    /// </param>
+    /// <param name="options">
+    /// Optional viewport-only presentation helpers.
+    /// </param>
+    /// <returns>
+    /// A frame wrapper whose data can be submitted and whose pick method uses the same snapshot.
+    /// </returns>
     public static Rendering2DViewportFrame CreateViewportFrame(
         Rendering2DSceneScope scope,
         Camera2D camera,
         int pixelWidth,
         int pixelHeight,
-        Rendering2DViewportOptions? options = null)
-    {
+        Rendering2DViewportOptions? options = null
+    ) {
         ArgumentNullException.ThrowIfNull(scope);
         ArgumentNullException.ThrowIfNull(camera);
         scope.Refresh();
@@ -448,9 +527,10 @@ public static class Rendering2DRenderer
         }
     }
 
-    private static void RouteInput(IReadOnlyList<Rendering2DFrame> frames,
-        Rendering2DViewportOptions? options)
-    {
+    private static void RouteInput(
+        IReadOnlyList<Rendering2DFrame> frames,
+        Rendering2DViewportOptions? options
+    ) {
         var ordered = new List<(IViewPointerTarget? pointer,
             IReadOnlyList<Rendering2DQuad>? occluders, RenderView view)>();
         for (int frameIndex = frames.Count - 1; frameIndex >= 0; frameIndex--)
@@ -537,9 +617,11 @@ public static class Rendering2DRenderer
         }
     }
 
-    private static bool SpriteCoversPointer(Rendering2DQuad quad, RenderView view,
-        RenderOutputInput input)
-    {
+    private static bool SpriteCoversPointer(
+        Rendering2DQuad quad,
+        RenderView view,
+        RenderOutputInput input
+    ) {
         Matrix worldToClip = view.projectionMatrix * view.viewMatrix;
         if (!TryProject(quad.bottomLeft, out Vector2 a)
             || !TryProject(quad.bottomRight, out Vector2 b)
@@ -549,8 +631,10 @@ public static class Rendering2DRenderer
         Vector2 point = input.pointerPosition;
         return InTriangle(a, b, c, point) || InTriangle(a, c, d, point);
 
-        bool TryProject(Rendering2DVertex vertex, out Vector2 projected)
-        {
+        bool TryProject(
+            Rendering2DVertex vertex,
+            out Vector2 projected
+        ) {
             Vector4 clip = Vector4.Transform(new Vector4(vertex.x, vertex.y, vertex.z, 1f), worldToClip);
             if (clip.w <= 0.000001f)
             {
@@ -563,8 +647,12 @@ public static class Rendering2DRenderer
             return true;
         }
 
-        static bool InTriangle(Vector2 a, Vector2 b, Vector2 c, Vector2 point)
-        {
+        static bool InTriangle(
+            Vector2 a,
+            Vector2 b,
+            Vector2 c,
+            Vector2 point
+        ) {
             float ab = Cross(a, b, point);
             float bc = Cross(b, c, point);
             float ca = Cross(c, a, point);
@@ -572,19 +660,40 @@ public static class Rendering2DRenderer
                 || (ab <= 0f && bc <= 0f && ca <= 0f);
         }
 
-        static float Cross(Vector2 a, Vector2 b, Vector2 point)
-            => (b.x - a.x) * (point.y - a.y) - (b.y - a.y) * (point.x - a.x);
+        static float Cross(
+            Vector2 a,
+            Vector2 b,
+            Vector2 point
+        ) => (b.x - a.x) * (point.y - a.y) - (b.y - a.y) * (point.x - a.x);
     }
 
-    /// <summary>Creates one explicit backbuffer or offscreen 2D request.</summary>
-    /// <param name="scope">Explicit ordered scenes visible to this operation.</param>
-    /// <param name="camera">Camera whose scoped view should be collected.</param>
-    /// <param name="target">Backbuffer or offscreen destination.</param>
-    /// <param name="viewport">Positive destination viewport.</param>
-    /// <param name="options">Optional composition and presentation overrides.</param>
-    /// <param name="name">Optional diagnostic name.</param>
-    /// <param name="priority">Optional scheduling priority; camera priority is used when omitted.</param>
-    /// <returns>An immutable request selecting the 2D pipeline.</returns>
+    /// <summary>
+    /// Creates one explicit backbuffer or offscreen 2D request.
+    /// </summary>
+    /// <param name="scope">
+    /// Explicit ordered scenes visible to this operation.
+    /// </param>
+    /// <param name="camera">
+    /// Camera whose scoped view should be collected.
+    /// </param>
+    /// <param name="target">
+    /// Backbuffer or offscreen destination.
+    /// </param>
+    /// <param name="viewport">
+    /// Positive destination viewport.
+    /// </param>
+    /// <param name="options">
+    /// Optional composition and presentation overrides.
+    /// </param>
+    /// <param name="name">
+    /// Optional diagnostic name.
+    /// </param>
+    /// <param name="priority">
+    /// Optional scheduling priority; camera priority is used when omitted.
+    /// </param>
+    /// <returns>
+    /// An immutable request selecting the 2D pipeline.
+    /// </returns>
     public static RenderRequest CreateRequest(
         Rendering2DSceneScope scope,
         Camera2D camera,
@@ -592,8 +701,8 @@ public static class Rendering2DRenderer
         RenderViewport viewport,
         Rendering2DViewportOptions? options = null,
         string? name = null,
-        int? priority = null)
-    {
+        int? priority = null
+    ) {
         ArgumentNullException.ThrowIfNull(scope);
         ArgumentNullException.ThrowIfNull(camera);
         return new RenderRequest(
@@ -605,22 +714,38 @@ public static class Rendering2DRenderer
             priority ?? Rendering2DIds.presentationOrder + camera.priority);
     }
 
-    /// <summary>Creates one request that composites the selected Base/Overlay camera stack.</summary>
-    /// <param name="scope">Explicit ordered scenes visible to this operation.</param>
-    /// <param name="target">Backbuffer or offscreen destination.</param>
-    /// <param name="viewport">Positive destination viewport.</param>
-    /// <param name="options">Optional composition and presentation overrides.</param>
-    /// <param name="name">Optional diagnostic name.</param>
-    /// <param name="priority">Ascending scheduling priority.</param>
-    /// <returns>An immutable request containing the complete selected camera stack.</returns>
+    /// <summary>
+    /// Creates one request that composites the selected Base/Overlay camera stack.
+    /// </summary>
+    /// <param name="scope">
+    /// Explicit ordered scenes visible to this operation.
+    /// </param>
+    /// <param name="target">
+    /// Backbuffer or offscreen destination.
+    /// </param>
+    /// <param name="viewport">
+    /// Positive destination viewport.
+    /// </param>
+    /// <param name="options">
+    /// Optional composition and presentation overrides.
+    /// </param>
+    /// <param name="name">
+    /// Optional diagnostic name.
+    /// </param>
+    /// <param name="priority">
+    /// Ascending scheduling priority.
+    /// </param>
+    /// <returns>
+    /// An immutable request containing the complete selected camera stack.
+    /// </returns>
     public static RenderRequest CreateCameraStackRequest(
         Rendering2DSceneScope scope,
         RenderTarget target,
         RenderViewport viewport,
         Rendering2DViewportOptions? options = null,
         string? name = null,
-        int priority = Rendering2DIds.presentationOrder)
-    {
+        int priority = Rendering2DIds.presentationOrder
+    ) {
         Rendering2DViewportFrame frame = CreateCameraStackFrame(
             scope,
             viewport.width,
@@ -635,16 +760,26 @@ public static class Rendering2DRenderer
             priority);
     }
 
-    /// <summary>Tries to select one deterministic base camera from an explicit scene scope.</summary>
-    /// <param name="scope">Explicit ordered scenes to inspect.</param>
-    /// <param name="camera">Receives the preferred camera.</param>
-    /// <param name="diagnostics">Receives ambiguity and invalid-stack diagnostics.</param>
-    /// <returns><see langword="true"/> when at least one enabled camera exists.</returns>
+    /// <summary>
+    /// Tries to select one deterministic base camera from an explicit scene scope.
+    /// </summary>
+    /// <param name="scope">
+    /// Explicit ordered scenes to inspect.
+    /// </param>
+    /// <param name="camera">
+    /// Receives the preferred camera.
+    /// </param>
+    /// <param name="diagnostics">
+    /// Receives ambiguity and invalid-stack diagnostics.
+    /// </param>
+    /// <returns>
+    /// <see langword="true"/> when at least one enabled camera exists.
+    /// </returns>
     public static bool TryFindPrimaryCamera(
         Rendering2DSceneScope scope,
         out Camera2D? camera,
-        out IReadOnlyList<string> diagnostics)
-    {
+        out IReadOnlyList<string> diagnostics
+    ) {
         ArgumentNullException.ThrowIfNull(scope);
         scope.Refresh();
         CameraPlan plan = BuildCameraPlan(scope, backbufferOnly: false);
@@ -666,8 +801,10 @@ public static class Rendering2DRenderer
         }
     }
 
-    internal static CameraPlan BuildCameraPlan(Rendering2DSceneScope scope, bool backbufferOnly)
-    {
+    internal static CameraPlan BuildCameraPlan(
+        Rendering2DSceneScope scope,
+        bool backbufferOnly
+    ) {
         Rendering2DFrameFingerprint fingerprint = ComputeCameraPlanFingerprint(scope, backbufferOnly);
         CameraPlan? cacheHit = null;
         lock (scope.cacheGate)
@@ -739,8 +876,8 @@ public static class Rendering2DRenderer
 
     private static Rendering2DFrameFingerprint ComputeCameraPlanFingerprint(
         Rendering2DSceneScope scope,
-        bool backbufferOnly)
-    {
+        bool backbufferOnly
+    ) {
         var hash = new Rendering2DFingerprintBuilder();
         hash.Add(backbufferOnly);
         hash.Add(scope.entries.Count);
@@ -767,8 +904,8 @@ public static class Rendering2DRenderer
     private static CameraPlan CacheCameraPlan(
         Rendering2DSceneScope scope,
         bool backbufferOnly,
-        CameraPlan plan)
-    {
+        CameraPlan plan
+    ) {
         lock (scope.cacheGate)
         {
             if (backbufferOnly)
@@ -787,8 +924,8 @@ public static class Rendering2DRenderer
 
     private static string[] CombineDiagnostics(
         IReadOnlyList<string> primary,
-        IReadOnlyList<string>? secondary)
-    {
+        IReadOnlyList<string>? secondary
+    ) {
         int secondaryCount = secondary?.Count ?? 0;
         if (primary.Count == 0 && secondaryCount == 0)
             return [];
@@ -800,16 +937,18 @@ public static class Rendering2DRenderer
         return result;
     }
 
-    private static string NormalizeStackId(string? value)
-        => string.IsNullOrWhiteSpace(value) ? "default" : value.Trim();
+    private static string NormalizeStackId(string? value) => string.IsNullOrWhiteSpace(value) ? "default" : value.Trim();
 
     internal sealed record CameraPlan(
         Camera2D[] cameras,
         string[] diagnostics,
-        Rendering2DFrameFingerprint fingerprint);
+        Rendering2DFrameFingerprint fingerprint
+    );
 
-    internal static bool HasEnabledBaseCamera(Rendering2DSceneScope scope, bool backbufferOnly)
-    {
+    internal static bool HasEnabledBaseCamera(
+        Rendering2DSceneScope scope,
+        bool backbufferOnly
+    ) {
         for (int entryIndex = 0; entryIndex < scope.entries.Count; entryIndex++)
         {
             Camera2D[] cameras = scope.entries[entryIndex].snapshot.cameras;
@@ -860,28 +999,46 @@ public sealed class Rendering2DViewportFrame
         statistics = CalculateStatistics(frames);
     }
 
-    /// <summary>Gets frame-only data accepted by the 2D pipeline.</summary>
+    /// <summary>
+    /// Gets frame-only data accepted by the 2D pipeline.
+    /// </summary>
     public RenderFrameData data { get; }
 
-    /// <summary>Gets allocation-free aggregate counts for diagnostics and external validation.</summary>
+    /// <summary>
+    /// Gets allocation-free aggregate counts for diagnostics and external validation.
+    /// </summary>
     public Rendering2DFrameStatistics statistics { get; }
 
     internal IReadOnlyList<string> diagnostics => m_frame.diagnostics;
 
     internal int primaryCameraPriority => m_frame.camera.priority;
 
-    /// <summary>Gets the exact world-to-view matrix used by this immutable viewport snapshot.</summary>
+    /// <summary>
+    /// Gets the exact world-to-view matrix used by this immutable viewport snapshot.
+    /// </summary>
     public Matrix viewMatrix => m_frame.viewTransform;
 
-    /// <summary>Gets the exact view-to-clip matrix used by this immutable viewport snapshot.</summary>
+    /// <summary>
+    /// Gets the exact view-to-clip matrix used by this immutable viewport snapshot.
+    /// </summary>
     public Matrix projectionMatrix => m_frame.projectionTransform;
 
-    /// <summary>Finds the frontmost visible object at normalized viewport coordinates.</summary>
-    /// <param name="normalizedX">Horizontal coordinate from zero at the left to one at the right.</param>
-    /// <param name="normalizedY">Vertical coordinate from zero at the top to one at the bottom.</param>
-    /// <returns>The frontmost visible object, or <see langword="null"/> when no object is hit.</returns>
-    public GameObject? Pick(float normalizedX, float normalizedY)
-    {
+    /// <summary>
+    /// Finds the frontmost visible object at normalized viewport coordinates.
+    /// </summary>
+    /// <param name="normalizedX">
+    /// Horizontal coordinate from zero at the left to one at the right.
+    /// </param>
+    /// <param name="normalizedY">
+    /// Vertical coordinate from zero at the top to one at the bottom.
+    /// </param>
+    /// <returns>
+    /// The frontmost visible object, or <see langword="null"/> when no object is hit.
+    /// </returns>
+    public GameObject? Pick(
+        float normalizedX,
+        float normalizedY
+    ) {
         for (int index = m_frames.Length - 1; index >= 0; index--)
         {
             GameObject? selected = m_frames[index].Pick(normalizedX, normalizedY);
@@ -943,8 +1100,8 @@ public readonly struct Rendering2DFrameStatistics
         int lightCount,
         int shadowCasterCount,
         int bloomLevels,
-        float bloomIntensity)
-    {
+        float bloomIntensity
+    ) {
         this.cameraCount = cameraCount;
         this.batchCount = batchCount;
         this.instanceCount = instanceCount;
@@ -955,28 +1112,44 @@ public readonly struct Rendering2DFrameStatistics
         this.bloomIntensity = bloomIntensity;
     }
 
-    /// <summary>Gets the number of composited cameras.</summary>
+    /// <summary>
+    /// Gets the number of composited cameras.
+    /// </summary>
     public int cameraCount { get; }
 
-    /// <summary>Gets the number of adjacent-state draw batches.</summary>
+    /// <summary>
+    /// Gets the number of adjacent-state draw batches.
+    /// </summary>
     public int batchCount { get; }
 
-    /// <summary>Gets the total number of submitted 2D instances.</summary>
+    /// <summary>
+    /// Gets the total number of submitted 2D instances.
+    /// </summary>
     public int instanceCount { get; }
 
-    /// <summary>Gets the number of instances that consume at least one 2D light blend style.</summary>
+    /// <summary>
+    /// Gets the number of instances that consume at least one 2D light blend style.
+    /// </summary>
     public int litInstanceCount { get; }
 
-    /// <summary>Gets the number of visible 2D lights.</summary>
+    /// <summary>
+    /// Gets the number of visible 2D lights.
+    /// </summary>
     public int lightCount { get; }
 
-    /// <summary>Gets the number of visible 2D shadow casters.</summary>
+    /// <summary>
+    /// Gets the number of visible 2D shadow casters.
+    /// </summary>
     public int shadowCasterCount { get; }
 
-    /// <summary>Gets the greatest configured Bloom pyramid depth.</summary>
+    /// <summary>
+    /// Gets the greatest configured Bloom pyramid depth.
+    /// </summary>
     public int bloomLevels { get; }
 
-    /// <summary>Gets the greatest configured Bloom intensity.</summary>
+    /// <summary>
+    /// Gets the greatest configured Bloom intensity.
+    /// </summary>
     public float bloomIntensity { get; }
 }
 

@@ -9,72 +9,122 @@ using InnoEngine.Mathematics;
 
 namespace Inno.Rendering2D;
 
-/// <summary>Identifies one integer tilemap coordinate.</summary>
-public readonly record struct TilemapPosition2D(int x, int y);
+/// <summary>
+/// Identifies one integer tilemap coordinate.
+/// </summary>
+public readonly record struct TilemapPosition2D(
+    int x,
+    int y
+);
 
-/// <summary>Defines an inclusive finite rectangle used by tilemap authoring operations.</summary>
+/// <summary>
+/// Defines an inclusive finite rectangle used by tilemap authoring operations.
+/// </summary>
 public readonly record struct TilemapSelection2D
 {
-    /// <summary>Creates a normalized inclusive selection rectangle.</summary>
-    public TilemapSelection2D(int firstX, int firstY, int secondX, int secondY)
-    {
+    /// <summary>
+    /// Creates a normalized inclusive selection rectangle.
+    /// </summary>
+    public TilemapSelection2D(
+        int firstX,
+        int firstY,
+        int secondX,
+        int secondY
+    ) {
         minimumX = Math.Min(firstX, secondX);
         minimumY = Math.Min(firstY, secondY);
         maximumX = Math.Max(firstX, secondX);
         maximumY = Math.Max(firstY, secondY);
     }
 
-    /// <summary>Gets the inclusive minimum horizontal coordinate.</summary>
+    /// <summary>
+    /// Gets the inclusive minimum horizontal coordinate.
+    /// </summary>
     public int minimumX { get; }
 
-    /// <summary>Gets the inclusive minimum vertical coordinate.</summary>
+    /// <summary>
+    /// Gets the inclusive minimum vertical coordinate.
+    /// </summary>
     public int minimumY { get; }
 
-    /// <summary>Gets the inclusive maximum horizontal coordinate.</summary>
+    /// <summary>
+    /// Gets the inclusive maximum horizontal coordinate.
+    /// </summary>
     public int maximumX { get; }
 
-    /// <summary>Gets the inclusive maximum vertical coordinate.</summary>
+    /// <summary>
+    /// Gets the inclusive maximum vertical coordinate.
+    /// </summary>
     public int maximumY { get; }
 
-    /// <summary>Gets whether the selection contains a coordinate.</summary>
-    public bool Contains(int x, int y)
-        => x >= minimumX && x <= maximumX && y >= minimumY && y <= maximumY;
+    /// <summary>
+    /// Gets whether the selection contains a coordinate.
+    /// </summary>
+    public bool Contains(
+        int x,
+        int y
+    ) => x >= minimumX && x <= maximumX && y >= minimumY && y <= maximumY;
 }
 
-/// <summary>Stores one relative cell used by the reusable stamp tool.</summary>
-public readonly record struct TilemapStampCell2D(int x, int y, TilemapCell2D value);
+/// <summary>
+/// Stores one relative cell used by the reusable stamp tool.
+/// </summary>
+public readonly record struct TilemapStampCell2D(
+    int x,
+    int y,
+    TilemapCell2D value
+);
 
-/// <summary>Stores optional occupancy without reserving a tile identifier as an empty sentinel.</summary>
-public readonly record struct TilemapCellSnapshot2D(bool hasValue, TilemapCell2D value);
+/// <summary>
+/// Stores optional occupancy without reserving a tile identifier as an empty sentinel.
+/// </summary>
+public readonly record struct TilemapCellSnapshot2D(
+    bool hasValue,
+    TilemapCell2D value
+);
 
-/// <summary>Stores the before and after value for exactly one affected tilemap cell.</summary>
+/// <summary>
+/// Stores the before and after value for exactly one affected tilemap cell.
+/// </summary>
 public readonly record struct TilemapCellChange2D(
     int layerId,
     int x,
     int y,
     TilemapCellSnapshot2D before,
-    TilemapCellSnapshot2D after);
+    TilemapCellSnapshot2D after
+);
 
-/// <summary>Owns the compact, deterministic result of one complete tilemap gesture.</summary>
+/// <summary>
+/// Owns the compact, deterministic result of one complete tilemap gesture.
+/// </summary>
 public sealed class TilemapStroke2D
 {
-    internal TilemapStroke2D(TilemapCellChange2D[] changes)
-        => this.changes = changes;
+    internal TilemapStroke2D(TilemapCellChange2D[] changes) => this.changes = changes;
 
-    /// <summary>Gets affected cells in stable layer, Y, X order.</summary>
+    /// <summary>
+    /// Gets affected cells in stable layer, Y, X order.
+    /// </summary>
     public IReadOnlyList<TilemapCellChange2D> changes { get; }
 
-    /// <summary>Gets whether the gesture changed at least one cell.</summary>
+    /// <summary>
+    /// Gets whether the gesture changed at least one cell.
+    /// </summary>
     public bool hasChanges => changes.Count != 0;
 
-    /// <summary>Restores every affected cell to its value before the gesture.</summary>
+    /// <summary>
+    /// Restores every affected cell to its value before the gesture.
+    /// </summary>
     public void Undo(Tilemap2DAsset tilemap) => Apply(tilemap, useAfter: false);
 
-    /// <summary>Reapplies every affected cell's value after the gesture.</summary>
+    /// <summary>
+    /// Reapplies every affected cell's value after the gesture.
+    /// </summary>
     public void Redo(Tilemap2DAsset tilemap) => Apply(tilemap, useAfter: true);
 
-    private void Apply(Tilemap2DAsset tilemap, bool useAfter)
-    {
+    private void Apply(
+        Tilemap2DAsset tilemap,
+        bool useAfter
+    ) {
         ArgumentNullException.ThrowIfNull(tilemap);
         var writes = new TilemapCellWrite2D[changes.Count];
         for (int index = 0; index < changes.Count; index++)
@@ -88,32 +138,42 @@ public sealed class TilemapStroke2D
         _ = tilemap.ApplyCells(writes);
     }
 
-    internal static TilemapCell2D WithPosition(TilemapCell2D value, int x, int y)
-    {
+    internal static TilemapCell2D WithPosition(
+        TilemapCell2D value,
+        int x,
+        int y
+    ) {
         value.x = x;
         value.y = y;
         return value;
     }
 }
 
-/// <summary>Provides deterministic Tile Palette operations that emit one compact change set per gesture.</summary>
+/// <summary>
+/// Provides deterministic Tile Palette operations that emit one compact change set per gesture.
+/// </summary>
 public static class TilemapEditing2D
 {
-    /// <summary>Paints one cell.</summary>
+    /// <summary>
+    /// Paints one cell.
+    /// </summary>
     public static TilemapStroke2D Brush(
         Tilemap2DAsset tilemap,
         int layerId,
         TilemapPosition2D position,
-        TilemapCell2D value)
+        TilemapCell2D value
+    )
         => PaintStroke(tilemap, layerId, [position], value);
 
-    /// <summary>Paints a freehand sequence, coalescing repeated coordinates into one change.</summary>
+    /// <summary>
+    /// Paints a freehand sequence, coalescing repeated coordinates into one change.
+    /// </summary>
     public static TilemapStroke2D PaintStroke(
         Tilemap2DAsset tilemap,
         int layerId,
         IEnumerable<TilemapPosition2D> positions,
-        TilemapCell2D value)
-    {
+        TilemapCell2D value
+    ) {
         ArgumentNullException.ThrowIfNull(positions);
         var builder = new StrokeBuilder(tilemap);
         foreach (TilemapPosition2D position in positions)
@@ -121,12 +181,14 @@ public static class TilemapEditing2D
         return builder.Commit();
     }
 
-    /// <summary>Erases one freehand sequence, coalescing repeated coordinates.</summary>
+    /// <summary>
+    /// Erases one freehand sequence, coalescing repeated coordinates.
+    /// </summary>
     public static TilemapStroke2D Erase(
         Tilemap2DAsset tilemap,
         int layerId,
-        IEnumerable<TilemapPosition2D> positions)
-    {
+        IEnumerable<TilemapPosition2D> positions
+    ) {
         ArgumentNullException.ThrowIfNull(positions);
         var builder = new StrokeBuilder(tilemap);
         foreach (TilemapPosition2D position in positions)
@@ -134,13 +196,15 @@ public static class TilemapEditing2D
         return builder.Commit();
     }
 
-    /// <summary>Paints every cell inside an inclusive box.</summary>
+    /// <summary>
+    /// Paints every cell inside an inclusive box.
+    /// </summary>
     public static TilemapStroke2D Box(
         Tilemap2DAsset tilemap,
         int layerId,
         TilemapSelection2D bounds,
-        TilemapCell2D value)
-    {
+        TilemapCell2D value
+    ) {
         var builder = new StrokeBuilder(tilemap);
         for (int y = bounds.minimumY; y <= bounds.maximumY; y++)
         {
@@ -150,14 +214,16 @@ public static class TilemapEditing2D
         return builder.Commit();
     }
 
-    /// <summary>Flood-fills an exact connected value within finite inclusive bounds.</summary>
+    /// <summary>
+    /// Flood-fills an exact connected value within finite inclusive bounds.
+    /// </summary>
     public static TilemapStroke2D Fill(
         Tilemap2DAsset tilemap,
         int layerId,
         TilemapPosition2D origin,
         TilemapSelection2D bounds,
-        TilemapCell2D value)
-    {
+        TilemapCell2D value
+    ) {
         ArgumentNullException.ThrowIfNull(tilemap);
         if (!bounds.Contains(origin.x, origin.y))
             throw new ArgumentOutOfRangeException(nameof(origin), "Fill origin must be inside its finite bounds.");
@@ -188,12 +254,14 @@ public static class TilemapEditing2D
         return builder.Commit();
     }
 
-    /// <summary>Returns occupied cells inside an inclusive selection in stable Y then X order.</summary>
+    /// <summary>
+    /// Returns occupied cells inside an inclusive selection in stable Y then X order.
+    /// </summary>
     public static IReadOnlyList<TilemapCell2D> Select(
         Tilemap2DAsset tilemap,
         int layerId,
-        TilemapSelection2D bounds)
-    {
+        TilemapSelection2D bounds
+    ) {
         ArgumentNullException.ThrowIfNull(tilemap);
         return tilemap.chunks
             .Where(chunk => chunk.layerId == layerId)
@@ -204,14 +272,16 @@ public static class TilemapEditing2D
             .ToArray();
     }
 
-    /// <summary>Moves occupied cells in a selection by an integer offset as one overlap-safe gesture.</summary>
+    /// <summary>
+    /// Moves occupied cells in a selection by an integer offset as one overlap-safe gesture.
+    /// </summary>
     public static TilemapStroke2D Move(
         Tilemap2DAsset tilemap,
         int layerId,
         TilemapSelection2D selection,
         int offsetX,
-        int offsetY)
-    {
+        int offsetY
+    ) {
         IReadOnlyList<TilemapCell2D> selected = Select(tilemap, layerId, selection);
         var builder = new StrokeBuilder(tilemap);
         for (int index = 0; index < selected.Count; index++)
@@ -224,13 +294,15 @@ public static class TilemapEditing2D
         return builder.Commit();
     }
 
-    /// <summary>Places a reusable sparse stamp at an integer origin.</summary>
+    /// <summary>
+    /// Places a reusable sparse stamp at an integer origin.
+    /// </summary>
     public static TilemapStroke2D Stamp(
         Tilemap2DAsset tilemap,
         int layerId,
         TilemapPosition2D origin,
-        IEnumerable<TilemapStampCell2D> cells)
-    {
+        IEnumerable<TilemapStampCell2D> cells
+    ) {
         ArgumentNullException.ThrowIfNull(cells);
         var builder = new StrokeBuilder(tilemap);
         foreach (TilemapStampCell2D cell in cells)
@@ -244,7 +316,10 @@ public static class TilemapEditing2D
         return builder.Commit();
     }
 
-    private static bool Equivalent(TilemapCellSnapshot2D left, TilemapCellSnapshot2D right)
+    private static bool Equivalent(
+        TilemapCellSnapshot2D left,
+        TilemapCellSnapshot2D right
+    )
         => left.hasValue == right.hasValue
            && (!left.hasValue || EqualityComparer<TilemapCell2D>.Default.Equals(left.value, right.value));
 
@@ -253,11 +328,13 @@ public static class TilemapEditing2D
         private readonly Tilemap2DAsset m_tilemap;
         private readonly Dictionary<CellKey, MutableChange> m_changes = [];
 
-        internal StrokeBuilder(Tilemap2DAsset tilemap)
-            => m_tilemap = tilemap ?? throw new ArgumentNullException(nameof(tilemap));
+        internal StrokeBuilder(Tilemap2DAsset tilemap) => m_tilemap = tilemap ?? throw new ArgumentNullException(nameof(tilemap));
 
-        internal TilemapCellSnapshot2D Read(int layerId, int x, int y)
-        {
+        internal TilemapCellSnapshot2D Read(
+            int layerId,
+            int x,
+            int y
+        ) {
             var key = new CellKey(layerId, x, y);
             if (m_changes.TryGetValue(key, out MutableChange? change))
                 return change.after;
@@ -266,8 +343,12 @@ public static class TilemapEditing2D
                 : default;
         }
 
-        internal void Set(int layerId, int x, int y, TilemapCellSnapshot2D after)
-        {
+        internal void Set(
+            int layerId,
+            int x,
+            int y,
+            TilemapCellSnapshot2D after
+        ) {
             var key = new CellKey(layerId, x, y);
             if (!m_changes.TryGetValue(key, out MutableChange? change))
             {
@@ -313,29 +394,41 @@ public static class TilemapEditing2D
         }
     }
 
-    private sealed class MutableChange(TilemapCellSnapshot2D before, TilemapCellSnapshot2D after)
-    {
+    private sealed class MutableChange(
+        TilemapCellSnapshot2D before,
+        TilemapCellSnapshot2D after
+    ) {
         internal TilemapCellSnapshot2D before { get; } = before;
         internal TilemapCellSnapshot2D after { get; set; } = after;
     }
 
-    private readonly record struct CellKey(int layerId, int x, int y);
+    private readonly record struct CellKey(
+        int layerId,
+        int x,
+        int y
+    );
 }
 
-/// <summary>Encodes and records reload-safe tilemap gestures in the shared Editor history.</summary>
+/// <summary>
+/// Encodes and records reload-safe tilemap gestures in the shared Editor history.
+/// </summary>
 public static class TilemapHistory2D
 {
-    /// <summary>Gets the stable history protocol handled by the 2D Plugin.</summary>
+    /// <summary>
+    /// Gets the stable history protocol handled by the 2D Plugin.
+    /// </summary>
     public const string kind = "inno.rendering2d.tilemap-stroke.v1";
 
-    /// <summary>Records an already applied gesture as exactly one Editor history transaction.</summary>
+    /// <summary>
+    /// Records an already applied gesture as exactly one Editor history transaction.
+    /// </summary>
     public static void RecordApplied(
         IEditorHistory history,
         string name,
         AssetPath path,
         Tilemap2DAsset tilemap,
-        TilemapStroke2D stroke)
-    {
+        TilemapStroke2D stroke
+    ) {
         ArgumentNullException.ThrowIfNull(history);
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
         ArgumentNullException.ThrowIfNull(tilemap);
@@ -351,8 +444,11 @@ public static class TilemapHistory2D
         transaction.Commit();
     }
 
-    internal static byte[] Encode(AssetPath path, Guid assetId, TilemapStroke2D stroke)
-    {
+    internal static byte[] Encode(
+        AssetPath path,
+        Guid assetId,
+        TilemapStroke2D stroke
+    ) {
         using var stream = new MemoryStream();
         using var writer = new BinaryWriter(stream);
         writer.Write(1);
@@ -401,8 +497,10 @@ public static class TilemapHistory2D
         return (assetId, path, new TilemapStroke2D(changes));
     }
 
-    private static void WriteSnapshot(BinaryWriter writer, TilemapCellSnapshot2D snapshot)
-    {
+    private static void WriteSnapshot(
+        BinaryWriter writer,
+        TilemapCellSnapshot2D snapshot
+    ) {
         writer.Write(snapshot.hasValue);
         if (!snapshot.hasValue)
             return;
@@ -417,8 +515,11 @@ public static class TilemapHistory2D
         writer.Write(cell.quarterTurns);
     }
 
-    private static TilemapCellSnapshot2D ReadSnapshot(BinaryReader reader, int x, int y)
-    {
+    private static TilemapCellSnapshot2D ReadSnapshot(
+        BinaryReader reader,
+        int x,
+        int y
+    ) {
         if (!reader.ReadBoolean())
             return default;
         return new TilemapCellSnapshot2D(true, new TilemapCell2D
@@ -434,7 +535,9 @@ public static class TilemapHistory2D
     }
 }
 
-/// <summary>Applies the current generation of the compact tilemap stroke protocol.</summary>
+/// <summary>
+/// Applies the current generation of the compact tilemap stroke protocol.
+/// </summary>
 [EditorHistoryHandler(TilemapHistory2D.kind)]
 public sealed class TilemapHistoryHandler2D : EditorHistoryHandler
 {
@@ -442,8 +545,8 @@ public sealed class TilemapHistoryHandler2D : EditorHistoryHandler
     protected override EditorHistoryAvailability Query(
         EditorHistoryContext context,
         EditorHistoryChange change,
-        EditorHistoryDirection direction)
-    {
+        EditorHistoryDirection direction
+    ) {
         ArgumentNullException.ThrowIfNull(context);
         try
         {
@@ -462,8 +565,8 @@ public sealed class TilemapHistoryHandler2D : EditorHistoryHandler
     protected override EditorHistoryResult Apply(
         EditorHistoryContext context,
         EditorHistoryChange change,
-        EditorHistoryDirection direction)
-    {
+        EditorHistoryDirection direction
+    ) {
         ArgumentNullException.ThrowIfNull(context);
         try
         {
@@ -490,8 +593,11 @@ public sealed class TilemapHistoryHandler2D : EditorHistoryHandler
         }
     }
 
-    private static bool TryLoad(Guid assetId, string path, out Tilemap2DAsset? tilemap)
-    {
+    private static bool TryLoad(
+        Guid assetId,
+        string path,
+        out Tilemap2DAsset? tilemap
+    ) {
         if (assetId != Guid.Empty
             && Assets.TryLoad(assetId, out Tilemap2DAsset? identified)
             && identified is not null)

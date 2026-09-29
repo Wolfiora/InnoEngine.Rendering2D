@@ -8,7 +8,9 @@ using InnoEditor.Annotations;
 
 namespace Inno.Rendering2D;
 
-/// <summary>Simulates a deterministic reusable 2D particle effect through the scene lifecycle.</summary>
+/// <summary>
+/// Simulates a deterministic reusable 2D particle effect through the scene lifecycle.
+/// </summary>
 [StableTypeId("db4c2130-c022-412a-a326-9e63cdf9297b")]
 public sealed class ParticleSystem2D : GameBehavior
 {
@@ -21,7 +23,9 @@ public sealed class ParticleSystem2D : GameBehavior
     private bool m_playing;
     private uint m_seed = 1;
 
-    /// <summary>Gets or sets the reusable effect definition.</summary>
+    /// <summary>
+    /// Gets or sets the reusable effect definition.
+    /// </summary>
     [SerializableProperty]
     [Header("Effect", "Simulation settings live in the reusable effect asset.")]
     [HelpBox(
@@ -30,12 +34,16 @@ public sealed class ParticleSystem2D : GameBehavior
         InspectorCondition.Null)]
     public ParticleEffect2DAsset? effect { get; set; }
 
-    /// <summary>Gets or sets whether emission starts with the behavior.</summary>
+    /// <summary>
+    /// Gets or sets whether emission starts with the behavior.
+    /// </summary>
     [SerializableProperty]
     [Header("Playback", "The seed makes CPU simulation deterministic across supported backends.")]
     public bool playOnStart { get; set; } = true;
 
-    /// <summary>Gets or sets the deterministic non-zero simulation seed.</summary>
+    /// <summary>
+    /// Gets or sets the deterministic non-zero simulation seed.
+    /// </summary>
     [SerializableProperty]
     public uint seed
     {
@@ -43,22 +51,32 @@ public sealed class ParticleSystem2D : GameBehavior
         set => m_seed = value == 0 ? 1u : value;
     }
 
-    /// <summary>Gets or sets the stable project-local sorting-layer name.</summary>
+    /// <summary>
+    /// Gets or sets the stable project-local sorting-layer name.
+    /// </summary>
     [SerializableProperty]
     [Header("Ordering", "Particles share one stable painter-order interval.")]
     public string sortingLayer { get; set; } = "default";
 
-    /// <summary>Gets or sets painter order within the selected sorting layer.</summary>
+    /// <summary>
+    /// Gets or sets painter order within the selected sorting layer.
+    /// </summary>
     [SerializableProperty]
     public int orderInLayer { get; set; }
 
-    /// <summary>Gets whether this system currently emits and simulates particles.</summary>
+    /// <summary>
+    /// Gets whether this system currently emits and simulates particles.
+    /// </summary>
     public bool isPlaying => m_playing;
 
-    /// <summary>Gets the current live particle count.</summary>
+    /// <summary>
+    /// Gets the current live particle count.
+    /// </summary>
     public int particleCount => m_count;
 
-    /// <summary>Starts emission without clearing existing live particles.</summary>
+    /// <summary>
+    /// Starts emission without clearing existing live particles.
+    /// </summary>
     public void Play()
     {
         EnsureCapacity();
@@ -68,7 +86,9 @@ public sealed class ParticleSystem2D : GameBehavior
         AdvanceSimulationRevision();
     }
 
-    /// <summary>Pauses emission and simulation while preserving live particles.</summary>
+    /// <summary>
+    /// Pauses emission and simulation while preserving live particles.
+    /// </summary>
     public void Pause()
     {
         if (!m_playing)
@@ -77,7 +97,9 @@ public sealed class ParticleSystem2D : GameBehavior
         AdvanceSimulationRevision();
     }
 
-    /// <summary>Stops emission and removes every live particle.</summary>
+    /// <summary>
+    /// Stops emission and removes every live particle.
+    /// </summary>
     public void Stop()
     {
         m_playing = false;
@@ -239,11 +261,16 @@ public sealed class ParticleSystem2D : GameBehavior
 
     private float NextFloat() => (NextUInt() >> 8) * (1f / 16777216f);
 
-    private static float Lerp(float minimum, float maximum, float amount)
-        => minimum + (maximum - minimum) * amount;
+    private static float Lerp(
+        float minimum,
+        float maximum,
+        float amount
+    ) => minimum + (maximum - minimum) * amount;
 
-    private static float HashNoise(uint seed, float time)
-    {
+    private static float HashNoise(
+        uint seed,
+        float time
+    ) {
         uint value = seed ^ (uint)MathF.Floor(time * 1024f);
         value ^= value << 13;
         value ^= value >> 17;
@@ -263,8 +290,8 @@ internal struct ParticleState2D
         float angularVelocity,
         float size,
         Color color,
-        uint noiseSeed)
-    {
+        uint noiseSeed
+    ) {
         this.position = position;
         this.velocity = velocity;
         this.age = age;

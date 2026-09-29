@@ -168,13 +168,12 @@ public sealed class Rendering2DSceneViewportContributor : EditorViewportContribu
         return camera;
     }
 
-    private Rendering2DSceneScope CreateScope(EditorViewportContext context)
-        => m_scopeCache.Get(context.content);
+    private Rendering2DSceneScope CreateScope(EditorViewportContext context) => m_scopeCache.Get(context.content);
 
     private static void InitializeNavigation(
         EditorViewportNavigationState navigation,
-        Rendering2DSceneScope scope)
-    {
+        Rendering2DSceneScope scope
+    ) {
         if (navigation.isInitialized)
             return;
         if (!Rendering2DRenderer.TryFindPrimaryCamera(
