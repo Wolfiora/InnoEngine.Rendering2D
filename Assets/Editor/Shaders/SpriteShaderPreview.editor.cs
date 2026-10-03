@@ -38,7 +38,6 @@ public sealed class SpritePreviewPipeline : RenderPipeline
     public static RenderDataChannelId channel => new(pipelineId);
 
     private static readonly RenderBindingId s_materialBinding = new("u_spriteMaterial");
-    private static readonly RenderBindingId s_lightSamplingBinding = new("u_lightSampling");
     private static readonly RenderBindingId s_spriteTextureBinding = new("s_spriteTexture");
     private static readonly RenderBindingId s_normalTextureBinding = new("s_normalTexture");
     private static readonly RenderBindingId s_emissionTextureBinding = new("s_emissionTexture");
@@ -103,7 +102,6 @@ public sealed class SpritePreviewPipeline : RenderPipeline
         commands.SetViewport(0, 0, data.viewport.width, data.viewport.height);
         data.material.Bind(commands);
         SetUniform(data.material, commands, s_materialBinding, data.parameters);
-        SetUniform(data.material, commands, s_lightSamplingBinding, data.zero);
         BindTexture(data.material, commands, s_spriteTextureBinding, data.white);
         BindTexture(data.material, commands, s_normalTextureBinding, data.normal);
         BindTexture(data.material, commands, s_emissionTextureBinding, data.black);

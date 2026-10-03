@@ -1,9 +1,26 @@
 // Composes an authored Sprite surface with Pipeline lighting and primitive coverage.
-void Evaluate(vec4 surfaceColor, vec3 surfaceNormal, vec3 surfaceEmission, vec4 v_color0, float v_shape, vec2 v_effectStep, vec2 v_texcoord0,
-    sampler2D s_lightColor0, sampler2D s_lightColor1, sampler2D s_lightColor2, sampler2D s_lightColor3, sampler2D s_lightDirection0, sampler2D s_lightDirection1, sampler2D s_lightDirection2, sampler2D s_lightDirection3,
-    vec4 u_lightSampling, vec4 u_spriteMaterial, vec4 fragmentCoordinate, vec4 viewRectangle, vec4 viewTexel,
-    out vec4 color0)
-{
+void Evaluate(
+    vec4 surfaceColor,
+    vec3 surfaceNormal,
+    vec3 surfaceEmission,
+    vec4 v_color0,
+    float v_shape,
+    vec2 v_effectStep,
+    vec2 v_texcoord0,
+    sampler2D s_lightColor0,
+    sampler2D s_lightColor1,
+    sampler2D s_lightColor2,
+    sampler2D s_lightColor3,
+    sampler2D s_lightDirection0,
+    sampler2D s_lightDirection1,
+    sampler2D s_lightDirection2,
+    sampler2D s_lightDirection3,
+    vec4 u_spriteMaterial,
+    vec4 fragmentCoordinate,
+    vec4 viewRectangle,
+    vec4 viewTexel,
+    out vec4 color0
+) {
     vec2 shapePosition = v_texcoord0 * 2.0 - 1.0;
     float shapeAlpha = 1.0;
     if (v_shape > 1.5 && v_shape < 2.5)
@@ -32,8 +49,6 @@ void Evaluate(vec4 surfaceColor, vec3 surfaceNormal, vec3 surfaceEmission, vec4 
     if (lightMask > 0.5)
     {
         vec2 lightUv = (fragmentCoordinate.xy - viewRectangle.xy) * viewTexel.xy;
-        if (u_lightSampling.x > 0.5)
-            lightUv.y = 1.0 - lightUv.y;
         vec3 lightColor = vec3(0.0, 0.0, 0.0);
         vec4 lightDirection = vec4(0.0, 0.0, 0.0, 0.0);
         if (mod(floor(lightMask), 2.0) > 0.5)

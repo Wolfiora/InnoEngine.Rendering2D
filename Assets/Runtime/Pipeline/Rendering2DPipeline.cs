@@ -640,7 +640,6 @@ public sealed class Rendering2DPipeline : RenderPipeline
         return new LightingFrameResources(
             colors,
             directions,
-            context.capabilities.originBottomLeft,
             format == RenderTextureFormat.RGBA16Float,
             supportsStencil,
             supportsMrt,
@@ -1688,11 +1687,6 @@ public sealed class Rendering2DPipeline : RenderPipeline
                 lighting.directions[slot],
                 RenderSamplerState.linearClamp);
         }
-        SetUniform(material, commands,
-            state.lightSamplingBinding,
-            lighting.flipVerticalUv
-                ? state.lightSamplingFlipped
-                : state.lightSamplingNormal);
     }
 
     private static void SetUniform(
@@ -1838,12 +1832,8 @@ public sealed class Rendering2DPipeline : RenderPipeline
                 new RenderBindingId("s_lightDirection2"),
                 new RenderBindingId("s_lightDirection3")
             ];
-            lightSamplingBinding = new RenderBindingId("u_lightSampling");
             materialEffectBinding = new RenderBindingId("u_spriteMaterial");
-            lightSamplingNormal = new byte[16];
-            lightSamplingFlipped = new byte[16];
             materialEffectNone = new byte[16];
-            WriteFloat(lightSamplingFlipped, 0, 1f);
             builtinWhiteTextureId = new RenderPersistentResourceId("inno.rendering.2d.builtin.white");
             builtinNeutralNormalTextureId = new RenderPersistentResourceId("inno.rendering.2d.builtin.neutral-normal");
             sharedQuadVertexId = new RenderPersistentResourceId("inno.rendering.2d.shared-quad.vertices");
@@ -1957,10 +1947,7 @@ public sealed class Rendering2DPipeline : RenderPipeline
         internal RenderBindingId emissionTextureBinding { get; }
         internal RenderBindingId[] lightColorBindings { get; }
         internal RenderBindingId[] lightDirectionBindings { get; }
-        internal RenderBindingId lightSamplingBinding { get; }
         internal RenderBindingId materialEffectBinding { get; }
-        internal byte[] lightSamplingNormal { get; }
-        internal byte[] lightSamplingFlipped { get; }
         internal byte[] materialEffectNone { get; }
         internal RenderPersistentResourceId builtinWhiteTextureId { get; }
         internal RenderPersistentResourceId builtinNeutralNormalTextureId { get; }
@@ -2036,7 +2023,6 @@ public sealed class Rendering2DPipeline : RenderPipeline
     private readonly record struct LightingFrameResources(
         RenderTextureHandle[] colors,
         RenderTextureHandle[] directions,
-        bool flipVerticalUv,
         bool usesHdr,
         bool supportsStencil,
         bool supportsMrt,
