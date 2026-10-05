@@ -70,8 +70,7 @@ Rendering2D 的 `.ishadersource` 使用 BGFX SC 的跨目标写法；向量常�
 On macOS arm64, build the Editor and run the project through a finite Metal smoke session with:
 
 ```bash
-DOTNET_COMMAND=/Users/aaronliao/.dotnet/dotnet \
-  ./Tools/Validate-Rendering2D.sh ../InnoEngine 600
+./Tools/Validate-Rendering2D.sh ../InnoEngine 600
 ```
 
 On a Windows x64 machine with a physical GPU and the requested driver installed, run one backend at a time:
@@ -130,7 +129,7 @@ Builds/rendering2d.iplugin
 `Settings.Project.inno` explicitly owns the stable Project/Plugin ID `rendering2d`; it is not inferred again from the checkout directory name. The equivalent headless export uses the same engine build pipeline:
 
 ```bash
-dotnet run --project ../InnoEngine/src/composition/editor/host/Inno.Editor.Build.Cli -- plugin --project . --output Builds/rendering2d.iplugin --display-name InnoEngine.Rendering2D
+dotnet run --project ../InnoEngine/build/cli/Inno.Build.Cli -- plugin --project . --output Builds/rendering2d.iplugin --display-name InnoEngine.Rendering2D
 ```
 
 Install it in another Inno project by copying the complete package to that project's `Plugins/` directory:
