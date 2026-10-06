@@ -35,7 +35,7 @@ public sealed class Rendering2DPipeline : RenderPipeline
         RenderExtensionStateContext owner
     ) {
         var settings = new Rendering2DPipelineSettings();
-        configuration.Restore(settings, owner);
+        owner.Restore(configuration, settings);
         m_lightMaterial = ForProgram(settings.lightAccumulation);
         m_shadowMaterial = ForProgram(settings.shadowStencil);
         m_prefilterMaterial = ForProgram(settings.bloomPrefilter);
