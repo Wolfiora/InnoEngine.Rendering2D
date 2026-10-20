@@ -34,6 +34,11 @@ public struct SpriteAnimationFrame2D
 public struct SpriteAnimationClip2D
 {
     /// <summary>
+    /// Gets or sets the author-facing clip name independently of its stable playback identity.
+    /// </summary>
+    public string name { get; set; }
+
+    /// <summary>
     /// Gets or sets the stable clip identity.
     /// </summary>
     public string id { get; set; }
@@ -64,7 +69,7 @@ public sealed class SpriteAnimation2DAsset : AssetObject
     public SpriteAnimationClip2D[] clips
     {
         get => m_clips;
-        set => m_clips = value?.ToArray() ?? [];
+        set => m_clips = value?.Select(clip => clip with { frames = clip.frames?.ToArray() ?? [] }).ToArray() ?? [];
     }
 
     /// <summary>
@@ -112,10 +117,10 @@ public sealed class SpriteAnimation2DAsset : AssetObject
         if (values.Select(static value => value.id).Distinct(StringComparer.Ordinal).Count() != values.Length)
             throw new ArgumentException("Animation clip IDs must be unique.", nameof(clips));
         if (values.Any(static value => value.frames is null || value.frames.Length == 0
-            || value.frames.Any(static frame => !frame.sprite.isAssigned || frame.duration <= 0f)))
+            || value.frames.Any(static frame => !frame.sprite.isAssigned || !float.IsFinite(frame.duration) || frame.duration <= 0f)))
         {
             throw new ArgumentException("Every animation clip requires valid positive-duration frames.", nameof(clips));
         }
-        m_clips = values;
+        m_clips = values.Select(clip => clip with { frames = clip.frames.ToArray() }).ToArray();
     }
 }

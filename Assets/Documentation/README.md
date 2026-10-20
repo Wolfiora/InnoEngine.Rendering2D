@@ -1,5 +1,7 @@
 # Inno Rendering 2D
 
+[2D 创作指南：Inspector、Atlas、Sprite Animation、Tile Palette 与粒子](AUTHORING.md)
+
 `Inno.Rendering.2D` is a source Plugin implemented exclusively through public Inno APIs. It owns every 2D
 concept—camera, sprites, atlas data, animation, tilemaps, lights, batching, shader contracts, project settings,
 and Editor viewport integration. The engine Rendering Core remains unaware of 2D.

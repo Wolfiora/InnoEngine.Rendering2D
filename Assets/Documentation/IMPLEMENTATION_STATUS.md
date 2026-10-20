@@ -28,9 +28,10 @@ later phases.
   tile chunks, dirty chunk revisions, persistent generation-scoped GPU instance buffers for static chunks,
   ordinary/animated/rule tiles, layers, transforms, tint, and open metadata.
 - Tile Palette editing operations for brush, erase, pick, box, bounded fill, select, overlap-safe move, and
-  reusable stamps. A gesture is coalesced into one compact before/after history payload and one Undo transaction.
-- Sprite frame animation with variable durations, events, playback/scrubbing/onion-skin document previews, and
-  blend-safe runtime cross-fade; camera stack/reference resolution/viewport/post-process data, sorting groups,
+  reusable stamps. Low-level operations return compact cell changes; the visual asset document records one
+  shared draft History entry per gesture.
+- Sprite frame animation with variable durations, Core Events subscriptions, playback/scrubbing/adjacent-frame
+  previews, a dockable timeline workspace, and runtime cross-fade; camera stack/reference resolution/viewport/post-process data, sorting groups,
   shadow-caster data, deterministic particles, and post-process profile data.
 - `SpriteMask2D` extraction, bounded mask membership, D24S8 stencil-union writes, and `VisibleInside` /
   `VisibleOutside` sprite tests without exposing mask semantics to Rendering Core.
@@ -56,14 +57,14 @@ later phases.
 ## Partially delivered
 
 - Atlas documents support whole-source, grid, and manual rectangle slicing, pivot/border editing, automatic
-  alpha-hull outlines or explicit rectangle outlines, packing diagnostics, and page previews. Direct manipulation
-  on a zoomable canvas, JPEG/HDR source decoding, and drag-based resize handles remain pending.
+  alpha-hull outlines or explicit rectangle outlines, packing diagnostics, page previews, and bounded source
+  canvases with move/resize handles. JPEG/HDR source decoding and free canvas pan/zoom remain outside this editor.
 - Tilemaps cull sparse chunks before expansion and reuse persistent GPU buffers when a chunk revision is stable.
-  The current tools run in the unified tilemap document; direct Scene viewport painting, a graphical palette,
-  brush previews, and visual rule-tile authoring remain pending. Dirty revisions rebuild affected snapshots;
+  The current tools include a graphical palette, artwork previews, and visual rule-tile conditions in the
+  unified tilemap document. Direct Scene viewport painting remains separate. Dirty revisions rebuild affected snapshots;
   unchanged frames reuse the cached extraction path.
-- Particles have deterministic simulation and instanced rendering. The full curve/gradient/flipbook authoring
-  canvas and benchmark coverage remain pending.
+- Particles have deterministic simulation, instanced rendering, sampled curve/gradient previews and ordered
+  key editors. A live emitter simulation preview and dedicated scale benchmarks remain separate.
 - The screen-space light list is currently emitted as capability-neutral raster work. A compute-tiled accelerator
   may be added later, but it must preserve the already implemented raster semantics and output.
 - Camera post-process profiles and document editing feed the render graph. Richer color grading and interactive
@@ -75,8 +76,8 @@ later phases.
   HarfBuzz shaping, fallback, asynchronous MSDF pages, rich text, and CJK coverage; a small
   `Inno.Text.Rendering2D` integration plugin will own `TextRenderer2D` while depending on both product lines.
   Rendering Core and this plugin will not absorb those font-domain concepts.
-- Full Unity-class Hierarchy/Inspector/Asset Browser interaction set, command palette, global search, notification
-  center, layout presets, and the specialized animation/tile/atlas canvases.
+- Skeletal and multi-track cinematic animation editing. Sprite frame animation, Atlas manipulation and the
+  Tilemap asset canvas are provided by this plugin; generic Editor workspace features have their own owner.
 - Fixed-seed screenshot image-difference baselines and dedicated scale/allocation benchmark projects. The
   checked-in GPU smoke workflow validates startup, imports, script compilation, and backend execution without
   embedding benchmark fixtures in the production Plugin.

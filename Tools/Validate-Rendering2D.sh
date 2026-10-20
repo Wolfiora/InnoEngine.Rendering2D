@@ -75,3 +75,10 @@ compiler_assembly="${compiler_assembly//$'\r'/}"
     -warnaserror
 
 echo "Rendering2D Metal GPU validation passed. Log: $validation_log"
+
+"$dotnet_command" test "$source_root/Tests/InnoEngine.Rendering2D.Tests/InnoEngine.Rendering2D.Tests.csproj" \
+    --configuration Release --disable-build-servers -m:1 -nr:false -p:UseSharedCompilation=false -warnaserror \
+    --artifacts-path "$project_root/Library/Validation/Tests" \
+    --results-directory "$source_root/Logs/Authoring-Metal" --logger 'trx;LogFileName=authoring.trx' \
+    "-p:Rendering2DEngineAssemblies=$(dirname "$compiler_assembly")" \
+    "-p:Rendering2DScriptOutput=$project_root/Library/Validation/Scripts"

@@ -296,6 +296,12 @@ public sealed class ParticleEffect2DAsset : AssetObject
     /// </exception>
     public void Validate()
     {
+        if (!float.IsFinite(emissionRate) || !float.IsFinite(minimumLifetime) || !float.IsFinite(maximumLifetime)
+            || !float.IsFinite(minimumSpeed) || !float.IsFinite(maximumSpeed) || !float.IsFinite(flipbookFramesPerSecond)
+            || !float.IsFinite(coneAngle) || !float.IsFinite(noiseStrength)
+            || !float.IsFinite(shapeSize.x) || !float.IsFinite(shapeSize.y)
+            || !float.IsFinite(gravity.x) || !float.IsFinite(gravity.y))
+            throw new InvalidOperationException("Particle parameters must be finite.");
         if (!sprite.isAssigned
             || maximumParticles <= 0 || emissionRate < 0f
             || minimumLifetime <= 0f || maximumLifetime < minimumLifetime
@@ -303,8 +309,12 @@ public sealed class ParticleEffect2DAsset : AssetObject
         {
             throw new InvalidOperationException("Particle sprite, count, emission, lifetime, speed, or flipbook rate is invalid.");
         }
-        if (flipbookFrames.Any(static frame => !frame.isAssigned))
+        if (flipbookFrames is null || flipbookFrames.Any(static frame => !frame.isAssigned))
             throw new InvalidOperationException("Every particle flipbook frame must reference a sprite.");
+        if (sizeOverLifetime.keys?.Any(key => !float.IsFinite(key.value) || key.value < 0f) == true
+            || colorOverLifetime.keys?.Any(key => !float.IsFinite(key.color.r) || !float.IsFinite(key.color.g)
+                || !float.IsFinite(key.color.b) || !float.IsFinite(key.color.a)) == true)
+            throw new InvalidOperationException("Particle curve values and gradient colors must be finite; size must be nonnegative.");
         ValidateTimes(sizeOverLifetime.keys?.Select(static key => key.time).ToArray());
         ValidateTimes(colorOverLifetime.keys?.Select(static key => key.time).ToArray());
     }
@@ -316,8 +326,8 @@ public sealed class ParticleEffect2DAsset : AssetObject
         float previous = float.NegativeInfinity;
         foreach (float time in times)
         {
-            if (!float.IsFinite(time) || time < previous)
-                throw new InvalidOperationException("Particle curve keys must use finite ascending times.");
+            if (!float.IsFinite(time) || time <= previous || time < 0f || time > 1f)
+                throw new InvalidOperationException("Particle keys require unique ascending times between zero and one.");
             previous = time;
         }
     }

@@ -8,14 +8,14 @@ on:
         type: boolean
         default: true
       engine_ref:
-        description: InnoEngine branch, tag, or commit to validate
-        required: true
-        default: master
+        description: Optional InnoEngine revision override; defaults to the tested authoring API revision
+        required: false
   pull_request:
     paths:
       - ".github/workflows/rendering2d-gpu.yml"
       - "Assets/**"
       - "Tools/**"
+      - "Tests/**"
       - "Settings.*.inno"
   push:
     branches:
@@ -24,6 +24,7 @@ on:
       - ".github/workflows/rendering2d-gpu.yml"
       - "Assets/**"
       - "Tools/**"
+      - "Tests/**"
       - "Settings.*.inno"
 
 permissions:
@@ -32,6 +33,7 @@ permissions:
 env:
   DOTNET_CLI_TELEMETRY_OPTOUT: "1"
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: "1"
+  INNO_ENGINE_REF: "76ee62807bd164ad1935a6d93e9f00633670867a"
 
 jobs:
   windows-gpu:
@@ -53,8 +55,8 @@ jobs:
       - name: Checkout matching InnoEngine
         uses: actions/checkout@v4
         with:
-          repository: FLwolfy/InnoEngine
-          ref: ${{ inputs.engine_ref || 'master' }}
+          repository: Wolfiora/InnoEngine
+          ref: ${{ inputs.engine_ref || env.INNO_ENGINE_REF }}
           submodules: recursive
           path: InnoEngine
 
@@ -98,8 +100,8 @@ jobs:
       - name: Checkout matching InnoEngine
         uses: actions/checkout@v4
         with:
-          repository: FLwolfy/InnoEngine
-          ref: ${{ inputs.engine_ref || 'master' }}
+          repository: Wolfiora/InnoEngine
+          ref: ${{ inputs.engine_ref || env.INNO_ENGINE_REF }}
           submodules: recursive
           path: InnoEngine
 

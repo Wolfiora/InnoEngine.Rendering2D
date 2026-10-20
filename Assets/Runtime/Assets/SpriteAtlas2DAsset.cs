@@ -488,7 +488,11 @@ public sealed class SpriteAtlas2DAsset : AssetObject, IRenderTextureArtifactSour
             || value.pixelRect.x < 0f
             || value.pixelRect.y < 0f
             || value.pixelRect.width <= 0f
-            || value.pixelRect.height <= 0f))
+            || value.pixelRect.height <= 0f
+            || !float.IsFinite(value.pixelRect.x) || !float.IsFinite(value.pixelRect.y)
+            || !float.IsFinite(value.pixelRect.width) || !float.IsFinite(value.pixelRect.height)
+            || !float.IsFinite(value.pivot.x) || !float.IsFinite(value.pivot.y)
+            || value.pivot.x < 0f || value.pivot.x > 1f || value.pivot.y < 0f || value.pivot.y > 1f))
         {
             throw new ArgumentException("Atlas slices require stable IDs, names, source indices, and positive pixel rectangles.", nameof(slices));
         }

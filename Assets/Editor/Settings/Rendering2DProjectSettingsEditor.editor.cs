@@ -17,7 +17,6 @@ public sealed class Rendering2DProjectSettingsEditor : ProjectSettingEditor<Rend
     private string m_pipelineError = string.Empty;
     /// <inheritdoc />
     public override string section => "Renderer";
-
     /// <inheritdoc />
     public override string description => "Configure project-wide 2D rendering pipeline and batching limits.";
 
@@ -26,7 +25,8 @@ public sealed class Rendering2DProjectSettingsEditor : ProjectSettingEditor<Rend
     {
         m_pipelinePath ??= setting.pipeline?.assetPath.ToString() ?? string.Empty;
         ImGui.Text("Pipeline: " + (setting.pipeline?.name ?? "Not configured"));
-        ImGui.InputText("Choose Pipeline Source", ref m_pipelinePath, 512);
+        ImGuiWidget.Hint("Use the bundled default, or enter a 2D Pipeline source path.");
+        _ = Rendering2DEditorFields.Text("Pipeline Source", ref m_pipelinePath);
         if (ImGui.Button("Assign Pipeline"))
         {
             try
@@ -42,46 +42,42 @@ public sealed class Rendering2DProjectSettingsEditor : ProjectSettingEditor<Rend
                 m_pipelineError = error.Message;
             }
         }
+
         if (ImGui.Button("Use Plugin Default Pipeline"))
         {
             setting.pipeline = Assets.Load<RenderPipelineAsset>(Assets.LocalPath("Pipelines/Default2D.irenderpipeline"));
             m_pipelinePath = setting.pipeline.assetPath.ToString();
             m_pipelineError = string.Empty;
         }
+
         if (m_pipelineError.Length != 0)
             ImGui.Text(m_pipelineError);
-
         ImGui.Separator();
         float pixelsPerUnit = setting.defaultPixelsPerUnit;
-        if (ImGui.InputFloat("Default Pixels Per Unit", ref pixelsPerUnit))
-            setting.defaultPixelsPerUnit = MathF.Max(0.001f, pixelsPerUnit);
+        if (Rendering2DEditorFields.Float("Default Pixels Per Unit", ref pixelsPerUnit, 0.001f))
+            setting.defaultPixelsPerUnit = pixelsPerUnit;
         int frameLimit = setting.maximumQuadsPerFrame;
-        if (ImGui.InputInt("Maximum Quads Per Frame", ref frameLimit))
-            setting.maximumQuadsPerFrame = Math.Max(1, frameLimit);
+        if (Rendering2DEditorFields.Integer("Maximum Quads Per Frame", ref frameLimit, 1))
+            setting.maximumQuadsPerFrame = frameLimit;
         int batchLimit = setting.maximumQuadsPerBatch;
-        if (ImGui.InputInt("Maximum Quads Per Batch", ref batchLimit))
-            setting.maximumQuadsPerBatch = Math.Max(1, batchLimit);
+        if (Rendering2DEditorFields.Integer("Maximum Quads Per Batch", ref batchLimit, 1))
+            setting.maximumQuadsPerBatch = batchLimit;
         int tiledLimit = setting.maximumTiledSpriteQuads;
-        if (ImGui.InputInt("Maximum Tiled Sprite Quads", ref tiledLimit))
-            setting.maximumTiledSpriteQuads = Math.Max(1, tiledLimit);
+        if (Rendering2DEditorFields.Integer("Maximum Tiled Sprite Quads", ref tiledLimit, 1))
+            setting.maximumTiledSpriteQuads = tiledLimit;
     }
-
-
 }
 
 /// <summary>
 /// Provides the sorting-layer section of the unified 2D Project Settings page.
 /// </summary>
 [ProjectSettingPath("Project/Rendering/2D/Sorting Layers", order: 100)]
-public sealed class Rendering2DSortingLayersProjectSettingsEditor
-    : ProjectSettingEditor<Rendering2DProjectSettings>
+public sealed class Rendering2DSortingLayersProjectSettingsEditor : ProjectSettingEditor<Rendering2DProjectSettings>
 {
     private string m_newName = "Layer";
     private int m_newOrder;
-
     /// <inheritdoc />
     public override string section => "Sorting Layers";
-
     /// <inheritdoc />
     public override string description => "Configure sorting-layer names and order. IDs are generated automatically as projectId.name.";
 
@@ -96,8 +92,8 @@ public sealed class Rendering2DSortingLayersProjectSettingsEditor
             ImGui.PushId(index);
             string name = layer.name ?? string.Empty;
             int order = layer.order;
-            changed |= ImGui.InputText("Name", ref name, 128);
-            changed |= ImGui.InputInt("Order", ref order);
+            changed |= Rendering2DEditorFields.Text("Name", ref name);
+            changed |= Rendering2DEditorFields.Integer("Order", ref order);
             if (index > 0 && ImGui.Button("Remove"))
             {
                 layers.RemoveAt(index--);
@@ -107,14 +103,15 @@ public sealed class Rendering2DSortingLayersProjectSettingsEditor
             {
                 layers[index] = layer.With(name, order);
             }
+
             ImGui.PopId();
             ImGui.Separator();
         }
+
         if (changed)
             TryApplyLayers(setting, layers);
-
-        ImGui.InputText("New Name", ref m_newName, 128);
-        ImGui.InputInt("New Order", ref m_newOrder);
+        _ = Rendering2DEditorFields.Text("New Name", ref m_newName);
+        _ = Rendering2DEditorFields.Integer("New Order", ref m_newOrder);
         if (ImGui.Button("Add Sorting Layer") && !string.IsNullOrWhiteSpace(m_newName))
         {
             layers.Add(new SortingLayer2DDefinition(m_newName, m_newOrder));

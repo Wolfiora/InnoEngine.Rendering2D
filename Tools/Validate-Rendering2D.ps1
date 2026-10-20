@@ -152,5 +152,14 @@ Invoke-Checked "Rendering2D generated script build" {
         -warnaserror
 }
 
+Invoke-Checked "Rendering2D authoring contract tests" {
+    & $DotNet test (Join-Path $sourceRoot 'Tests/InnoEngine.Rendering2D.Tests/InnoEngine.Rendering2D.Tests.csproj') `
+        --configuration Release --disable-build-servers -m:1 -nr:false -p:UseSharedCompilation=false -warnaserror `
+        --artifacts-path (Join-Path $projectRoot 'Library/Validation/Tests') `
+        --results-directory (Join-Path $logDirectory "Authoring-$Backend") --logger 'trx;LogFileName=authoring.trx' `
+        "-p:Rendering2DEngineAssemblies=$(Split-Path -Parent $compilerAssembly)" `
+        "-p:Rendering2DScriptOutput=$(Join-Path $projectRoot 'Library/Validation/Scripts')"
+}
+
 Write-Host "Rendering2D Windows GPU validation passed on $architecture/$Backend. Log: $validationLog"
 Write-Host "Disposable validation project retained for inspection: $projectRoot"

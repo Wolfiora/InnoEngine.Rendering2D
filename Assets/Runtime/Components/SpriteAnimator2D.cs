@@ -1,5 +1,6 @@
 using System;
 using InnoEngine.Core;
+using InnoEngine.Events;
 using InnoEngine.Reflection;
 using InnoEngine.Scene;
 using InnoEngine.Serialization;
@@ -14,20 +15,21 @@ namespace Inno.Rendering2D;
 public sealed class SpriteAnimator2D : GameBehavior
 {
     private int m_frameIndex;
-    private float m_frameTime;
+    private double m_frameTime;
     private bool m_playing;
     private float m_crossFadeDuration;
     private float m_crossFadeElapsed;
+    private readonly EventDispatcher m_events = new();
+    private EventHub? m_frameEvents;
+    private long m_playbackRevision;
+    private bool m_destroyed;
 
     /// <summary>
     /// Gets or sets the animation library.
     /// </summary>
     [SerializableProperty]
     [Header("Animation", "Assign a frame-animation library before selecting its stable clip identifier.")]
-    [HelpBox(
-        "Clip selection becomes available after an Animation 2D asset is assigned.",
-        nameof(animation),
-        InspectorCondition.Null)]
+    [HelpBox("Clip selection becomes available after an Animation 2D asset is assigned.", nameof(animation), InspectorCondition.Null)]
     public SpriteAnimation2DAsset? animation { get; set; }
 
     /// <summary>
@@ -49,31 +51,46 @@ public sealed class SpriteAnimator2D : GameBehavior
     /// Gets or sets non-negative playback speed.
     /// </summary>
     [SerializableProperty]
-    public float speed
-    {
-        get;
-        set => field = float.IsFinite(value) ? MathF.Max(0f, value) : 0f;
-    } = 1f;
-
+    public float speed { get; set => field = float.IsFinite(value) ? MathF.Max(0f, value) : 0f; } = 1f;
     /// <summary>
     /// Gets whether playback is advancing.
     /// </summary>
     public bool isPlaying => m_playing;
-
     /// <summary>
     /// Gets the current zero-based frame index.
     /// </summary>
     public int currentFrameIndex => m_frameIndex;
-
     /// <summary>
     /// Gets the stable event identity of the current frame, or an empty value.
     /// </summary>
     public string currentFrameEvent { get; private set; } = string.Empty;
 
     /// <summary>
-    /// Occurs when playback enters a frame containing a non-empty stable event identity.
+    /// Subscribes to named frames through Core Events until the returned token or this component is destroyed.
     /// </summary>
-    public event Action<string>? frameEvent;
+    /// <param name="handler">
+    /// Synchronous listener; it must release its token before its owning extension retires.
+    /// </param>
+    /// <param name="priority">
+    /// Descending listener priority within this animator.
+    /// </param>
+    /// <returns>
+    /// A disposable Core Events subscription. Events contain neutral values and no scene references.
+    /// </returns>
+    /// <exception cref="ArgumentNullException">
+    /// The listener is null.
+    /// </exception>
+    /// <exception cref="ObjectDisposedException">
+    /// This component has been destroyed.
+    /// </exception>
+    public IDisposable Listen(
+        Action<SpriteAnimationFrameEvent2D> handler,
+        int priority = 0
+    ) {
+        ArgumentNullException.ThrowIfNull(handler);
+        ObjectDisposedException.ThrowIf(m_destroyed, this);
+        return (m_frameEvents ??= m_events.CreateHub()).Listen(handler, priority);
+    }
 
     /// <summary>
     /// Starts one clip from its first frame.
@@ -87,6 +104,7 @@ public sealed class SpriteAnimator2D : GameBehavior
     public void Play(string id)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
+        m_playbackRevision++;
         clipId = id;
         m_frameIndex = 0;
         m_frameTime = 0f;
@@ -104,20 +122,28 @@ public sealed class SpriteAnimator2D : GameBehavior
     /// <param name="duration">
     /// Non-negative transition duration in seconds.
     /// </param>
+    /// <exception cref="ArgumentException">
+    /// The clip identity is empty.
+    /// </exception>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// The transition duration is negative or not finite.
+    /// </exception>
     public void CrossFade(
         string id,
         float duration
     ) {
         ArgumentException.ThrowIfNullOrWhiteSpace(id);
         ArgumentOutOfRangeException.ThrowIfNegative(duration);
-        if (duration <= 0f
-            || !gameObject.TryGetComponent<SpriteRenderer2D>(out SpriteRenderer2D? renderer)
-            || renderer is null)
+        if (!float.IsFinite(duration))
+            throw new ArgumentOutOfRangeException(nameof(duration), "The transition duration must be finite.");
+        if (duration <= 0f || !gameObject.TryGetComponent<SpriteRenderer2D>(out SpriteRenderer2D? renderer) || renderer is null)
         {
             Play(id);
             return;
         }
+
         SpriteReference2D source = renderer.sprite;
+        long revision = ++m_playbackRevision;
         clipId = id;
         m_frameIndex = 0;
         m_frameTime = 0f;
@@ -125,24 +151,34 @@ public sealed class SpriteAnimator2D : GameBehavior
         m_crossFadeDuration = duration;
         m_crossFadeElapsed = 0f;
         ApplyFrame();
-        renderer.SetCrossFade(source, source.isAssigned ? 1f : 0f);
+        if (revision == m_playbackRevision)
+            renderer.SetCrossFade(source, source.isAssigned ? 1f : 0f);
     }
 
     /// <summary>
     /// Pauses playback while preserving the current frame and elapsed time.
     /// </summary>
-    public void Pause() => m_playing = false;
+    public void Pause()
+    {
+        m_playbackRevision++;
+        m_playing = false;
+    }
 
     /// <summary>
     /// Resumes the currently selected clip.
     /// </summary>
-    public void Resume() => m_playing = true;
+    public void Resume()
+    {
+        m_playbackRevision++;
+        m_playing = true;
+    }
 
     /// <summary>
     /// Stops playback and rewinds to the first frame.
     /// </summary>
     public void Stop()
     {
+        m_playbackRevision++;
         m_playing = false;
         m_frameIndex = 0;
         m_frameTime = 0f;
@@ -163,18 +199,27 @@ public sealed class SpriteAnimator2D : GameBehavior
     protected override void Update()
     {
         UpdateCrossFade();
-        if (!m_playing || animation is null || speed <= 0f
-            || !animation.TryGetClip(clipId, out SpriteAnimationClip2D clip)
-            || clip.frames is null || clip.frames.Length == 0)
+        if (!m_playing || animation is null || speed <= 0f || !animation.TryGetClip(clipId, out SpriteAnimationClip2D clip) || clip.frames is null || clip.frames.Length == 0)
         {
             return;
         }
 
-        m_frameTime += MathF.Max(0f, Time.deltaTime) * speed;
+        m_frameIndex = Math.Clamp(m_frameIndex, 0, clip.frames.Length - 1);
+        long revision = m_playbackRevision;
+        m_frameTime += (double)MathF.Max(0f, Time.deltaTime) * speed;
         int guard = clip.frames.Length + 1;
-        while (guard-- > 0 && m_frameTime >= clip.frames[m_frameIndex].duration)
+        while (guard-- > 0)
         {
-            m_frameTime -= clip.frames[m_frameIndex].duration;
+            float duration = clip.frames[m_frameIndex].duration;
+            if (!float.IsFinite(duration) || duration <= 0f)
+            {
+                m_playing = false;
+                return;
+            }
+
+            if (m_frameTime < duration)
+                break;
+            m_frameTime -= duration;
             int next = m_frameIndex + 1;
             if (next >= clip.frames.Length)
             {
@@ -185,40 +230,51 @@ public sealed class SpriteAnimator2D : GameBehavior
                     m_playing = false;
                     break;
                 }
+
                 next = 0;
             }
+
             m_frameIndex = next;
             ApplyFrame();
+            if (revision != m_playbackRevision)
+                return;
         }
+    }
+
+    /// <inheritdoc />
+    protected override void OnDestroy()
+    {
+        m_destroyed = true;
+        m_playbackRevision++;
+        m_frameEvents?.Dispose();
+        m_frameEvents = null;
+        m_events.DiscardPending();
+        m_playing = false;
     }
 
     private void ApplyFrame()
     {
         currentFrameEvent = string.Empty;
-        if (animation is null
-            || !animation.TryGetClip(clipId, out SpriteAnimationClip2D clip)
-            || clip.frames is null || clip.frames.Length == 0
-            || !gameObject.TryGetComponent<SpriteRenderer2D>(out SpriteRenderer2D? renderer)
-            || renderer is null)
+        if (animation is null || !animation.TryGetClip(clipId, out SpriteAnimationClip2D clip) || clip.frames is null || clip.frames.Length == 0 || !gameObject.TryGetComponent<SpriteRenderer2D>(out SpriteRenderer2D? renderer) || renderer is null)
         {
             return;
         }
+
         m_frameIndex = Math.Clamp(m_frameIndex, 0, clip.frames.Length - 1);
         SpriteAnimationFrame2D frame = clip.frames[m_frameIndex];
         renderer.sprite = frame.sprite;
         currentFrameEvent = frame.eventId ?? string.Empty;
-        if (!string.IsNullOrWhiteSpace(currentFrameEvent))
-            frameEvent?.Invoke(currentFrameEvent);
+        if (!string.IsNullOrWhiteSpace(currentFrameEvent) && m_frameEvents is not null)
+            m_events.Emit(new SpriteAnimationFrameEvent2D(clipId, m_frameIndex, currentFrameEvent));
     }
 
     private void UpdateCrossFade()
     {
-        if (m_crossFadeDuration <= 0f
-            || !gameObject.TryGetComponent<SpriteRenderer2D>(out SpriteRenderer2D? renderer)
-            || renderer is null)
+        if (m_crossFadeDuration <= 0f || !gameObject.TryGetComponent<SpriteRenderer2D>(out SpriteRenderer2D? renderer) || renderer is null)
         {
             return;
         }
+
         m_crossFadeElapsed += MathF.Max(0f, Time.deltaTime);
         float remaining = 1f - Math.Clamp(m_crossFadeElapsed / m_crossFadeDuration, 0f, 1f);
         renderer.SetCrossFade(renderer.crossFadeSprite, remaining);
@@ -230,8 +286,7 @@ public sealed class SpriteAnimator2D : GameBehavior
     {
         m_crossFadeDuration = 0f;
         m_crossFadeElapsed = 0f;
-        if (gameObject.TryGetComponent<SpriteRenderer2D>(out SpriteRenderer2D? renderer)
-            && renderer is not null)
+        if (gameObject.TryGetComponent<SpriteRenderer2D>(out SpriteRenderer2D? renderer) && renderer is not null)
         {
             renderer.SetCrossFade(default, 0f);
         }

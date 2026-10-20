@@ -27,6 +27,8 @@ A source-based 2D rendering plugin for [InnoEngine](https://github.com/FLwolfy/I
 - The Scene contributor declares an `EditorViewportManipulationPlane.XY` contract; the Editor owns native handle presentation, without ImGuizmo types in this Plugin
 - Selected Spot Light gizmos follow the rendered local +Y direction, including reflections from negative scale, and show the spot arc and two cone edges instead of a full point-light circle. Point and spot outlines use the same world-unit range as rendering.
 - Unified Asset Browser documents for atlases, animations, tile sets, tilemaps, post-processing, and particles
+- Named Sprite/clip/layer selectors, isolated Sprite thumbnails, a dockable frame-animation workspace,
+  Atlas move/resize handles, a graphical Tile Palette, and particle curve/gradient editors
 - Deterministic MaxRects atlas composition with trim, rotation, extrusion, and named multi-page texture artifacts
 - Plugin-owned project settings and native asset importers
 - Native Metal, D3D11, D3D12, and Vulkan smoke validation plus a self-hosted GPU CI matrix
@@ -42,6 +44,9 @@ depend on Canvas or embed font and shaping policy. See the
 - A current checkout or build of [InnoEngine](https://github.com/FLwolfy/InnoEngine)
 - The .NET SDK 10.0.402 and C# 14 toolchain declared in `global.json`
 - Any platform support packs and native dependencies required by InnoEngine
+
+Start with the [2D authoring guide](Assets/Documentation/AUTHORING.md) for the Inspector, Atlas,
+Sprite Animation panel, Tile Palette, particles, and save/Undo workflows.
 
 ## Run the development project
 
@@ -163,6 +168,8 @@ Assets/
 ├── Editor/
 │   ├── Assets/      Creation, import, inspection, and document integration
 │   ├── Authoring/   Sprite-atlas and tilemap authoring algorithms
+│   ├── Inspection/ Sprite, component, curve, and gradient drawers
+│   ├── Presentation/ Shared plugin fields and isolated previews
 │   ├── Settings/    Project settings UI
 │   ├── Shaders/     Internal Shader loading, templates, and previews
 │   └── Viewports/   Scene and Game viewport contributors
@@ -180,6 +187,27 @@ Assets/
 ```
 
 For the full feature contract, authoring APIs, camera composition rules, custom materials, and viewport behavior, see the [plugin documentation](Assets/Documentation/README.md).
+
+## Authoring tests
+
+The current authoring UI uses the timeline input API from InnoEngine commit
+`76ee62807bd164ad1935a6d93e9f00633670867a`. The GPU workflow pins this tested revision by default;
+manual runs may supply an explicit matching Engine revision.
+
+`Tools/Test-Authoring.ps1` compiles the current plugin through the formal Build entry, regenerates IDE
+references, and tests the resulting runtime and Editor assemblies through public contracts. Supply the
+matching built engine host, an explicit tools target, and an owned output directory:
+
+```powershell
+./Tools/Test-Authoring.ps1 -EngineRoot ../InnoEngine `
+  -BuildAssembly <evaluated-InnoEngine.Build.dll> -ToolsTarget windows-x64 `
+  -Output <owned-output-directory> -DotNet <dotnet-host>
+```
+
+Use `macos-arm64` on Apple Silicon. Both GPU validation scripts also run these tests and write TRX results
+alongside their logs. The [authoring implementation plan](Documentation/EDITOR_AUTHORING_PLAN.md) and
+[acceptance report](Documentation/EDITOR_AUTHORING_ACCEPTANCE.md) distinguish compilation, automated
+contracts, actual interactions, and platform coverage.
 
 ## Version-control notes
 

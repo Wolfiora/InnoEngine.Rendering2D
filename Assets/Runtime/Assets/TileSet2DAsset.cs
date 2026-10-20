@@ -99,6 +99,11 @@ public struct TileAnimationFrame2D
 public struct TileDefinition2D
 {
     /// <summary>
+    /// Gets or sets the author-facing tile name independently of its stable cell identity.
+    /// </summary>
+    public string name { get; set; }
+
+    /// <summary>
     /// Gets or sets the non-negative tile identity.
     /// </summary>
     public int id { get; set; }
@@ -201,7 +206,7 @@ public sealed class TileSet2DAsset : AssetObject
         if (values.Select(static value => value.id).Distinct().Count() != values.Length)
             throw new ArgumentException("Tile IDs must be unique.", nameof(tiles));
         if (values.Any(static value => value.animation is not null
-            && value.animation.Any(static frame => !frame.sprite.isAssigned || frame.duration <= 0f)))
+            && value.animation.Any(static frame => !frame.sprite.isAssigned || !float.IsFinite(frame.duration) || frame.duration <= 0f)))
         {
             throw new ArgumentException("Animated tile frames require assigned sprites and positive durations.", nameof(tiles));
         }

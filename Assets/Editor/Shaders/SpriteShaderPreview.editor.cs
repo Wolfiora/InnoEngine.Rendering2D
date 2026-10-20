@@ -26,17 +26,12 @@ public sealed class SpriteShaderPreview : ShaderPreviewProvider
 /// Renders the isolated compiled candidate through the ordinary material binder and Render Graph.
 /// </summary>
 [RenderPipelineExtension(pipelineId)]
-public sealed class SpritePreviewPipeline : RenderPipeline
+public sealed partial class SpritePreviewPipeline : RenderPipeline
 {
     /// <summary>
     /// Identifies the Editor-only preview pipeline; runtime packages do not carry this implementation.
     /// </summary>
     public const string pipelineId = "inno.rendering.2d.sprite-preview";
-    /// <summary>
-    /// Gets the frame-only domain preview input channel.
-    /// </summary>
-    public static RenderDataChannelId channel => new(pipelineId);
-
     private static readonly RenderBindingId s_materialBinding = new("u_spriteMaterial");
     private static readonly RenderBindingId s_spriteTextureBinding = new("s_spriteTexture");
     private static readonly RenderBindingId s_normalTextureBinding = new("s_normalTexture");
@@ -57,29 +52,57 @@ public sealed class SpritePreviewPipeline : RenderPipeline
     private readonly byte[] m_zero = new byte[16];
     private readonly float[] m_identity = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
 
+    /// <summary>
+    /// Gets the frame-only domain preview input channel.
+    /// </summary>
+    public static RenderDataChannelId channel => new(pipelineId);
+
     /// <inheritdoc />
     public override void Build(RenderPipelineContext context)
     {
-        if (!context.request.data.TryGet(channel, out ShaderPreviewContext? preview) || preview is null)
-            throw new InvalidOperationException("Sprite preview input is missing.");
         if (!context.outputTexture.isValid)
             throw new InvalidOperationException("A preview requires an offscreen output.");
-        if (!context.resourceService.TryResolveMaterialArtifact(preview.resourceId, preview.artifact, preview.material,
-            Rendering2DIds.spriteContract, Rendering2DIds.alphaRole, ShaderProgramKind.Raster, m_vertices, null,
-            preview.diagnostics, out RenderMaterialPass? material) || material is null)
-            return;
+        RenderMaterialPass? material;
+        PersistentTextureHandle spriteTexture = default;
+        bool thumbnail = context.request.data.TryGet(thumbnailChannel, out SpriteThumbnailRequest? sprite) && sprite is not null;
+        if (thumbnail)
+        {
+            if (!TryPrepareThumbnail(context, sprite!, out material, out spriteTexture))
+                return;
+        }
+        else
+        {
+            if (!context.request.data.TryGet(channel, out ShaderPreviewContext? preview) || preview is null)
+                throw new InvalidOperationException("Sprite preview input is missing.");
+            if (!context.resourceService.TryResolveMaterialArtifact(
+                preview.resourceId,
+                preview.artifact,
+                preview.material,
+                Rendering2DIds.spriteContract,
+                Rendering2DIds.alphaRole,
+                ShaderProgramKind.Raster,
+                m_vertices,
+                null,
+                preview.diagnostics,
+                out material
+            ) || material is null)
+                return;
+        }
+
         var resources = context.resourceService;
-        PersistentBufferHandle vertices = resources.AcquireBuffer(new(pipelineId + "/vertices"), 1,
-            new(new(4, 8, RenderBufferUsage.Vertex), m_vertices), m_vertexBytes, "Preview quad vertices");
-        PersistentBufferHandle indices = resources.AcquireBuffer(new(pipelineId + "/indices"), 1,
-            new(new(6, 2, RenderBufferUsage.Index), indexFormat: RenderIndexFormat.UInt16), m_indices, "Preview quad indices");
-        PersistentBufferHandle instances = resources.AcquireBuffer(new(pipelineId + "/instances"), 1,
-            new(new(1, 80, RenderBufferUsage.Vertex), m_instances), m_instanceBytes, "Preview Sprite instance");
+        PersistentBufferHandle vertices = resources.AcquireBuffer(new(pipelineId + "/vertices"), 1, new(new(4, 8, RenderBufferUsage.Vertex), m_vertices), m_vertexBytes, "Preview quad vertices");
+        PersistentBufferHandle indices = resources.AcquireBuffer(new(pipelineId + "/indices"), 1, new(new(6, 2, RenderBufferUsage.Index), indexFormat: RenderIndexFormat.UInt16), m_indices, "Preview quad indices");
+        PersistentBufferHandle instances = resources.AcquireBuffer(
+            new(pipelineId + "/instances"),
+            thumbnail ? m_thumbnailRevision : 1,
+            new(new(1, 80, RenderBufferUsage.Vertex), m_instances),
+            thumbnail ? m_thumbnailInstances : m_instanceBytes,
+            "Preview Sprite instance"
+        );
         PersistentTextureHandle white = Texture("white", [255, 255, 255, 255]);
         PersistentTextureHandle black = Texture("black", [0, 0, 0, 255]);
         PersistentTextureHandle normal = Texture("normal", [128, 128, 255, 255]);
-        var data = new DrawData(material, vertices, indices, instances, white, black, normal,
-            m_material, m_zero, context.request.viewport);
+        var data = new DrawData(material!, vertices, indices, instances, thumbnail ? spriteTexture : white, white, black, normal, m_material, m_zero, context.request.viewport);
         RasterPassBuilder pass = context.graph.AddRasterPass("Sprite draft preview", new(pipelineId), data, static (
             value,
             render
@@ -87,12 +110,10 @@ public sealed class SpritePreviewPipeline : RenderPipeline
         pass.SetViewTransform(m_identity, m_identity);
         pass.UseColorAttachment(context.outputTexture, 0, RenderLoadAction.Clear, RenderStoreAction.Store, new(.055f, .055f, .065f, 1));
         context.graph.MarkOutput(context.outputTexture);
-
         PersistentTextureHandle Texture(
             string name,
             byte[] rgba
-        ) => resources.AcquireTexture(new(pipelineId + "/" + name), 1,
-            new(1, 1, RenderTextureFormat.RGBA8, RenderTextureUsage.Sampled), [new(0, 0, rgba)], "Preview " + name);
+        ) => resources.AcquireTexture(new(pipelineId + "/" + name), 1, new(1, 1, RenderTextureFormat.RGBA8, RenderTextureUsage.Sampled), [new(0, 0, rgba)], "Preview " + name);
     }
 
     private static void Draw(
@@ -102,7 +123,7 @@ public sealed class SpritePreviewPipeline : RenderPipeline
         commands.SetViewport(0, 0, data.viewport.width, data.viewport.height);
         data.material.Bind(commands);
         SetUniform(data.material, commands, s_materialBinding, data.parameters);
-        BindTexture(data.material, commands, s_spriteTextureBinding, data.white);
+        BindTexture(data.material, commands, s_spriteTextureBinding, data.sprite);
         BindTexture(data.material, commands, s_normalTextureBinding, data.normal);
         BindTexture(data.material, commands, s_emissionTextureBinding, data.black);
         for (int index = 0; index < 4; index++)
@@ -149,6 +170,7 @@ public sealed class SpritePreviewPipeline : RenderPipeline
         PersistentBufferHandle vertices,
         PersistentBufferHandle indices,
         PersistentBufferHandle instances,
+        PersistentTextureHandle sprite,
         PersistentTextureHandle white,
         PersistentTextureHandle black,
         PersistentTextureHandle normal,
