@@ -61,14 +61,12 @@ public enum LightBlendStyle2D
 public sealed class Light2D : GameBehavior
 {
     private LightKind2D m_kind = LightKind2D.Point;
-    private float m_intensity = 1f;
     private float m_range = 5f;
     private float m_spotAngle = 60f;
     private float m_falloff = 2f;
     private Vector2[] m_shape = [];
     private bool m_castShadows;
     private float m_shadowSoftness = 0.15f;
-    private float m_normalIntensity = 1f;
 
     /// <summary>
     /// Gets or sets the analytical light shape.
@@ -103,9 +101,9 @@ public sealed class Light2D : GameBehavior
     [Tooltip("Linear HDR multiplier. Values above one intentionally exceed display white.")]
     public float intensity
     {
-        get => m_intensity;
-        set => m_intensity = float.IsFinite(value) ? MathF.Max(0f, value) : 0f;
-    }
+        get;
+        set => field = float.IsFinite(value) ? MathF.Max(0f, value) : 0f;
+    } = 1f;
 
     /// <summary>
     /// Gets or sets the selected light accumulation style.
@@ -198,9 +196,9 @@ public sealed class Light2D : GameBehavior
     [Header("Filtering", "Normal intensity scales the response of sprite normal maps.")]
     public float normalIntensity
     {
-        get => m_normalIntensity;
-        set => m_normalIntensity = float.IsFinite(value) ? MathF.Max(0f, value) : 0f;
-    }
+        get;
+        set => field = float.IsFinite(value) ? MathF.Max(0f, value) : 0f;
+    } = 1f;
 
     /// <summary>
     /// Gets or sets GameObject layers illuminated by this light.

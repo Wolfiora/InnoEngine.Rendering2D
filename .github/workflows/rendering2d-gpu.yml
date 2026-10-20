@@ -3,6 +3,10 @@ name: Rendering2D GPU Validation
 on:
   workflow_dispatch:
     inputs:
+      native_product_acceptance:
+        description: Run GPU products with the selected BGCS toolchain
+        type: boolean
+        default: true
       engine_ref:
         description: InnoEngine branch, tag, or commit to validate
         required: true
@@ -31,6 +35,7 @@ env:
 
 jobs:
   windows-gpu:
+    if: github.event_name != 'workflow_dispatch' || inputs.native_product_acceptance
     name: Windows x64 / ${{ matrix.backend }}
     runs-on: [self-hosted, Windows, X64, gpu]
     timeout-minutes: 120
@@ -56,7 +61,7 @@ jobs:
       - name: Install .NET SDK
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 9.0.x
+          global-json-file: InnoEngine/global.json
 
       - name: Install MSBuild
         uses: microsoft/setup-msbuild@v2
@@ -69,7 +74,6 @@ jobs:
           -EngineRoot ../InnoEngine
           -Backend ${{ matrix.backend }}
           -SmokeFrames 3000
-          -PrepareEngine
 
       - name: Upload GPU validation log
         if: always()
@@ -80,6 +84,7 @@ jobs:
           if-no-files-found: warn
 
   metal-gpu:
+    if: github.event_name != 'workflow_dispatch' || inputs.native_product_acceptance
     name: macOS arm64 / Metal
     runs-on: [self-hosted, macOS, ARM64, gpu]
     timeout-minutes: 90
@@ -101,18 +106,7 @@ jobs:
       - name: Install .NET SDK
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 9.0.x
-
-      - name: Build native editor dependencies
-        shell: bash
-        working-directory: InnoEngine
-        run: |
-          dotnet run --project build/toolchains/Inno.Build.Toolchains.Sdl3 -- build --config debug
-          dotnet run --project build/toolchains/Inno.Build.Toolchains.MiniAudio -- build --config debug
-          dotnet run --project build/toolchains/Inno.Build.Toolchains.ImGui -- build --config debug
-          dotnet run --project build/toolchains/Inno.Build.Toolchains.ImGuizmo -- build --config debug
-          dotnet run --project build/toolchains/Inno.Build.Toolchains.Bgfx -- native --config debug
-          dotnet run --project build/toolchains/Inno.Build.Toolchains.Bgfx -- tools --config debug
+          global-json-file: InnoEngine/global.json
 
       - name: Run Metal GPU validation
         shell: bash

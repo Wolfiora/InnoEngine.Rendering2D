@@ -32,7 +32,6 @@ public sealed class Camera2D : GameBehavior
     private bool m_primary = true;
     private CameraComposition2D m_composition = CameraComposition2D.Base;
     private bool m_clearTarget = true;
-    private float m_orthographicSize = 5f;
     private Vector2 m_referenceResolution = new(1920f, 1080f);
 
     /// <summary>
@@ -112,9 +111,9 @@ public sealed class Camera2D : GameBehavior
     [Tooltip("Positive vertical half-size of the camera view in world units.")]
     public float orthographicSize
     {
-        get => m_orthographicSize;
-        set => m_orthographicSize = float.IsFinite(value) && value > 0f ? value : 0.0001f;
-    }
+        get;
+        set => field = float.IsFinite(value) && value > 0f ? value : 0.0001f;
+    } = 5f;
 
     /// <summary>
     /// Gets or sets normalized destination viewport bounds.

@@ -40,7 +40,7 @@ depend on Canvas or embed font and shaping policy. See the
 ## Requirements
 
 - A current checkout or build of [InnoEngine](https://github.com/FLwolfy/InnoEngine)
-- The .NET 9 SDK used by the current InnoEngine toolchain
+- The .NET SDK 10.0.402 and C# 14 toolchain declared in `global.json`
 - Any platform support packs and native dependencies required by InnoEngine
 
 ## Run the development project
@@ -56,7 +56,7 @@ GameEngineDev/
 From this repository, launch the Inno Editor with the repository root as the project directory:
 
 ```bash
-dotnet run --project ../InnoEngine/src/composition/editor/host/Inno.Editor.Application -- .
+dotnet run --project ../InnoEngine/entry/InnoEngine.Editor -- .
 ```
 
 The editor imports the authored content under `Assets/` and regenerates `Library/`, IDE project files, logs, and other local state. The same launch command accepts a project path with a trailing directory separator.
@@ -79,15 +79,25 @@ On a Windows x64 machine with a physical GPU and the requested driver installed,
 ./Tools/Validate-Rendering2D.ps1 `
   -EngineRoot ../InnoEngine `
   -Backend d3d12 `
-  -SmokeFrames 600 `
-  -PrepareEngine
+  -SmokeFrames 600
 ```
 
 Valid Windows backend values are `d3d11`, `d3d12`, and `vulkan`. The scripts build the matching Editor,
 run the ordinary plugin project for a fixed frame count, reject software renderers and fatal import/backend/
-teardown diagnostics, and rebuild generated Editor scripts with warnings as errors. They do not inject a hidden
+teardown diagnostics, explicitly generate IDE projects through the formal `scripts --ide` command, and build
+Editor scripts with warnings as errors. They do not inject a hidden
 scene, mutate authored assets, or activate production-side acceptance branches. The checked-in GPU workflow uses
 self-hosted runners carrying the `gpu` label; a generic hosted VM is not accepted as hardware evidence.
+
+The Windows script accepts `-Configuration Debug|Release`, `-ArtifactsPath`, and `-TaskArtifactsPath`
+for an explicit SDK output owner. Both the build and `TargetPath` evaluation use the same selection.
+For example, keep build outputs on another volume with:
+
+```powershell
+./Tools/Validate-Rendering2D.ps1 -EngineRoot ../InnoEngine -Backend d3d12 `
+  -Configuration Release -ArtifactsPath D:/InnoAcceptance/Editor `
+  -TaskArtifactsPath D:/InnoAcceptance/Tasks
+```
 
 ## Use the plugin in a scene
 
@@ -129,8 +139,10 @@ Builds/rendering2d.iplugin
 `Settings.Project.inno` explicitly owns the stable Project/Plugin ID `rendering2d`; it is not inferred again from the checkout directory name. The equivalent headless export uses the same engine build pipeline:
 
 ```bash
-dotnet run --project ../InnoEngine/build/cli/Inno.Build.Cli -- plugin --project . --output Builds/rendering2d.iplugin --display-name InnoEngine.Rendering2D
+dotnet run --project ../InnoEngine/entry/InnoEngine.Build -- plugin --tools-target windows-x64 --project . --output Builds/rendering2d.iplugin --display-name InnoEngine.Rendering2D
 ```
+
+On macOS ARM64, use `--tools-target macos-arm64`.
 
 Install it in another Inno project by copying the complete package to that project's `Plugins/` directory:
 

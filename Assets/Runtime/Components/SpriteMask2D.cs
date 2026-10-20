@@ -16,8 +16,6 @@ public sealed class SpriteMask2D : GameBehavior
 {
     private int m_frontOrder = int.MinValue;
     private int m_backOrder = int.MaxValue;
-    private float m_alphaCutoff = 0.01f;
-    private float m_boundsPadding;
 
     /// <summary>
     /// Gets or sets the stable mask sprite.
@@ -54,8 +52,8 @@ public sealed class SpriteMask2D : GameBehavior
     [Tooltip("Maximum world-space Vertex Offset displacement, matching the visible Sprite's Bounds Padding when sharing its Material.")]
     public float boundsPadding
     {
-        get => m_boundsPadding;
-        set => m_boundsPadding = float.IsFinite(value) ? MathF.Max(0f, value) : 0f;
+        get;
+        set => field = float.IsFinite(value) ? MathF.Max(0f, value) : 0f;
     }
 
     /// <summary>
@@ -95,9 +93,9 @@ public sealed class SpriteMask2D : GameBehavior
     [Range(0, 1)]
     public float alphaCutoff
     {
-        get => m_alphaCutoff;
-        set => m_alphaCutoff = float.IsFinite(value) ? Math.Clamp(value, 0f, 1f) : 0.01f;
-    }
+        get;
+        set => field = float.IsFinite(value) ? Math.Clamp(value, 0f, 1f) : 0.01f;
+    } = 0.01f;
 
     /// <summary>
     /// Gets or sets the stable sorting layer whose sprites can observe this mask.

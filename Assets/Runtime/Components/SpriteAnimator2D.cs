@@ -18,7 +18,6 @@ public sealed class SpriteAnimator2D : GameBehavior
     private bool m_playing;
     private float m_crossFadeDuration;
     private float m_crossFadeElapsed;
-    private float m_speed = 1f;
 
     /// <summary>
     /// Gets or sets the animation library.
@@ -52,9 +51,9 @@ public sealed class SpriteAnimator2D : GameBehavior
     [SerializableProperty]
     public float speed
     {
-        get => m_speed;
-        set => m_speed = float.IsFinite(value) ? MathF.Max(0f, value) : 0f;
-    }
+        get;
+        set => field = float.IsFinite(value) ? MathF.Max(0f, value) : 0f;
+    } = 1f;
 
     /// <summary>
     /// Gets whether playback is advancing.

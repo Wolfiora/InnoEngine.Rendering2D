@@ -9,7 +9,14 @@ param(
     [ValidateRange(300, 10000)]
     [int]$SmokeFrames = 3000,
 
-    [switch]$PrepareEngine
+    [ValidateSet("Debug", "Release")]
+    [string]$Configuration = "Debug",
+
+    [string]$ArtifactsPath,
+
+    [string]$TaskArtifactsPath,
+
+    [string]$DotNet = "dotnet"
 )
 
 $ErrorActionPreference = "Stop"
@@ -42,33 +49,36 @@ if ($architecture -ne "X64") {
 $sourceRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 $engineRootPath = (Resolve-Path $EngineRoot).Path
 $engineSolution = Join-Path $engineRootPath "InnoEngine.sln"
-$editorProject = Join-Path $engineRootPath "src/composition/editor/host/Inno.Editor.Application/Inno.Editor.Application.csproj"
-$editorAssembly = Join-Path $engineRootPath "src/composition/editor/host/Inno.Editor.Application/bin/Debug/net9.0/Inno.Editor.Application.dll"
+$editorProject = Join-Path $engineRootPath "entry/InnoEngine.Editor/InnoEngine.Editor.csproj"
+$buildProject = Join-Path $engineRootPath "entry/InnoEngine.Build/InnoEngine.Build.csproj"
 
 if (-not (Test-Path $engineSolution)) {
     throw "EngineRoot '$engineRootPath' does not contain InnoEngine.sln."
 }
 
-if ($PrepareEngine) {
-    Push-Location $engineRootPath
-    try {
-        Invoke-Checked "SDL3 debug build" { dotnet run --project build/toolchains/Inno.Build.Toolchains.Sdl3 -- build --config debug }
-        Invoke-Checked "MiniAudio debug build" { dotnet run --project build/toolchains/Inno.Build.Toolchains.MiniAudio -- build --config debug }
-        Invoke-Checked "ImGui debug build" { dotnet run --project build/toolchains/Inno.Build.Toolchains.ImGui -- build --config debug }
-        Invoke-Checked "ImGuizmo debug build" { dotnet run --project build/toolchains/Inno.Build.Toolchains.ImGuizmo -- build --config debug }
-        Invoke-Checked "BGFX debug runtime build" { dotnet run --project build/toolchains/Inno.Build.Toolchains.Bgfx -- native --config debug }
-        Invoke-Checked "BGFX debug tools build" { dotnet run --project build/toolchains/Inno.Build.Toolchains.Bgfx -- tools --config debug }
-    }
-    finally {
-        Pop-Location
-    }
+$outputArguments = @()
+if ($ArtifactsPath) {
+    $outputArguments += "-p:ArtifactsPath=$([IO.Path]::GetFullPath($ArtifactsPath, $engineRootPath))"
+}
+if ($TaskArtifactsPath) {
+    $outputArguments += "-p:InnoTaskArtifacts=$([IO.Path]::GetFullPath($TaskArtifactsPath, $engineRootPath))"
 }
 
-Invoke-Checked "Inno Editor restore" {
-    dotnet restore $editorProject --disable-build-servers -p:NuGetAudit=false
+Push-Location $engineRootPath
+try {
+    Invoke-Checked "Windows Editor build and product native preparation" {
+        & $DotNet build $editorProject --configuration $Configuration `
+            --disable-build-servers -m:1 -nr:false -p:UseSharedCompilation=false @outputArguments
+    }
+    $evaluatedOutput = @(& $DotNet msbuild $editorProject -nologo -getProperty:TargetPath `
+        "-p:Configuration=$Configuration" -p:DesignTimeBuild=true @outputArguments)
+    if ($LASTEXITCODE -ne 0 -or $evaluatedOutput.Count -ne 1) {
+        throw 'The Editor project did not resolve one executable assembly.'
+    }
+    $editorAssembly = $evaluatedOutput[0].Trim()
 }
-Invoke-Checked "Inno Editor build" {
-    dotnet build $editorProject --no-restore --disable-build-servers -m:1 -nr:false
+finally {
+    Pop-Location
 }
 
 if (-not (Test-Path $editorAssembly)) {
@@ -86,7 +96,7 @@ if (Test-Path (Join-Path $sourceRoot "Plugins")) {
 $logDirectory = Join-Path $sourceRoot "Logs"
 New-Item -ItemType Directory -Force $logDirectory | Out-Null
 $validationLog = Join-Path $logDirectory "Rendering2D-$Backend-GpuValidation.log"
-$processOutput = & dotnet $editorAssembly `
+$processOutput = & $DotNet $editorAssembly `
     $projectRoot `
     --graphics-api $Backend `
     --smoke-frames $SmokeFrames 2>&1 | Tee-Object -FilePath $validationLog
@@ -112,8 +122,30 @@ if ($validationText -match "BGFX FATAL|Unhandled exception|Teardown failure|Micr
     throw "Rendering2D $Backend validation reported an import, backend, reference, or teardown failure."
 }
 
+Push-Location $engineRootPath
+try {
+    Invoke-Checked "Project compiler build" {
+        & $DotNet build $buildProject --configuration $Configuration `
+            --disable-build-servers -m:1 -nr:false -p:UseSharedCompilation=false @outputArguments
+    }
+    $evaluatedCompiler = @(& $DotNet msbuild $buildProject -nologo -getProperty:TargetPath `
+        "-p:Configuration=$Configuration" -p:DesignTimeBuild=true @outputArguments)
+    if ($LASTEXITCODE -ne 0 -or $evaluatedCompiler.Count -ne 1) {
+        throw 'The Build project did not resolve one compiler assembly.'
+    }
+    $compilerAssembly = $evaluatedCompiler[0].Trim()
+}
+finally {
+    Pop-Location
+}
+
+Invoke-Checked "Rendering2D script compilation and IDE generation" {
+    & $DotNet $compilerAssembly scripts --engine-root $engineRootPath --tools-target windows-x64 `
+        --dotnet $DotNet --project $projectRoot --output (Join-Path $projectRoot 'Library/Validation/Scripts') --ide
+}
+
 Invoke-Checked "Rendering2D generated script build" {
-    dotnet build (Join-Path $sourceRoot "Inno.EditorScripts.csproj") `
+    & $DotNet build (Join-Path $projectRoot "Inno.EditorScripts.csproj") `
         -p:NuGetAudit=false `
         --disable-build-servers `
         -m:1 `

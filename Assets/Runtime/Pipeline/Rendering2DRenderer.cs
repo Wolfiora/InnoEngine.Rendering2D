@@ -1201,7 +1201,7 @@ public sealed class Rendering2DModel : IRenderModel
             return;
         m_lastDiagnostics = diagnostics;
         foreach (string diagnostic in diagnostics)
-            Log.Warn(diagnostic);
+            Log.Warn(typeof(Rendering2DRenderer), diagnostic);
     }
 
 }

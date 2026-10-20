@@ -213,7 +213,6 @@ public sealed class Tilemap2DAsset : AssetObject
     private TilemapLayer2D[] m_layers = [TilemapLayer2D.CreateDefault()];
     private TilemapChunk2D[] m_chunks = [];
     private readonly Dictionary<ChunkKey, ulong> m_chunkRevisions = [];
-    private TileSet2DAsset? m_tileSet;
     private Vector2 m_cellSize = Vector2.ONE;
     private int m_chunkSize = 32;
     private ulong m_revision = 1;
@@ -224,12 +223,12 @@ public sealed class Tilemap2DAsset : AssetObject
     [SerializableProperty]
     public TileSet2DAsset? tileSet
     {
-        get => m_tileSet;
+        get;
         set
         {
-            if (ReferenceEquals(m_tileSet, value))
+            if (ReferenceEquals(field, value))
                 return;
-            m_tileSet = value;
+            field = value;
             InvalidateAllChunks();
         }
     }

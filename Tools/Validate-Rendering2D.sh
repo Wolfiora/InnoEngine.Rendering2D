@@ -10,8 +10,8 @@ engine_root="$(cd "$1" && pwd)"
 source_root="$(cd "$(dirname "$0")/.." && pwd)"
 smoke_frames="${2:-3000}"
 dotnet_command="${DOTNET_COMMAND:-dotnet}"
-editor_project="$engine_root/src/composition/editor/host/Inno.Editor.Application/Inno.Editor.Application.csproj"
-editor_assembly="$engine_root/src/composition/editor/host/Inno.Editor.Application/bin/Debug/net9.0/Inno.Editor.Application.dll"
+editor_project="$engine_root/entry/InnoEngine.Editor/InnoEngine.Editor.csproj"
+build_project="$engine_root/entry/InnoEngine.Build/InnoEngine.Build.csproj"
 validation_log="$source_root/Logs/Rendering2D-metal-GpuValidation.log"
 
 if [[ "$(uname -s)" != "Darwin" || "$(uname -m)" != "arm64" ]]; then
@@ -23,8 +23,16 @@ if [[ ! "$smoke_frames" =~ ^[0-9]+$ ]] || (( smoke_frames < 300 )); then
     exit 2
 fi
 
-"$dotnet_command" restore "$editor_project" --disable-build-servers -p:NuGetAudit=false
-"$dotnet_command" build "$editor_project" --no-restore --disable-build-servers -m:1 -nr:false
+(
+    cd "$engine_root"
+    "$dotnet_command" build "$editor_project" --disable-build-servers -m:1 -nr:false -p:UseSharedCompilation=false
+)
+
+editor_assembly="$(
+    cd "$engine_root"
+    "$dotnet_command" msbuild "$editor_project" -nologo -getProperty:TargetPath -p:Configuration=Debug -p:DesignTimeBuild=true
+)"
+editor_assembly="${editor_assembly//$'\r'/}"
 
 temporary_directory="$(mktemp -d)"
 trap 'rm -rf "$temporary_directory"' EXIT
@@ -48,7 +56,19 @@ if grep -Eq "BGFX FATAL|Unhandled exception|Teardown failure|unknown stable type
     exit 1
 fi
 
-"$dotnet_command" build "$source_root/Inno.EditorScripts.csproj" \
+(
+    cd "$engine_root"
+    "$dotnet_command" build "$build_project" --disable-build-servers -m:1 -nr:false -p:UseSharedCompilation=false
+)
+compiler_assembly="$(
+    cd "$engine_root"
+    "$dotnet_command" msbuild "$build_project" -nologo -getProperty:TargetPath -p:Configuration=Debug -p:DesignTimeBuild=true
+)"
+compiler_assembly="${compiler_assembly//$'\r'/}"
+"$dotnet_command" "$compiler_assembly" scripts --engine-root "$engine_root" --tools-target macos-arm64 \
+    --dotnet "$dotnet_command" --project "$project_root" --output "$project_root/Library/Validation/Scripts" --ide
+
+"$dotnet_command" build "$project_root/Inno.EditorScripts.csproj" \
     -p:NuGetAudit=false \
     --disable-build-servers \
     -m:1 \

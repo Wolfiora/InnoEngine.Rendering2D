@@ -21,7 +21,6 @@ public sealed class ParticleSystem2D : GameBehavior
     private uint m_randomState = 1;
     private ulong m_simulationRevision = 1;
     private bool m_playing;
-    private uint m_seed = 1;
 
     /// <summary>
     /// Gets or sets the reusable effect definition.
@@ -47,9 +46,9 @@ public sealed class ParticleSystem2D : GameBehavior
     [SerializableProperty]
     public uint seed
     {
-        get => m_seed;
-        set => m_seed = value == 0 ? 1u : value;
-    }
+        get;
+        set => field = value == 0 ? 1u : value;
+    } = 1;
 
     /// <summary>
     /// Gets or sets the stable project-local sorting-layer name.

@@ -133,7 +133,6 @@ public sealed class SpriteRenderer2D : GameBehavior
     private SpriteReference2D m_crossFadeSprite;
     private float m_crossFadeWeight;
     private byte m_lightBlendStyles = 0x0f;
-    private float m_boundsPadding;
 
     /// <summary>
     /// Allows pointer input to reach content drawn behind this sprite when enabled.
@@ -184,8 +183,8 @@ public sealed class SpriteRenderer2D : GameBehavior
     [Tooltip("Maximum world-space displacement of your Shader's Vertex Offset. Expand this when the Shader moves vertices beyond the original geometry; it does not change rendered size.")]
     public float boundsPadding
     {
-        get => m_boundsPadding;
-        set => m_boundsPadding = float.IsFinite(value) ? MathF.Max(0f, value) : 0f;
+        get;
+        set => field = float.IsFinite(value) ? MathF.Max(0f, value) : 0f;
     }
 
     /// <summary>
