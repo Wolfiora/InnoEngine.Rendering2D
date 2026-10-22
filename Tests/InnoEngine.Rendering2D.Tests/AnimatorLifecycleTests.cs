@@ -51,6 +51,12 @@ public sealed class AnimatorLifecycleTests
         calls.Clear();
         animator.Stop();
         Assert.Equal(["low:footstep"], calls);
+        IDisposable failing = animator.Listen(_ => throw new InvalidOperationException("Listener failure"), 30);
+        Assert.Throws<InvalidOperationException>(() => animator.Play("walk"));
+        failing.Dispose();
+        calls.Clear();
+        animator.Play("walk");
+        Assert.Equal(["low:footstep"], calls);
         SpriteAnimationClip2D walk = animator.animation.clips[0];
         animator.animation.SetClips([walk, new()
         {
