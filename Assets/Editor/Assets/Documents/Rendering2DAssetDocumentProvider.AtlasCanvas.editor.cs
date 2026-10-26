@@ -9,7 +9,6 @@ using InnoEngine.Rendering;
 using Rect = InnoEngine.Mathematics.Rect;
 
 namespace Inno.Rendering2D;
-
 internal sealed partial class Rendering2DAssetDocumentProvider
 {
     private sealed partial class AtlasDraft
@@ -18,11 +17,9 @@ internal sealed partial class Rendering2DAssetDocumentProvider
         private byte[]? m_dragBefore;
         private byte[]? m_editBaseline;
         private Rect m_dragRect;
-
         internal override bool isEditing => m_dragBefore is not null;
 
         internal override byte[]? TakeGestureBefore() => CompleteGesture();
-
         internal override byte[]? CompleteGesture()
         {
             byte[]? before = m_dragBefore;
@@ -67,7 +64,7 @@ internal sealed partial class Rendering2DAssetDocumentProvider
             if (m_sources.Length == 0)
                 return;
             m_sourceIndex = Math.Clamp(m_sourceIndex, 0, m_sources.Length - 1);
-            if (!ImGuiWidget.SectionHeader("Selected Source", "Choose a texture using the standard asset selector or drag it from the File Browser."))
+            if (!EditorUiSession.current.widgets.SectionHeader("Selected Source", "Choose a texture using the standard asset selector or drag it from the File Browser."))
                 return;
             Property("name", "Name", () => m_sources[m_sourceIndex].name, value => m_sources[m_sourceIndex].name = value);
             Property<TextureAsset?>("texture", "Color Texture", () => m_sources[m_sourceIndex].texture, value => m_sources[m_sourceIndex].texture = value);
@@ -78,17 +75,7 @@ internal sealed partial class Rendering2DAssetDocumentProvider
                 string label,
                 Func<T> getter,
                 Action<T> setter
-            ) => context.properties.DrawValue(
-                context.editorContext,
-                this,
-                "atlas.source." + path,
-                label,
-                typeof(T),
-                () => getter(),
-                value => setter(value is T typed ? typed : default!),
-                edits,
-                readOnly
-            );
+            ) => context.properties.DrawValue(context.editorContext, this, "atlas.source." + path, label, typeof(T), () => getter(), value => setter(value is T typed ? typed : default!), edits, readOnly);
         }
 
         private bool DrawSourceCanvas(
@@ -98,14 +85,14 @@ internal sealed partial class Rendering2DAssetDocumentProvider
             if (!TryGetSelectedSource(out TextureAsset? texture) || texture is null || texture.isMissing)
                 return false;
             ImGui.SeparatorText("Source Canvas");
-            ImGuiWidget.Hint("Click a sprite to select it. Drag its body to move, or its lower-right corner to resize.");
+            EditorUiSession.current.widgets.Hint("Click a sprite to select it. Drag its body to move, or its lower-right corner to resize.");
             if (!previews.TryGetTexture(texture, out EditorPreviewHandle handle))
             {
-                ImGuiWidget.Hint("Source preview preparing...");
+                EditorUiSession.current.widgets.Hint("Source preview preparing...");
                 return false;
             }
 
-            float scale = MathF.Min(MathF.Max(1f, ImGui.GetContentRegionAvailable().X) / Math.Max(1, texture.width), 320f * ImGuiWidget.style.zoom / Math.Max(1, texture.height));
+            float scale = MathF.Min(MathF.Max(1f, ImGui.GetContentRegionAvailable().X) / Math.Max(1, texture.width), 320f * EditorUiSession.current.widgets.style.zoom / Math.Max(1, texture.height));
             Vector2 origin = ImGui.GetCursorPosition();
             Vector2 screen = ImGui.GetCursorScreenPosition();
             previews.Draw(handle, new Vector2(Math.Max(1, texture.width) * scale, Math.Max(1, texture.height) * scale));
@@ -131,7 +118,7 @@ internal sealed partial class Rendering2DAssetDocumentProvider
                     Vector2 maximum = screen + new Vector2(right, bottom) * scale;
                     ImGui.SetCursorPosition(origin + new Vector2(x, y) * scale);
                     Vector2 extent = maximum - minimum;
-                    float grip = MathF.Min(10f * ImGuiWidget.style.zoom, MathF.Min(extent.X, extent.Y) / 3f);
+                    float grip = MathF.Min(10f * EditorUiSession.current.widgets.style.zoom, MathF.Min(extent.X, extent.Y) / 3f);
                     _ = ImGui.Button("##slice:" + slice.id.value, new Vector2(extent.X, MathF.Max(1f, extent.Y - grip)));
                     if (ImGui.IsItemClicked())
                         m_selectedSlice = index;
@@ -142,6 +129,7 @@ internal sealed partial class Rendering2DAssetDocumentProvider
                             m_dragBefore = before;
                             m_dragRect = slice.pixelRect;
                         }
+
                         Vector2 delta = ImGui.GetMouseDragDelta();
                         float movedX = Math.Clamp(MathF.Round(m_dragRect.x + delta.X / scale), 0, MathF.Max(0, texture.width - slice.pixelRect.width));
                         float movedY = Math.Clamp(MathF.Round(m_dragRect.y + delta.Y / scale), 0, MathF.Max(0, texture.height - slice.pixelRect.height));
@@ -149,6 +137,7 @@ internal sealed partial class Rendering2DAssetDocumentProvider
                         m_slices[index] = slice;
                         changed = true;
                     }
+
                     ImGui.SetCursorPosition(origin + new Vector2(right, bottom) * scale - new Vector2(grip));
                     _ = ImGui.Button("##resize:" + slice.id.value, new Vector2(grip));
                     if (ImGui.IsItemClicked())
@@ -160,6 +149,7 @@ internal sealed partial class Rendering2DAssetDocumentProvider
                             m_dragBefore = before;
                             m_dragRect = slice.pixelRect;
                         }
+
                         Vector2 delta = ImGui.GetMouseDragDelta();
                         float resizedWidth = Math.Clamp(MathF.Round(m_dragRect.width + delta.X / scale), 1f, texture.width - m_dragRect.x);
                         float resizedHeight = Math.Clamp(MathF.Round(m_dragRect.height + delta.Y / scale), 1f, texture.height - m_dragRect.y);
@@ -168,13 +158,7 @@ internal sealed partial class Rendering2DAssetDocumentProvider
                         changed = true;
                     }
 
-                    ImGui.DrawRectangle(
-                        minimum,
-                        maximum,
-                        ImGui.ToPackedColor(index == m_selectedSlice ? EditorPalette.warning : EditorPalette.textDisabled),
-                        0,
-                        index == m_selectedSlice ? 2f : 1f
-                    );
+                    ImGui.DrawRectangle(minimum, maximum, ImGui.ToPackedColor(index == m_selectedSlice ? EditorPalette.warning : EditorPalette.textDisabled), 0, index == m_selectedSlice ? 2f : 1f);
                 }
             }
             finally

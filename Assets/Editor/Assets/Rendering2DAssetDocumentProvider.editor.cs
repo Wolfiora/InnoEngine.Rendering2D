@@ -13,7 +13,6 @@ using InnoEngine.Core;
 using InnoEngine.Rendering;
 
 namespace Inno.Rendering2D;
-
 internal sealed partial class Rendering2DAssetDocumentProvider(
     IEditorDocumentService documents,
     IEditorPreviewService previews,
@@ -25,7 +24,6 @@ internal sealed partial class Rendering2DAssetDocumentProvider(
     private readonly Dictionary<Guid, byte[]> m_baselines = [];
     private readonly Dictionary<Guid, byte[]> m_snapshots = [];
     private readonly Dictionary<Guid, string> m_errors = [];
-
     public override string id => Rendering2DIds.assetDocumentProvider;
 
     public override bool CanOpen(string assetPath) => Supports(Path.GetExtension(assetPath));
@@ -35,9 +33,7 @@ internal sealed partial class Rendering2DAssetDocumentProvider(
             return;
         foreach (EditorDocumentContext document in documents.documents)
         {
-            if (m_drafts.TryGetValue(document.documentId, out Draft? draft)
-                && (force || Time.frameCount > draft.lastDrawnFrame + 1)
-                && draft.CompleteGesture() is byte[] before)
+            if (m_drafts.TryGetValue(document.documentId, out Draft? draft) && (force || Time.frameCount > draft.lastDrawnFrame + 1) && draft.CompleteGesture() is byte[] before)
                 RecordApplied(document, draft, before, "Edit 2D Asset Gesture");
         }
     }
@@ -47,8 +43,7 @@ internal sealed partial class Rendering2DAssetDocumentProvider(
         // The candidate may already own the type cache here. Retire with frozen bytes only.
         foreach (EditorDocumentContext context in documents.documents)
         {
-            if (!m_drafts.TryGetValue(context.documentId, out Draft? draft)
-                || draft.TakeGestureBefore() is not byte[] before)
+            if (!m_drafts.TryGetValue(context.documentId, out Draft? draft) || draft.TakeGestureBefore() is not byte[] before)
                 continue;
             byte[] after = m_snapshots[context.documentId];
             if (before.AsSpan().SequenceEqual(after))
@@ -81,13 +76,12 @@ internal sealed partial class Rendering2DAssetDocumentProvider(
         animation.DrawPreview(thumbnails);
         if (animation.isEditing)
             SynchronizeState(context, animation);
-        ImGuiWidget.Hint("The selected frame is shared with the Inspector. Assign its Sprite there. Save publishes the source; preview never dispatches gameplay events.");
+        EditorUiSession.current.widgets.Hint("The selected frame is shared with the Inspector. Assign its Sprite there. Save publishes the source; preview never dispatches gameplay events.");
         if (m_errors.TryGetValue(context.documentId, out string? error))
-            ImGuiWidget.Hint("Cannot save: " + error);
+            EditorUiSession.current.widgets.Hint("Cannot save: " + error);
     }
 
     internal static bool Supports(string extension) => Array.Exists(S_EXTENSIONS, value => string.Equals(value, extension, StringComparison.OrdinalIgnoreCase));
-
     public override void Open(EditorDocumentContext context)
     {
         ArgumentNullException.ThrowIfNull(context);
@@ -126,13 +120,13 @@ internal sealed partial class Rendering2DAssetDocumentProvider(
         }
 
         bool readOnly = AssetPath.Parse(context.assetPath).source != AssetSourceId.project;
-        if (ImGuiWidget.SectionHeader("Asset", "The source remains authoritative. Save publishes draft changes through the normal asset import path."))
+        if (EditorUiSession.current.widgets.SectionHeader("Asset", "The source remains authoritative. Save publishes draft changes through the normal asset import path."))
         {
-            ImGuiWidget.Hint(context.isDirty ? "Unsaved changes · runtime content unchanged" : "Saved source");
+            EditorUiSession.current.widgets.Hint(context.isDirty ? "Unsaved changes · runtime content unchanged" : "Saved source");
             if (readOnly)
-                ImGuiWidget.Hint("Installed Plugin asset · copy to the project to edit");
+                EditorUiSession.current.widgets.Hint("Installed Plugin asset · copy to the project to edit");
             if (m_errors.TryGetValue(context.documentId, out string? failure))
-                ImGuiWidget.Hint("Cannot save: " + failure);
+                EditorUiSession.current.widgets.Hint("Cannot save: " + failure);
         }
 
         draft.lastDrawnFrame = Time.frameCount;
@@ -178,7 +172,7 @@ internal sealed partial class Rendering2DAssetDocumentProvider(
                 return false;
             }
         }
-        catch (Exception failure) when (failure is ArgumentException or InvalidOperationException or IOException)
+        catch (Exception failure)when (failure is ArgumentException or InvalidOperationException or IOException)
         {
             m_errors[context.documentId] = failure.Message;
             return false;
@@ -221,12 +215,11 @@ internal sealed partial class Rendering2DAssetDocumentProvider(
             ChangeData data = DecodeChange(change);
             if (!m_drafts.TryGetValue(data.documentId, out Draft? draft))
                 return EditorHistoryAvailability.Unavailable($"Reopen '{data.assetPath}' to use its History.");
-            byte[] expected = direction == EditorHistoryDirection.Undo ? data.after : data.before;
             if (draft.isEditing)
                 return EditorHistoryAvailability.Unavailable("Finish the current 2D gesture before using History.");
-            return m_snapshots[data.documentId].AsSpan().SequenceEqual(expected) ? EditorHistoryAvailability.Available() : EditorHistoryAvailability.Unavailable("The 2D asset draft changed outside this History entry.");
+            return EditorHistoryAvailability.Available();
         }
-        catch (Exception error) when (error is IOException or FormatException or InvalidOperationException or ArgumentException)
+        catch (Exception error)when (error is IOException or FormatException or InvalidOperationException or ArgumentException)
         {
             return EditorHistoryAvailability.Unavailable(error.Message);
         }
@@ -263,7 +256,7 @@ internal sealed partial class Rendering2DAssetDocumentProvider(
 
             return EditorHistoryResult.Success();
         }
-        catch (Exception error) when (error is IOException or FormatException or InvalidOperationException or ArgumentException)
+        catch (Exception error)when (error is IOException or FormatException or InvalidOperationException or ArgumentException)
         {
             return EditorHistoryResult.Failure(error.Message);
         }
@@ -285,7 +278,7 @@ internal sealed partial class Rendering2DAssetDocumentProvider(
             merged = new EditorHistoryChange(Rendering2DIds.assetDraftHistory, EditorHistoryPayload.FromBytes(EncodeChange(combined)), older.mergeKey);
             return true;
         }
-        catch (Exception error) when (error is IOException or FormatException or InvalidOperationException or ArgumentException)
+        catch (Exception error)when (error is IOException or FormatException or InvalidOperationException or ArgumentException)
         {
             return false;
         }
@@ -321,7 +314,6 @@ internal sealed partial class Rendering2DAssetDocumentProvider(
         EditorDocumentContext context,
         Draft draft
     ) => SynchronizeSnapshot(context, draft.Capture());
-
     private void SynchronizeSnapshot(
         EditorDocumentContext context,
         byte[] current
@@ -415,16 +407,13 @@ internal sealed partial class Rendering2DAssetDocumentProvider(
     {
         internal long lastDrawnFrame;
         internal virtual bool isEditing => false;
+
         internal virtual byte[]? CompleteGesture() => null;
         internal virtual byte[]? TakeGestureBefore() => null;
         internal abstract byte[] Capture();
-
         internal abstract void Restore(byte[] bytes);
-
         internal abstract bool Draw(IEditorPreviewService previews);
-
         internal abstract bool Save(AssetPath path);
-
         internal virtual void DrawInspector(
             InspectionDrawContext context,
             IEditorPreviewService previews,
@@ -469,11 +458,14 @@ internal sealed partial class Rendering2DAssetDocumentProvider(
     {
         internal byte[] current => provider.m_snapshots[context.documentId];
 
+        /// <inheritdoc />
         public bool ChangeProperty(
             object owner,
             string propertyName,
             Action mutation,
-            string historyName
+            string historyName,
+            string? mergeKey,
+            string? componentName
         ) {
             if (readOnly)
                 return false;
@@ -488,7 +480,7 @@ internal sealed partial class Rendering2DAssetDocumentProvider(
                 throw;
             }
 
-            provider.RecordApplied(context, draft, before, historyName);
+            provider.RecordApplied(context, draft, before, historyName, mergeKey);
             return true;
         }
 

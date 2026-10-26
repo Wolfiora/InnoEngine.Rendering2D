@@ -5,21 +5,20 @@ using InnoEngine.Assets;
 using InnoEngine.Rendering;
 
 namespace Inno.Rendering2D;
-
 /// <summary>
 /// Presents sprite sources by asset and region name while keeping storage identities private.
 /// </summary>
 [PropertyDrawer(typeof(SpriteReference2D), priority: 100)]
 public sealed class SpriteReferencePropertyDrawer : IPropertyDrawer
 {
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public void Draw(PropertyDrawContext context)
     {
-        SpriteReference2D value = context.GetValue() is SpriteReference2D sprite ? sprite : default;
+        SpriteReference2D value = context.GetValue()is SpriteReference2D sprite ? sprite : default;
         bool atlasMode = value.atlas is not null || value.regionId.isValid;
         if (context.TryGetTextState("source-mode", out string? mode) && !value.isAssigned)
             atlasMode = mode == "atlas";
-        if (ImGuiWidget.BeginBoundedCombo("##sprite-kind", atlasMode ? "Atlas region" : "Texture"))
+        if (EditorUiSession.current.widgets.BeginBoundedCombo("##sprite-kind", atlasMode ? "Atlas region" : "Texture"))
         {
             try
             {
@@ -41,7 +40,7 @@ public sealed class SpriteReferencePropertyDrawer : IPropertyDrawer
             }
             finally
             {
-                ImGuiWidget.EndBoundedCombo();
+                EditorUiSession.current.widgets.EndBoundedCombo();
             }
         }
 
@@ -64,7 +63,7 @@ public sealed class SpriteReferencePropertyDrawer : IPropertyDrawer
             if (atlas is { isMissing: false })
             {
                 string title = atlas.TryGetRegion(value.regionId, out SpriteRegion2D selected) ? RegionName(selected) : value.regionId.isValid ? "Missing region" : "Choose a sprite";
-                if (ImGuiWidget.BeginBoundedCombo("##sprite-region", title))
+                if (EditorUiSession.current.widgets.BeginBoundedCombo("##sprite-region", title))
                 {
                     try
                     {
@@ -82,11 +81,11 @@ public sealed class SpriteReferencePropertyDrawer : IPropertyDrawer
                         }
 
                         if (atlas.regions.Length == 0)
-                            ImGuiWidget.Hint("Open the Atlas, add slices, then Save to publish its sprites.");
+                            EditorUiSession.current.widgets.Hint("Open the Atlas, add slices, then Save to publish its sprites.");
                     }
                     finally
                     {
-                        ImGuiWidget.EndBoundedCombo();
+                        EditorUiSession.current.widgets.EndBoundedCombo();
                     }
                 }
             }
@@ -104,16 +103,16 @@ public sealed class SpriteReferencePropertyDrawer : IPropertyDrawer
         if ((value.isAssigned || value.atlas is not null || value.regionId.isValid) && ImGui.SmallButton("Clear Sprite"))
             context.SetValue(new SpriteReference2D());
         if (value.texture is { isMissing: false } source)
-            ImGuiWidget.Hint(source.name);
+            EditorUiSession.current.widgets.Hint(source.name);
         if (value.atlas is { isMissing: true } || value.texture is { isMissing: true })
-            ImGuiWidget.Hint("Missing sprite source · its reference is preserved until you replace or clear it.");
+            EditorUiSession.current.widgets.Hint("Missing sprite source · its reference is preserved until you replace or clear it.");
         else if (value.atlas is not null && value.regionId.isValid && !value.atlas.TryGetRegion(value.regionId, out _))
-            ImGuiWidget.Hint("Missing region · restore it in the Atlas, or choose a replacement.");
+            EditorUiSession.current.widgets.Hint("Missing region · restore it in the Atlas, or choose a replacement.");
         else if (!value.isAssigned)
-            ImGuiWidget.Hint("Choose a source. Sprite renderers can also use a procedural shape.");
+            EditorUiSession.current.widgets.Hint("Choose a source. Sprite renderers can also use a procedural shape.");
         if (context.interactions.TryGetModule<Rendering2DSpritePreviewModule>(out var previews) && previews is not null)
             previews.Draw(value, context.path, 88f);
-        SpriteReference2D Read() => context.GetValue() is SpriteReference2D current ? current : default;
+        SpriteReference2D Read() => context.GetValue()is SpriteReference2D current ? current : default;
     }
 
     private static string RegionName(SpriteRegion2D region) => string.IsNullOrWhiteSpace(region.name) ? "Unnamed sprite" : region.name;

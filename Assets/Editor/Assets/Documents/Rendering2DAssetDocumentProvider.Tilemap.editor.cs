@@ -7,13 +7,11 @@ using InnoEditor.Inspection;
 using InnoEditor.Rendering;
 using InnoEngine.Assets;
 using CellSize = InnoEngine.Mathematics.Vector2;
-
 using InnoEngine.Mathematics;
 using TilemapCanvasColor = System.Numerics.Vector4;
 using TilemapCanvasPoint = System.Numerics.Vector2;
 
 namespace Inno.Rendering2D;
-
 internal sealed partial class Rendering2DAssetDocumentProvider
 {
     private sealed class TilemapDraft(Tilemap2DAsset asset) : Draft
@@ -38,7 +36,6 @@ internal sealed partial class Rendering2DAssetDocumentProvider
         private string m_newLayer = "Layer";
         private string m_tileSearch = "";
         private TilemapSelection2D m_visibleBounds;
-
         internal override bool isEditing => m_gestureBefore is not null;
 
         internal override byte[]? TakeGestureBefore()
@@ -69,7 +66,6 @@ internal sealed partial class Rendering2DAssetDocumentProvider
         }
 
         internal override byte[] Capture() => EditorAssets.EncodeNative(m_asset);
-
         internal override void Restore(byte[] bytes)
         {
             Tilemap2DAsset restored = EditorAssets.DecodeNative<Tilemap2DAsset>(bytes);
@@ -88,23 +84,13 @@ internal sealed partial class Rendering2DAssetDocumentProvider
             IInspectionPropertyEditService edits,
             bool readOnly
         ) {
-            if (m_gestureBefore is not null && !ImGui.IsMouseButtonDown() && CompleteGesture() is byte[] completedGesture)
+            if (m_gestureBefore is not null && !ImGui.IsMouseButtonDown() && CompleteGesture()is byte[] completedGesture)
                 ((InspectorDraftEdits)edits).RecordApplied(completedGesture, "Paint Tilemap");
             base.DrawInspector(context, previews, edits, readOnly);
-            context.properties.DrawValue(
-                context.editorContext,
-                this,
-                "tilemap.tileset",
-                "Tile Set",
-                typeof(TileSet2DAsset),
-                () => m_asset.tileSet,
-                value => m_asset.tileSet = value as TileSet2DAsset,
-                edits,
-                readOnly
-            );
+            context.properties.DrawValue(context.editorContext, this, "tilemap.tileset", "Tile Set", typeof(TileSet2DAsset), () => m_asset.tileSet, value => m_asset.tileSet = value as TileSet2DAsset, edits, readOnly);
             if (m_asset.tileSet is not TileSet2DAsset tileSet || tileSet.isMissing || tileSet.tiles.Length == 0)
             {
-                ImGuiWidget.Hint("Assign a Tile Set with at least one tile to begin painting. Missing cells are preserved.");
+                EditorUiSession.current.widgets.Hint("Assign a Tile Set with at least one tile to begin painting. Missing cells are preserved.");
                 return;
             }
 
@@ -112,7 +98,7 @@ internal sealed partial class Rendering2DAssetDocumentProvider
             if (!tileSet.TryGetTile(m_tileId, out _))
                 m_tileId = tileSet.tiles[0].id;
             DrawPalette(tileSet, thumbnails);
-            ImGuiWidget.PropertyRow("brush-tint", "Brush Tint", () =>
+            EditorUiSession.current.widgets.PropertyRow("brush-tint", "Brush Tint", () =>
             {
                 TilemapCanvasColor color = new(m_tint.r, m_tint.g, m_tint.b, m_tint.a);
                 if (ImGui.ColorEditLinear4("##color", ref color))
@@ -138,7 +124,7 @@ internal sealed partial class Rendering2DAssetDocumentProvider
         internal override bool Draw(IEditorPreviewService previews)
         {
             bool changed = false;
-            if (ImGuiWidget.SectionHeader("Map", "Sparse cells retain their identities; only visible cells are drawn by the editor."))
+            if (EditorUiSession.current.widgets.SectionHeader("Map", "Sparse cells retain their identities; only visible cells are drawn by the editor."))
             {
                 float x = m_asset.cellSize.x;
                 float y = m_asset.cellSize.y;
@@ -154,11 +140,11 @@ internal sealed partial class Rendering2DAssetDocumentProvider
                 }
             }
 
-            if (ImGuiWidget.SectionHeader("Layers", "Choose the painting layer. Deleting a layer with cells is disabled to preserve its content."))
+            if (EditorUiSession.current.widgets.SectionHeader("Layers", "Choose the painting layer. Deleting a layer with cells is disabled to preserve its content."))
             {
                 TilemapLayer2D[] layers = m_asset.layers;
                 string label = layers.FirstOrDefault(layer => layer.id == m_layerId).name ?? "Choose a layer";
-                if (ImGuiWidget.BeginBoundedCombo("##layer", label))
+                if (EditorUiSession.current.widgets.BeginBoundedCombo("##layer", label))
                 {
                     try
                     {
@@ -170,7 +156,7 @@ internal sealed partial class Rendering2DAssetDocumentProvider
                     }
                     finally
                     {
-                        ImGuiWidget.EndBoundedCombo();
+                        EditorUiSession.current.widgets.EndBoundedCombo();
                     }
                 }
 
@@ -222,6 +208,7 @@ internal sealed partial class Rendering2DAssetDocumentProvider
                         visible = true,
                         order = layers.Length
                     }
+
                     ];
                     m_layerId = id;
                     changed = true;
@@ -245,15 +232,14 @@ internal sealed partial class Rendering2DAssetDocumentProvider
             layers = source.layers.ToArray(),
             chunks = source.chunks.Select(chunk => chunk with { cells = chunk.cells?.ToArray() ?? [] }).ToArray()
         };
-
         private void DrawPalette(
             TileSet2DAsset tileSet,
             Rendering2DSpritePreviewModule? thumbnails
         ) {
-            if (!ImGuiWidget.SectionHeader("Tile Palette", "Choose artwork by name, then paint on the map below."))
+            if (!EditorUiSession.current.widgets.SectionHeader("Tile Palette", "Choose artwork by name, then paint on the map below."))
                 return;
             _ = Rendering2DEditorFields.Text("Search", ref m_tileSearch);
-            float edge = 62f * ImGuiWidget.style.zoom;
+            float edge = 62f * EditorUiSession.current.widgets.style.zoom;
             int columns = Math.Max(1, (int)(ImGui.GetContentRegionAvailable().X / (edge + 4)));
             int index = 0;
             foreach (TileDefinition2D tile in tileSet.tiles.Where(tile => TileSetDraft.TileName(tile).Contains(m_tileSearch, StringComparison.OrdinalIgnoreCase)).Take(128))
@@ -268,7 +254,7 @@ internal sealed partial class Rendering2DAssetDocumentProvider
                 TilemapCanvasPoint maximum = ImGui.GetItemMaximum();
                 TilemapCanvasPoint next = ImGui.GetCursorPosition();
                 ImGui.SetCursorPosition(cursor + new TilemapCanvasPoint(3));
-                thumbnails?.Draw(tile.sprite, $"tile/{tileSet.identity.persistentId}/{tile.id}", MathF.Max(1, (edge - 6) / ImGuiWidget.style.zoom), false);
+                thumbnails?.Draw(tile.sprite, $"tile/{tileSet.identity.persistentId}/{tile.id}", MathF.Max(1, (edge - 6) / EditorUiSession.current.widgets.style.zoom), false);
                 ImGui.SetCursorPosition(next);
                 string name = TileSetDraft.TileName(tile);
                 while (name.Length > 1 && ImGui.MeasureText(name).X > edge - 6)
@@ -290,11 +276,11 @@ internal sealed partial class Rendering2DAssetDocumentProvider
             InspectorDraftEdits edits,
             bool readOnly
         ) {
-            if (!ImGuiWidget.SectionHeader("Paint", "Drag Brush/Erase across cells. Box and Select use the start/end cells. Fill is bounded to the visible map."))
+            if (!EditorUiSession.current.widgets.SectionHeader("Paint", "Drag Brush/Erase across cells. Box and Select use the start/end cells. Fill is bounded to the visible map."))
                 return;
             if (!m_asset.layers.Any(layer => layer.id == m_layerId))
             {
-                ImGuiWidget.Hint("Add a layer before painting.");
+                EditorUiSession.current.widgets.Hint("Add a layer before painting.");
                 return;
             }
 
@@ -311,9 +297,9 @@ internal sealed partial class Rendering2DAssetDocumentProvider
                 m_tool = PaintTool.Stamp;
             }
 
-            float edge = 28f * m_zoom * ImGuiWidget.style.zoom;
+            float edge = 28f * m_zoom * EditorUiSession.current.widgets.style.zoom;
             int columns = Math.Clamp((int)(ImGui.GetContentRegionAvailable().X / (edge + 2f)), 1, 32);
-            int rows = Math.Clamp((int)(220f * ImGuiWidget.style.zoom / (edge + 2f)), 3, 24);
+            int rows = Math.Clamp((int)(220f * EditorUiSession.current.widgets.style.zoom / (edge + 2f)), 3, 24);
             var bounds = new TilemapSelection2D(m_originX, m_originY, m_originX + columns - 1, m_originY + rows - 1);
             m_visibleBounds = bounds;
             bool held = !readOnly && ImGui.IsMouseButtonDown();
@@ -353,7 +339,7 @@ internal sealed partial class Rendering2DAssetDocumentProvider
                     {
                         TilemapCanvasPoint cursor = ImGui.GetCursorPosition();
                         ImGui.SetCursorPosition(cursor + minimum - ImGui.GetCursorScreenPosition() + new TilemapCanvasPoint(2));
-                        thumbnails.Draw(visual.sprite, $"tile/{tileSet.identity.persistentId}/{visual.id}", MathF.Max(1, (edge - 4) / ImGuiWidget.style.zoom), false);
+                        thumbnails.Draw(visual.sprite, $"tile/{tileSet.identity.persistentId}/{visual.id}", MathF.Max(1, (edge - 4) / EditorUiSession.current.widgets.style.zoom), false);
                         ImGui.SetCursorPosition(next);
                     }
 
@@ -371,9 +357,9 @@ internal sealed partial class Rendering2DAssetDocumentProvider
                 edits.RecordApplied(before, "Paint Tilemap");
             }
 
-            ImGuiWidget.Hint($"Visible: ({bounds.minimumX}, {bounds.minimumY}) – ({bounds.maximumX}, {bounds.maximumY}) · {m_asset.chunks.Length} sparse chunks");
+            EditorUiSession.current.widgets.Hint($"Visible: ({bounds.minimumX}, {bounds.minimumY}) – ({bounds.maximumX}, {bounds.maximumY}) · {m_asset.chunks.Length} sparse chunks");
             if (m_tool == PaintTool.Stamp && m_stamp.Length == 0)
-                ImGuiWidget.Hint("Select occupied cells and Copy Selection before stamping.");
+                EditorUiSession.current.widgets.Hint("Select occupied cells and Copy Selection before stamping.");
         }
 
         private void Paint(TilemapPosition2D position)

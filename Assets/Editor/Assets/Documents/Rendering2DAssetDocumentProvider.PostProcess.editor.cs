@@ -7,7 +7,6 @@ using InnoEditor.Rendering;
 using InnoEngine.Assets;
 
 namespace Inno.Rendering2D;
-
 internal sealed partial class Rendering2DAssetDocumentProvider
 {
     private sealed class PostProcessDraft(PostProcessProfile2DAsset asset) : Draft
@@ -22,9 +21,7 @@ internal sealed partial class Rendering2DAssetDocumentProvider
         private float m_bloomScatter = asset.bloomScatter;
         private float m_vignette = asset.vignette;
         private int m_pixelation = asset.pixelation;
-
         internal override byte[] Capture() => EditorAssets.EncodeNative(CreateAsset(normalize: false));
-
         internal override void Restore(byte[] bytes)
         {
             PostProcessProfile2DAsset restored = EditorAssets.DecodeNative<PostProcessProfile2DAsset>(bytes);
@@ -63,7 +60,7 @@ internal sealed partial class Rendering2DAssetDocumentProvider
             IInspectionPropertyEditService edits,
             bool readOnly
         ) {
-            if (ImGuiWidget.SectionHeader("Color and Tone", "Exposure, contrast, saturation, and tone mapping shape the complete camera result."))
+            if (EditorUiSession.current.widgets.SectionHeader("Color and Tone", "Exposure, contrast, saturation, and tone mapping shape the complete camera result."))
             {
                 Property("exposure", "Exposure", () => m_exposure, value => m_exposure = value);
                 Property("contrast", "Contrast", () => m_contrast, value => m_contrast = value, minimum: 0.0001);
@@ -71,7 +68,7 @@ internal sealed partial class Rendering2DAssetDocumentProvider
                 Property("toneMapping", "Tone Mapping", () => m_toneMapping, value => m_toneMapping = value);
             }
 
-            if (ImGuiWidget.SectionHeader("Bloom", "Bloom extracts bright pixels and spreads them through a bounded downsample pyramid."))
+            if (EditorUiSession.current.widgets.SectionHeader("Bloom", "Bloom extracts bright pixels and spreads them through a bounded downsample pyramid."))
             {
                 Property("bloomIntensity", "Intensity", () => m_bloomIntensity, value => m_bloomIntensity = value, minimum: 0);
                 Property("bloomThreshold", "Threshold", () => m_bloomThreshold, value => m_bloomThreshold = value, minimum: 0);
@@ -79,7 +76,7 @@ internal sealed partial class Rendering2DAssetDocumentProvider
                 Property("bloomScatter", "Scatter", () => m_bloomScatter, value => m_bloomScatter = value, minimum: 0, maximum: 1);
             }
 
-            if (ImGuiWidget.SectionHeader("Screen Effects", "These operations are evaluated after color and bloom composition."))
+            if (EditorUiSession.current.widgets.SectionHeader("Screen Effects", "These operations are evaluated after color and bloom composition."))
             {
                 Property("vignette", "Vignette", () => m_vignette, value => m_vignette = value, minimum: 0, maximum: 1);
                 Property("pixelation", "Pixelation", () => m_pixelation, value => m_pixelation = value, minimum: 1);
@@ -93,27 +90,13 @@ internal sealed partial class Rendering2DAssetDocumentProvider
                 double? minimum = null,
                 double? maximum = null
             ) {
-                context.properties.DrawValue(
-                    context.editorContext,
-                    this,
-                    "post-process." + path,
-                    label,
-                    typeof(T),
-                    () => getter(),
-                    value => setter(value is T typed ? typed : throw new InvalidOperationException($"'{path}' received an incompatible value.")),
-                    edits,
-                    readOnly,
-                    minimum: minimum,
-                    maximum: maximum
-                );
+                context.properties.DrawValue(context.editorContext, this, "post-process." + path, label, typeof(T), () => getter(), value => setter(value is T typed ? typed : throw new InvalidOperationException($"'{path}' received an incompatible value.")), edits, readOnly, minimum: minimum, maximum: maximum);
             }
         }
 
         internal override bool Save(AssetPath path)
         {
-            if (!float.IsFinite(m_exposure) || !float.IsFinite(m_contrast) || !float.IsFinite(m_saturation)
-                || !float.IsFinite(m_bloomIntensity) || !float.IsFinite(m_bloomThreshold)
-                || !float.IsFinite(m_bloomScatter) || !float.IsFinite(m_vignette))
+            if (!float.IsFinite(m_exposure) || !float.IsFinite(m_contrast) || !float.IsFinite(m_saturation) || !float.IsFinite(m_bloomIntensity) || !float.IsFinite(m_bloomThreshold) || !float.IsFinite(m_bloomScatter) || !float.IsFinite(m_vignette))
                 throw new ArgumentException("Post-processing values must be finite.", nameof(path));
             return Rendering2DAssets.SavePostProcess(path, CreateAsset(normalize: true));
         }

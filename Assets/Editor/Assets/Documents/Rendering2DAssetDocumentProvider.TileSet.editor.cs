@@ -8,7 +8,6 @@ using InnoEngine.Assets;
 using InnoEngine.Mathematics;
 
 namespace Inno.Rendering2D;
-
 internal sealed partial class Rendering2DAssetDocumentProvider
 {
     private sealed class TileSetDraft(TileSet2DAsset asset) : Draft
@@ -18,11 +17,8 @@ internal sealed partial class Rendering2DAssetDocumentProvider
         private int m_rule;
         private int m_frame;
         private string m_newName = "Grass";
-
         internal override byte[] Capture() => EditorAssets.EncodeNative(new TileSet2DAsset { tiles = CloneTiles(m_tiles) });
-
         internal override void Restore(byte[] bytes) => m_tiles = CloneTiles(EditorAssets.DecodeNative<TileSet2DAsset>(bytes).tiles);
-
         internal override void DrawInspector(
             InspectionDrawContext context,
             IEditorPreviewService previews,
@@ -33,8 +29,8 @@ internal sealed partial class Rendering2DAssetDocumentProvider
             if (m_tiles.Length == 0)
                 return;
             m_selected = Math.Clamp(m_selected, 0, m_tiles.Length - 1);
-            Property("sprite", "Sprite", () => Selected().sprite, value => Update(Selected() with { sprite = value }));
-            Property("color", "Tint", () => Selected().color, value => Update(Selected() with { color = value }));
+            Property("sprite", "Sprite", () => Selected().sprite, value => Update(Selected()with { sprite = value }));
+            Property("color", "Tint", () => Selected().color, value => Update(Selected()with { color = value }));
             TileDefinition2D tile = Selected();
             if (tile.rules is { Length: > 0 })
             {
@@ -63,23 +59,13 @@ internal sealed partial class Rendering2DAssetDocumentProvider
                 string label,
                 Func<T> getter,
                 Action<T> setter
-            ) => context.properties.DrawValue(
-                context.editorContext,
-                this,
-                "tileset." + path,
-                label,
-                typeof(T),
-                () => getter(),
-                value => setter(value is T typed ? typed : default!),
-                edits,
-                readOnly
-            );
+            ) => context.properties.DrawValue(context.editorContext, this, "tileset." + path, label, typeof(T), () => getter(), value => setter(value is T typed ? typed : default!), edits, readOnly);
         }
 
         internal override bool Draw(IEditorPreviewService previews)
         {
             bool changed = false;
-            ImGuiWidget.SectionHeader("Tile Definitions", "Choose tiles by name. Map cells keep their numeric identities when a tile is renamed.");
+            EditorUiSession.current.widgets.SectionHeader("Tile Definitions", "Choose tiles by name. Map cells keep their numeric identities when a tile is renamed.");
             _ = Rendering2DEditorFields.Text("New Tile", ref m_newName);
             if (ImGui.Button("Add Tile"))
             {
@@ -95,6 +81,7 @@ internal sealed partial class Rendering2DAssetDocumentProvider
                     rules = [],
                     metadata = ""
                 }
+
                 ];
                 m_selected = m_tiles.Length - 1;
                 changed = true;
@@ -102,12 +89,12 @@ internal sealed partial class Rendering2DAssetDocumentProvider
 
             if (m_tiles.Length == 0)
             {
-                ImGuiWidget.Hint("Add a tile and assign a sprite. Animated and rule variants are optional.");
+                EditorUiSession.current.widgets.Hint("Add a tile and assign a sprite. Animated and rule variants are optional.");
                 return changed;
             }
 
             m_selected = Math.Clamp(m_selected, 0, m_tiles.Length - 1);
-            if (ImGuiWidget.BeginBoundedCombo("##tile", TileName(m_tiles[m_selected])))
+            if (EditorUiSession.current.widgets.BeginBoundedCombo("##tile", TileName(m_tiles[m_selected])))
             {
                 try
                 {
@@ -119,7 +106,7 @@ internal sealed partial class Rendering2DAssetDocumentProvider
                 }
                 finally
                 {
-                    ImGuiWidget.EndBoundedCombo();
+                    EditorUiSession.current.widgets.EndBoundedCombo();
                 }
             }
 
@@ -141,8 +128,8 @@ internal sealed partial class Rendering2DAssetDocumentProvider
                 return true;
             }
 
-            ImGuiWidget.Hint("Removing a definition preserves its map cells as unresolved tiles.");
-            if (ImGuiWidget.SectionHeader("Animation", "Variable-duration frames override the base sprite while the tile is visible."))
+            EditorUiSession.current.widgets.Hint("Removing a definition preserves its map cells as unresolved tiles.");
+            if (EditorUiSession.current.widgets.SectionHeader("Animation", "Variable-duration frames override the base sprite while the tile is visible."))
             {
                 tile.animation ??= [];
                 if (ImGui.SmallButton("Add Animation Frame"))
@@ -152,6 +139,7 @@ internal sealed partial class Rendering2DAssetDocumentProvider
                         sprite = tile.sprite,
                         duration = 0.125f
                     }
+
                     ];
                     m_frame = tile.animation.Length - 1;
                     changed = true;
@@ -185,7 +173,7 @@ internal sealed partial class Rendering2DAssetDocumentProvider
                 }
             }
 
-            if (ImGuiWidget.SectionHeader("Neighbor Rules", "Click neighbor cells to cycle Any / Same / Different / Empty / Occupied. Higher priority wins."))
+            if (EditorUiSession.current.widgets.SectionHeader("Neighbor Rules", "Click neighbor cells to cycle Any / Same / Different / Empty / Occupied. Higher priority wins."))
             {
                 tile.rules ??= [];
                 if (ImGui.SmallButton("Add Rule"))
@@ -195,6 +183,7 @@ internal sealed partial class Rendering2DAssetDocumentProvider
                         sprite = tile.sprite,
                         conditions = []
                     }
+
                     ];
                     m_rule = tile.rules.Length - 1;
                     changed = true;
@@ -218,7 +207,7 @@ internal sealed partial class Rendering2DAssetDocumentProvider
                     }
 
                     var conditions = (rule.conditions ?? []).ToList();
-                    float edge = MathF.Min(70f * ImGuiWidget.style.zoom, MathF.Max(1f, (ImGui.GetContentRegionAvailable().X - 8f) / 3f));
+                    float edge = MathF.Min(70f * EditorUiSession.current.widgets.style.zoom, MathF.Max(1f, (ImGui.GetContentRegionAvailable().X - 8f) / 3f));
                     for (int y = 1; y >= -1; y--)
                     {
                         for (int x = -1; x <= 1; x++)
@@ -264,7 +253,7 @@ internal sealed partial class Rendering2DAssetDocumentProvider
                 }
             }
 
-            if (ImGuiWidget.SectionHeader("Gameplay Metadata", "Optional domain data. Rendering does not interpret it."))
+            if (EditorUiSession.current.widgets.SectionHeader("Gameplay Metadata", "Optional domain data. Rendering does not interpret it."))
             {
                 string metadata = tile.metadata ?? "";
                 if (Rendering2DEditorFields.Text("Metadata", ref metadata))
@@ -287,7 +276,6 @@ internal sealed partial class Rendering2DAssetDocumentProvider
 
         private TileDefinition2D Selected() => m_tiles[m_selected];
         private void Update(TileDefinition2D tile) => m_tiles[m_selected] = tile;
-
         internal static string TileName(TileDefinition2D tile) => string.IsNullOrWhiteSpace(tile.name) ? $"Tile {tile.id}" : tile.name;
         private static TileDefinition2D[] CloneTiles(TileDefinition2D[] source) => source.Select(tile => tile with { animation = tile.animation?.ToArray() ?? [], rules = tile.rules?.Select(rule => rule with { conditions = rule.conditions?.ToArray() ?? [] }).ToArray() ?? [] }).ToArray();
     }

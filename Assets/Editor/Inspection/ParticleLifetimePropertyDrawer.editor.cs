@@ -2,13 +2,11 @@ using System;
 using System.Linq;
 using InnoEditor.ImGui;
 using InnoEditor.Inspection;
-
 using InnoEngine.Mathematics;
 using ParticleEditorColor = System.Numerics.Vector4;
 using ParticleEditorPoint = System.Numerics.Vector2;
 
 namespace Inno.Rendering2D;
-
 /// <summary>
 /// Presents particle lifetime curves and gradients with sampled previews and ordered, named key controls.
 /// </summary>
@@ -16,13 +14,13 @@ namespace Inno.Rendering2D;
 [PropertyDrawer(typeof(ParticleGradient2D), priority: 100)]
 public sealed class ParticleLifetimePropertyDrawer : IPropertyDrawer
 {
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public void Draw(PropertyDrawContext context)
     {
         if (context.propertyType == typeof(ParticleCurve2D))
-            DrawCurve(context, context.GetValue() is ParticleCurve2D curve ? curve : default);
+            DrawCurve(context, context.GetValue()is ParticleCurve2D curve ? curve : default);
         else
-            DrawGradient(context, context.GetValue() is ParticleGradient2D gradient ? gradient : default);
+            DrawGradient(context, context.GetValue()is ParticleGradient2D gradient ? gradient : default);
     }
 
     private static void DrawCurve(
@@ -32,7 +30,7 @@ public sealed class ParticleLifetimePropertyDrawer : IPropertyDrawer
         ParticleCurveKey2D[] keys = curve.keys ?? [];
         float maximum = MathF.Max(1f, keys.Length == 0 ? 1f : keys.Max(key => float.IsFinite(key.value) ? key.value : 0f));
         ParticleEditorPoint origin = ImGui.GetCursorScreenPosition();
-        ParticleEditorPoint size = new(MathF.Max(1f, ImGui.GetContentRegionAvailable().X), 72f * ImGuiWidget.style.zoom);
+        ParticleEditorPoint size = new(MathF.Max(1f, ImGui.GetContentRegionAvailable().X), 72f * EditorUiSession.current.widgets.style.zoom);
         ImGui.Dummy(size);
         ImGui.DrawFilledRectangle(origin, origin + size, ImGui.ToPackedColor(EditorPalette.frame));
         ParticleEditorPoint previous = origin + new ParticleEditorPoint(0, size.Y * (1f - Sample(curve, 0, maximum)));
@@ -43,7 +41,8 @@ public sealed class ParticleLifetimePropertyDrawer : IPropertyDrawer
             ImGui.DrawLine(previous, next, ImGui.ToPackedColor(EditorPalette.warning), 2f);
             previous = next;
         }
-        ImGuiWidget.Hint("Birth → End of lifetime");
+
+        EditorUiSession.current.widgets.Hint("Birth → End of lifetime");
         int selected = SelectKey(context, keys.Select(key => key.time).ToArray());
         if (selected >= 0)
         {
@@ -54,23 +53,26 @@ public sealed class ParticleLifetimePropertyDrawer : IPropertyDrawer
             if (changed)
             {
                 ParticleCurveKey2D[] replacement = keys.ToArray();
-                replacement[selected] = new() { time = time, value = value };
+                replacement[selected] = new()
+                {
+                    time = time,
+                    value = value
+                };
                 if (replacement.Select(key => key.time).Distinct().Count() == replacement.Length)
                     context.SetValue(new ParticleCurve2D { keys = replacement.OrderBy(key => key.time).ToArray() });
             }
+
             if (ImGui.SmallButton("Remove Key"))
                 context.SetValue(new ParticleCurve2D { keys = keys.Where((
                     _,
                     index
                 ) => index != selected).ToArray() });
         }
+
         if (keys.Length < 64 && ImGui.SmallButton("Add Key"))
         {
             float time = NextTime(keys.Select(key => key.time).ToArray());
-            context.SetValue(new ParticleCurve2D
-            {
-                keys = keys.Append(new() { time = time, value = curve.Evaluate(time) }).OrderBy(key => key.time).ToArray()
-            });
+            context.SetValue(new ParticleCurve2D { keys = keys.Append(new() { time = time, value = curve.Evaluate(time) }).OrderBy(key => key.time).ToArray() });
         }
     }
 
@@ -80,16 +82,14 @@ public sealed class ParticleLifetimePropertyDrawer : IPropertyDrawer
     ) {
         ParticleGradientKey2D[] keys = gradient.keys ?? [];
         ParticleEditorPoint origin = ImGui.GetCursorScreenPosition();
-        ParticleEditorPoint size = new(MathF.Max(1f, ImGui.GetContentRegionAvailable().X), 24f * ImGuiWidget.style.zoom);
+        ParticleEditorPoint size = new(MathF.Max(1f, ImGui.GetContentRegionAvailable().X), 24f * EditorUiSession.current.widgets.style.zoom);
         ImGui.Dummy(size);
         for (int index = 0; index < 32; index++)
         {
             var color = gradient.Evaluate(index / 31f);
-            ImGui.DrawFilledRectangle(
-                origin + new ParticleEditorPoint(size.X * index / 32f, 0),
-                origin + new ParticleEditorPoint(size.X * (index + 1) / 32f, size.Y),
-                ImGui.ToPackedColor(new ParticleEditorColor(Display(color.r), Display(color.g), Display(color.b), float.IsFinite(color.a) ? color.a : 0f)));
+            ImGui.DrawFilledRectangle(origin + new ParticleEditorPoint(size.X * index / 32f, 0), origin + new ParticleEditorPoint(size.X * (index + 1) / 32f, size.Y), ImGui.ToPackedColor(new ParticleEditorColor(Display(color.r), Display(color.g), Display(color.b), float.IsFinite(color.a) ? color.a : 0f)));
         }
+
         int selected = SelectKey(context, keys.Select(key => key.time).ToArray());
         if (selected >= 0)
         {
@@ -101,23 +101,26 @@ public sealed class ParticleLifetimePropertyDrawer : IPropertyDrawer
             if (changed)
             {
                 ParticleGradientKey2D[] replacement = keys.ToArray();
-                replacement[selected] = new() { time = time, color = new(edited.X, edited.Y, edited.Z, edited.W) };
+                replacement[selected] = new()
+                {
+                    time = time,
+                    color = new(edited.X, edited.Y, edited.Z, edited.W)
+                };
                 if (replacement.Select(key => key.time).Distinct().Count() == replacement.Length)
                     context.SetValue(new ParticleGradient2D { keys = replacement.OrderBy(key => key.time).ToArray() });
             }
+
             if (ImGui.SmallButton("Remove Key"))
                 context.SetValue(new ParticleGradient2D { keys = keys.Where((
                     _,
                     index
                 ) => index != selected).ToArray() });
         }
+
         if (keys.Length < 64 && ImGui.SmallButton("Add Key"))
         {
             float time = NextTime(keys.Select(key => key.time).ToArray());
-            context.SetValue(new ParticleGradient2D
-            {
-                keys = keys.Append(new() { time = time, color = gradient.Evaluate(time) }).OrderBy(key => key.time).ToArray()
-            });
+            context.SetValue(new ParticleGradient2D { keys = keys.Append(new() { time = time, color = gradient.Evaluate(time) }).OrderBy(key => key.time).ToArray() });
         }
     }
 
@@ -128,11 +131,12 @@ public sealed class ParticleLifetimePropertyDrawer : IPropertyDrawer
         int selected = context.TryGetTextState("key", out string? saved) && int.TryParse(saved, out int index) ? index : 0;
         if (times.Length == 0)
         {
-            ImGuiWidget.Hint("No keys · constant default");
+            EditorUiSession.current.widgets.Hint("No keys · constant default");
             return -1;
         }
+
         selected = Math.Clamp(selected, 0, times.Length - 1);
-        if (ImGuiWidget.BeginBoundedCombo("##key", $"Key {selected + 1} · {times[selected]:0.###}"))
+        if (EditorUiSession.current.widgets.BeginBoundedCombo("##key", $"Key {selected + 1} · {times[selected]:0.###}"))
         {
             try
             {
@@ -146,9 +150,10 @@ public sealed class ParticleLifetimePropertyDrawer : IPropertyDrawer
             }
             finally
             {
-                ImGuiWidget.EndBoundedCombo();
+                EditorUiSession.current.widgets.EndBoundedCombo();
             }
         }
+
         return selected;
     }
 
@@ -169,6 +174,7 @@ public sealed class ParticleLifetimePropertyDrawer : IPropertyDrawer
             widest = width;
             result = ordered[index - 1] + width * 0.5f;
         }
+
         return result;
     }
 

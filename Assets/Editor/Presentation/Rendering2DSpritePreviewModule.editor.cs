@@ -8,11 +8,10 @@ using InnoEditor.Rendering;
 using InnoEngine.Rendering;
 
 namespace Inno.Rendering2D;
-
 /// <summary>
 /// Owns bounded, generation-scoped sprite previews for visible 2D authoring controls.
 /// </summary>
-/// <param name="previews">
+/// <param name = "previews">
 /// Session-owned offscreen rendering and texture presentation service.
 /// </param>
 [EditorModule("rendering2d.sprite-previews", order: 390)]
@@ -20,7 +19,6 @@ public sealed class Rendering2DSpritePreviewModule(IEditorPreviewService preview
 {
     private readonly Dictionary<string, PreviewState> m_states = new(StringComparer.Ordinal);
     private long m_frame;
-
     internal bool Draw(
         SpriteReference2D sprite,
         string owner,
@@ -37,7 +35,7 @@ public sealed class Rendering2DSpritePreviewModule(IEditorPreviewService preview
         }
 
         state.frame = m_frame;
-        size = MathF.Max(1f, MathF.Min(size * ImGuiWidget.style.zoom, ImGui.GetContentRegionAvailable().X));
+        size = MathF.Max(1f, MathF.Min(size * EditorUiSession.current.widgets.style.zoom, ImGui.GetContentRegionAvailable().X));
         if (state.submittedFrame != m_frame)
         {
             var data = new RenderFrameData();
@@ -51,11 +49,11 @@ public sealed class Rendering2DSpritePreviewModule(IEditorPreviewService preview
         if (state.ready)
             previews.Draw(state.handle, new Vector2(size));
         else if (showStatus)
-            ImGuiWidget.Hint("Sprite preview preparing...");
+            EditorUiSession.current.widgets.Hint("Sprite preview preparing...");
         return state.ready;
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     protected override void OnUpdate(EditorContext context)
     {
         m_frame++;
@@ -63,9 +61,9 @@ public sealed class Rendering2DSpritePreviewModule(IEditorPreviewService preview
             Release(owner);
     }
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     protected override void OnStop(EditorContext context) => ReleaseAll();
-    /// <inheritdoc />
+    /// <inheritdoc/>
     protected override void OnDispose() => ReleaseAll();
     private void ReleaseAll()
     {
@@ -89,9 +87,7 @@ public sealed class Rendering2DSpritePreviewModule(IEditorPreviewService preview
         };
         internal long frame;
         internal long submittedFrame = -1;
-
         internal bool ready;
-
         internal EditorPreviewHandle handle;
     }
 }

@@ -6,7 +6,6 @@ using InnoEditor.ImGui;
 using InnoEditor.Settings;
 
 namespace Inno.Rendering2D;
-
 /// <summary>
 /// Provides the renderer-limit section of the unified 2D Project Settings page.
 /// </summary>
@@ -15,17 +14,17 @@ public sealed class Rendering2DProjectSettingsEditor : ProjectSettingEditor<Rend
 {
     private string? m_pipelinePath;
     private string m_pipelineError = string.Empty;
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public override string section => "Renderer";
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public override string description => "Configure project-wide 2D rendering pipeline and batching limits.";
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     protected override void OnDraw(Rendering2DProjectSettings setting)
     {
         m_pipelinePath ??= setting.pipeline?.assetPath.ToString() ?? string.Empty;
         ImGui.Text("Pipeline: " + (setting.pipeline?.name ?? "Not configured"));
-        ImGuiWidget.Hint("Use the bundled default, or enter a 2D Pipeline source path.");
+        EditorUiSession.current.widgets.Hint("Use the bundled default, or enter a 2D Pipeline source path.");
         _ = Rendering2DEditorFields.Text("Pipeline Source", ref m_pipelinePath);
         if (ImGui.Button("Assign Pipeline"))
         {
@@ -76,12 +75,12 @@ public sealed class Rendering2DSortingLayersProjectSettingsEditor : ProjectSetti
 {
     private string m_newName = "Layer";
     private int m_newOrder;
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public override string section => "Sorting Layers";
-    /// <inheritdoc />
+    /// <inheritdoc/>
     public override string description => "Configure sorting-layer names and order. IDs are generated automatically as projectId.name.";
 
-    /// <inheritdoc />
+    /// <inheritdoc/>
     protected override void OnDraw(Rendering2DProjectSettings setting)
     {
         var layers = new System.Collections.Generic.List<SortingLayer2DDefinition>(setting.sortingLayers);

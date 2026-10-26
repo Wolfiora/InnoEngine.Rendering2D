@@ -8,7 +8,6 @@ using InnoEngine.Assets;
 using InnoEngine.Rendering;
 
 namespace Inno.Rendering2D;
-
 internal sealed partial class Rendering2DAssetDocumentProvider
 {
     private sealed partial class AtlasDraft(SpriteAtlas2DAsset asset) : Draft
@@ -29,9 +28,7 @@ internal sealed partial class Rendering2DAssetDocumentProvider
         private float m_pivotX = 0.5f;
         private float m_pivotY = 0.5f;
         private string m_packingStatus = string.Empty;
-
         internal override byte[] Capture() => EditorAssets.EncodeNative(CreateAsset(normalize: false));
-
         internal override void Restore(byte[] bytes)
         {
             SpriteAtlas2DAsset restored = EditorAssets.DecodeNative<SpriteAtlas2DAsset>(bytes);
@@ -75,6 +72,7 @@ internal sealed partial class Rendering2DAssetDocumentProvider
                 {
                     name = "Source " + (m_sources.Length + 1)
                 }
+
                 ];
                 m_sourceIndex = m_sources.Length - 1;
                 changed = true;
@@ -88,6 +86,7 @@ internal sealed partial class Rendering2DAssetDocumentProvider
                 if (ImGui.Selectable($"Source {sourceIndex}: {source.name} ({dimensions})", m_sourceIndex == sourceIndex))
                     m_sourceIndex = sourceIndex;
             }
+
             if (m_sources.Length > 0)
             {
                 m_sourceIndex = Math.Clamp(m_sourceIndex, 0, m_sources.Length - 1);
@@ -107,6 +106,7 @@ internal sealed partial class Rendering2DAssetDocumentProvider
                             slice.sourceIndex--;
                         m_slices[index] = slice;
                     }
+
                     m_sourceIndex = Math.Max(0, removed - 1);
                     changed = true;
                 }
@@ -136,7 +136,7 @@ internal sealed partial class Rendering2DAssetDocumentProvider
             changed |= DrawSourceCanvas(previews, m_editBaseline ?? throw new InvalidOperationException("Atlas edits require the current document snapshot."));
             ImGui.SeparatorText("Regions");
             m_selectedSlice = Math.Clamp(m_selectedSlice, 0, Math.Max(0, m_slices.Count - 1));
-            if (m_slices.Count > 0 && ImGuiWidget.BeginBoundedCombo("##region", m_slices[m_selectedSlice].name))
+            if (m_slices.Count > 0 && EditorUiSession.current.widgets.BeginBoundedCombo("##region", m_slices[m_selectedSlice].name))
             {
                 try
                 {
@@ -148,7 +148,7 @@ internal sealed partial class Rendering2DAssetDocumentProvider
                 }
                 finally
                 {
-                    ImGuiWidget.EndBoundedCombo();
+                    EditorUiSession.current.widgets.EndBoundedCombo();
                 }
             }
 
@@ -222,7 +222,7 @@ internal sealed partial class Rendering2DAssetDocumentProvider
                 ImGui.Text($"Published page · {page.width} × {page.height}");
                 if (previews.TryGetTextureArtifact(published.GetPageTexture(0), page.width, page.height, out EditorPreviewHandle handle))
                 {
-                    float scale = MathF.Min(MathF.Max(1, ImGui.GetContentRegionAvailable().X) / page.width, 320f * ImGuiWidget.style.zoom / page.height);
+                    float scale = MathF.Min(MathF.Max(1, ImGui.GetContentRegionAvailable().X) / page.width, 320f * EditorUiSession.current.widgets.style.zoom / page.height);
                     previews.Draw(handle, new System.Numerics.Vector2(page.width * scale, page.height * scale));
                 }
             }
@@ -262,16 +262,7 @@ internal sealed partial class Rendering2DAssetDocumentProvider
         {
             if (!TryGetSelectedSource(out TextureAsset? texture) || texture is null)
                 return false;
-            SpriteAtlasSlice2D[] slices = SpriteAtlasSlicing2D.Grid(
-                m_slices,
-                m_sourceIndex,
-                GetSourceName(),
-                texture.width,
-                texture.height,
-                Math.Max(1, m_gridWidth),
-                Math.Max(1, m_gridHeight),
-                new InnoEngine.Mathematics.Vector2(m_pivotX, m_pivotY)
-            );
+            SpriteAtlasSlice2D[] slices = SpriteAtlasSlicing2D.Grid(m_slices, m_sourceIndex, GetSourceName(), texture.width, texture.height, Math.Max(1, m_gridWidth), Math.Max(1, m_gridHeight), new InnoEngine.Mathematics.Vector2(m_pivotX, m_pivotY));
             m_slices.Clear();
             m_slices.AddRange(slices);
             return true;
@@ -354,13 +345,10 @@ internal sealed partial class Rendering2DAssetDocumentProvider
         {
             try
             {
-                SpriteAtlasPackResult2D result = SpriteAtlasMaxRectsPacker2D.Pack(
-                    m_slices.Select(slice => new SpriteAtlasPackInput2D(slice.id.value, Math.Max(1, (int)slice.pixelRect.width), Math.Max(1, (int)slice.pixelRect.height))),
-                    m_packing
-                );
+                SpriteAtlasPackResult2D result = SpriteAtlasMaxRectsPacker2D.Pack(m_slices.Select(slice => new SpriteAtlasPackInput2D(slice.id.value, Math.Max(1, (int)slice.pixelRect.width), Math.Max(1, (int)slice.pixelRect.height))), m_packing);
                 m_packingStatus = $"{result.placements.Count} regions fit in {result.pages.Count} deterministic page(s).";
             }
-            catch (Exception exception) when (exception is ArgumentException or OverflowException)
+            catch (Exception exception)when (exception is ArgumentException or OverflowException)
             {
                 m_packingStatus = exception.Message;
             }
