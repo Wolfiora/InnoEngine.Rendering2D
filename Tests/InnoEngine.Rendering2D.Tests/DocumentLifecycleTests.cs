@@ -40,7 +40,7 @@ public sealed class DocumentLifecycleTests
             EditorDocumentContext retained = documents.Open("Assets/Flight.ispriteanimation2d", Guid.NewGuid());
             retained.SetViewParameter("draft", "frozen neutral draft");
             retained.SetViewParameter("baseline", "frozen neutral baseline");
-            documents.SetDirty(retained.documentId);
+            documents.SetDirty(retained.documentID);
             placeholder.Dispose();
 
             // There is deliberately no Asset Pipeline or native UI context during registry activation.

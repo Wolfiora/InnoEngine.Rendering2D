@@ -143,7 +143,7 @@ public struct SortingLayer2DDefinition
 /// <summary>
 /// Stores project-wide limits and ordering definitions for the 2D renderer.
 /// </summary>
-[StableTypeId("26a75fc8-54bc-4558-9e12-a8035b9176d6")]
+[StableTypeID("26a75fc8-54bc-4558-9e12-a8035b9176d6")]
 [ProjectSettingDefinition(Rendering2DIds.projectSettings)]
 public sealed class Rendering2DProjectSettings : ISerializable
 {
@@ -155,7 +155,7 @@ public sealed class Rendering2DProjectSettings : ISerializable
     /// <summary>
     /// Gets the stable project setting protocol identity.
     /// </summary>
-    public static ProjectSettingId id => new(Rendering2DIds.projectSettings);
+    public static ProjectSettingID id => new(Rendering2DIds.projectSettings);
 
     /// <summary>
     /// Gets or sets the project-wide pixels represented by one world unit.

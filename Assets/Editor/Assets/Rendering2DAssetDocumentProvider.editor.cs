@@ -33,7 +33,7 @@ internal sealed partial class Rendering2DAssetDocumentProvider(
             return;
         foreach (EditorDocumentContext document in documents.documents)
         {
-            if (m_drafts.TryGetValue(document.documentId, out Draft? draft) && (force || Time.frameCount > draft.lastDrawnFrame + 1) && draft.CompleteGesture() is byte[] before)
+            if (m_drafts.TryGetValue(document.documentID, out Draft? draft) && (force || Time.frameCount > draft.lastDrawnFrame + 1) && draft.CompleteGesture() is byte[] before)
                 RecordApplied(document, draft, before, "Edit 2D Asset Gesture");
         }
     }
@@ -43,12 +43,12 @@ internal sealed partial class Rendering2DAssetDocumentProvider(
         // The candidate may already own the type cache here. Retire with frozen bytes only.
         foreach (EditorDocumentContext context in documents.documents)
         {
-            if (!m_drafts.TryGetValue(context.documentId, out Draft? draft) || draft.TakeGestureBefore() is not byte[] before)
+            if (!m_drafts.TryGetValue(context.documentID, out Draft? draft) || draft.TakeGestureBefore() is not byte[] before)
                 continue;
-            byte[] after = m_snapshots[context.documentId];
+            byte[] after = m_snapshots[context.documentID];
             if (before.AsSpan().SequenceEqual(after))
                 continue;
-            var data = new ChangeData(context.documentId, context.assetPath, before, after);
+            var data = new ChangeData(context.documentID, context.assetPath, before, after);
             var change = new EditorHistoryChange(Rendering2DIds.assetDraftHistory, EditorHistoryPayload.FromBytes(EncodeChange(data)));
             try
             {
@@ -66,19 +66,19 @@ internal sealed partial class Rendering2DAssetDocumentProvider(
         EditorDocumentContext context,
         Rendering2DSpritePreviewModule? thumbnails
     ) {
-        if (!m_drafts.ContainsKey(context.documentId))
+        if (!m_drafts.ContainsKey(context.documentID))
             EnsureDraft(context);
-        if (m_drafts[context.documentId] is not AnimationDraft animation)
+        if (m_drafts[context.documentID] is not AnimationDraft animation)
             return;
-        bool readOnly = AssetPath.Parse(context.assetPath).source != AssetSourceId.project;
+        bool readOnly = AssetPath.Parse(context.assetPath).source != AssetSourceID.project;
         animation.lastDrawnFrame = Time.frameCount;
         animation.DrawWorkspace(previews, new InspectorDraftEdits(this, context, animation, readOnly), readOnly);
         animation.DrawPreview(thumbnails);
         if (animation.isEditing)
             SynchronizeState(context, animation);
-        EditorUiSession.current.widgets.Hint("The selected frame is shared with the Inspector. Assign its Sprite there. Save publishes the source; preview never dispatches gameplay events.");
-        if (m_errors.TryGetValue(context.documentId, out string? error))
-            EditorUiSession.current.widgets.Hint("Cannot save: " + error);
+        EditorUISession.current.widgets.Hint("The selected frame is shared with the Inspector. Assign its Sprite there. Save publishes the source; preview never dispatches gameplay events.");
+        if (m_errors.TryGetValue(context.documentID, out string? error))
+            EditorUISession.current.widgets.Hint("Cannot save: " + error);
     }
 
     internal static bool Supports(string extension) => Array.Exists(S_EXTENSIONS, value => string.Equals(value, extension, StringComparison.OrdinalIgnoreCase));
@@ -90,7 +90,7 @@ internal sealed partial class Rendering2DAssetDocumentProvider(
 
     private void EnsureDraft(EditorDocumentContext context)
     {
-        if (m_drafts.ContainsKey(context.documentId))
+        if (m_drafts.ContainsKey(context.documentID))
             return;
         Draft draft = CreateDraft(context);
         byte[] baseline = draft.Capture();
@@ -102,8 +102,8 @@ internal sealed partial class Rendering2DAssetDocumentProvider(
             draft.Restore(current);
         }
 
-        m_drafts[context.documentId] = draft;
-        m_baselines[context.documentId] = baseline;
+        m_drafts[context.documentID] = draft;
+        m_baselines[context.documentID] = baseline;
         SynchronizeSnapshot(context, current);
     }
 
@@ -113,20 +113,20 @@ internal sealed partial class Rendering2DAssetDocumentProvider(
     ) {
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(inspection);
-        if (!m_drafts.TryGetValue(context.documentId, out Draft? draft))
+        if (!m_drafts.TryGetValue(context.documentID, out Draft? draft))
         {
             EnsureDraft(context);
-            draft = m_drafts[context.documentId];
+            draft = m_drafts[context.documentID];
         }
 
-        bool readOnly = AssetPath.Parse(context.assetPath).source != AssetSourceId.project;
-        if (EditorUiSession.current.widgets.SectionHeader("Asset", "The source remains authoritative. Save publishes draft changes through the normal asset import path."))
+        bool readOnly = AssetPath.Parse(context.assetPath).source != AssetSourceID.project;
+        if (EditorUISession.current.widgets.SectionHeader("Asset", "The source remains authoritative. Save publishes draft changes through the normal asset import path."))
         {
-            EditorUiSession.current.widgets.Hint(context.isDirty ? "Unsaved changes · runtime content unchanged" : "Saved source");
+            EditorUISession.current.widgets.Hint(context.isDirty ? "Unsaved changes · runtime content unchanged" : "Saved source");
             if (readOnly)
-                EditorUiSession.current.widgets.Hint("Installed Plugin asset · copy to the project to edit");
-            if (m_errors.TryGetValue(context.documentId, out string? failure))
-                EditorUiSession.current.widgets.Hint("Cannot save: " + failure);
+                EditorUISession.current.widgets.Hint("Installed Plugin asset · copy to the project to edit");
+            if (m_errors.TryGetValue(context.documentID, out string? failure))
+                EditorUISession.current.widgets.Hint("Cannot save: " + failure);
         }
 
         draft.lastDrawnFrame = Time.frameCount;
@@ -139,17 +139,17 @@ internal sealed partial class Rendering2DAssetDocumentProvider(
     internal void DrawInspectorHeader(EditorDocumentContext context)
     {
         ArgumentNullException.ThrowIfNull(context);
-        if (!m_drafts.ContainsKey(context.documentId))
+        if (!m_drafts.ContainsKey(context.documentID))
             EnsureDraft(context);
-        bool readOnly = AssetPath.Parse(context.assetPath).source != AssetSourceId.project;
+        bool readOnly = AssetPath.Parse(context.assetPath).source != AssetSourceID.project;
         ImGui.BeginDisabled(readOnly);
         try
         {
             if (ImGui.Button("Save"))
-                _ = documents.Save(context.documentId);
+                _ = documents.Save(context.documentID);
             ImGui.SameLine();
             if (ImGui.Button("Revert"))
-                _ = documents.Revert(context.documentId);
+                _ = documents.Revert(context.documentID);
         }
         finally
         {
@@ -162,25 +162,25 @@ internal sealed partial class Rendering2DAssetDocumentProvider(
         ArgumentNullException.ThrowIfNull(context);
         CompleteGestures(force: true);
         EnsureDraft(context);
-        if (!m_drafts.TryGetValue(context.documentId, out Draft? draft))
+        if (!m_drafts.TryGetValue(context.documentID, out Draft? draft))
             return false;
         try
         {
             if (!draft.Save(AssetPath.Parse(context.assetPath)))
             {
-                m_errors[context.documentId] = "The source could not be committed. The draft remains editable.";
+                m_errors[context.documentID] = "The source could not be committed. The draft remains editable.";
                 return false;
             }
         }
         catch (Exception failure)when (failure is ArgumentException or InvalidOperationException or IOException)
         {
-            m_errors[context.documentId] = failure.Message;
+            m_errors[context.documentID] = failure.Message;
             return false;
         }
 
-        m_errors.Remove(context.documentId);
-        m_baselines[context.documentId] = m_snapshots[context.documentId];
-        SynchronizeSnapshot(context, m_snapshots[context.documentId]);
+        m_errors.Remove(context.documentID);
+        m_baselines[context.documentID] = m_snapshots[context.documentID];
+        SynchronizeSnapshot(context, m_snapshots[context.documentID]);
         return true;
     }
 
@@ -188,11 +188,11 @@ internal sealed partial class Rendering2DAssetDocumentProvider(
     {
         ArgumentNullException.ThrowIfNull(context);
         EnsureDraft(context);
-        byte[] before = m_snapshots[context.documentId];
+        byte[] before = m_snapshots[context.documentID];
         Draft replacement = CreateDraft(context);
-        m_drafts[context.documentId] = replacement;
-        m_baselines[context.documentId] = replacement.Capture();
-        m_errors.Remove(context.documentId);
+        m_drafts[context.documentID] = replacement;
+        m_baselines[context.documentID] = replacement.Capture();
+        m_errors.Remove(context.documentID);
         RecordApplied(context, replacement, before, "Revert 2D Asset");
         return true;
     }
@@ -200,10 +200,10 @@ internal sealed partial class Rendering2DAssetDocumentProvider(
     public override void Close(EditorDocumentContext context)
     {
         ArgumentNullException.ThrowIfNull(context);
-        _ = m_drafts.Remove(context.documentId);
-        _ = m_baselines.Remove(context.documentId);
-        _ = m_snapshots.Remove(context.documentId);
-        _ = m_errors.Remove(context.documentId);
+        _ = m_drafts.Remove(context.documentID);
+        _ = m_baselines.Remove(context.documentID);
+        _ = m_snapshots.Remove(context.documentID);
+        _ = m_errors.Remove(context.documentID);
     }
 
     internal EditorHistoryAvailability QueryHistory(
@@ -237,7 +237,7 @@ internal sealed partial class Rendering2DAssetDocumentProvider(
             byte[] expected = direction == EditorHistoryDirection.Undo ? data.after : data.before;
             if (!m_snapshots[data.documentId].AsSpan().SequenceEqual(expected))
                 return EditorHistoryResult.Failure("The 2D asset draft changed outside this History entry.");
-            EditorDocumentContext? document = documents.documents.FirstOrDefault(value => value.documentId == data.documentId);
+            EditorDocumentContext? document = documents.documents.FirstOrDefault(value => value.documentID == data.documentId);
             if (document is null)
                 return EditorHistoryResult.Failure($"Reopen '{data.assetPath}' to use its History.");
             byte[] before = m_snapshots[data.documentId];
@@ -294,7 +294,7 @@ internal sealed partial class Rendering2DAssetDocumentProvider(
         byte[] after = draft.Capture();
         if (before.AsSpan().SequenceEqual(after))
             return;
-        var data = new ChangeData(context.documentId, context.assetPath, before, after);
+        var data = new ChangeData(context.documentID, context.assetPath, before, after);
         var change = new EditorHistoryChange(Rendering2DIds.assetDraftHistory, EditorHistoryPayload.FromBytes(EncodeChange(data)), mergeKey);
         try
         {
@@ -318,11 +318,11 @@ internal sealed partial class Rendering2DAssetDocumentProvider(
         EditorDocumentContext context,
         byte[] current
     ) {
-        m_snapshots[context.documentId] = current;
-        byte[] baseline = m_baselines[context.documentId];
+        m_snapshots[context.documentID] = current;
+        byte[] baseline = m_baselines[context.documentID];
         context.SetViewParameter("draft", Convert.ToBase64String(current));
         context.SetViewParameter("baseline", Convert.ToBase64String(baseline));
-        documents.SetDirty(context.documentId, !current.AsSpan().SequenceEqual(baseline));
+        documents.SetDirty(context.documentID, !current.AsSpan().SequenceEqual(baseline));
     }
 
     private static byte[] EncodeChange(ChangeData data)
@@ -390,7 +390,7 @@ internal sealed partial class Rendering2DAssetDocumentProvider(
     private static TAsset Load<TAsset>(EditorDocumentContext context)
         where TAsset : AssetObject
     {
-        if (context.assetId != Guid.Empty && Assets.TryLoad(context.assetId, out TAsset? identified) && identified is not null)
+        if (context.assetID != Guid.Empty && Assets.TryLoad(context.assetID, out TAsset? identified) && identified is not null)
         {
             return identified;
         }
@@ -456,7 +456,7 @@ internal sealed partial class Rendering2DAssetDocumentProvider(
         bool readOnly
     ) : IInspectionPropertyEditService
     {
-        internal byte[] current => provider.m_snapshots[context.documentId];
+        internal byte[] current => provider.m_snapshots[context.documentID];
 
         /// <inheritdoc />
         public bool ChangeProperty(

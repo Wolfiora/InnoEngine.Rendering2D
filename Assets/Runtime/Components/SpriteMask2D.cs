@@ -11,7 +11,7 @@ namespace Inno.Rendering2D;
 /// <summary>
 /// Writes one sprite-shaped stencil mask for ordered 2D drawables.
 /// </summary>
-[StableTypeId("e00a7951-61b4-4cbd-bc57-5b2b51598a7d")]
+[StableTypeID("e00a7951-61b4-4cbd-bc57-5b2b51598a7d")]
 public sealed class SpriteMask2D : GameBehavior
 {
     private int m_frontOrder = int.MinValue;

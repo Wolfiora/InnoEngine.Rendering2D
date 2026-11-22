@@ -12,7 +12,7 @@ internal sealed partial class Rendering2DAssetDocumentProvider
 {
     private sealed partial class AtlasDraft(SpriteAtlas2DAsset asset) : Draft
     {
-        private readonly Guid m_assetId = asset.identity.persistentId;
+        private readonly Guid m_assetId = asset.identity.persistentID;
         private SpriteAtlasPackingSettings2D m_packing = asset.packing;
         private SpriteAtlasSource2D[] m_sources = asset.sources.ToArray();
         private SpriteAtlasPage2D[] m_pages = asset.pages.ToArray();
@@ -136,7 +136,7 @@ internal sealed partial class Rendering2DAssetDocumentProvider
             changed |= DrawSourceCanvas(previews, m_editBaseline ?? throw new InvalidOperationException("Atlas edits require the current document snapshot."));
             ImGui.SeparatorText("Regions");
             m_selectedSlice = Math.Clamp(m_selectedSlice, 0, Math.Max(0, m_slices.Count - 1));
-            if (m_slices.Count > 0 && EditorUiSession.current.widgets.BeginBoundedCombo("##region", m_slices[m_selectedSlice].name))
+            if (m_slices.Count > 0 && EditorUISession.current.widgets.BeginBoundedCombo("##region", m_slices[m_selectedSlice].name))
             {
                 try
                 {
@@ -148,7 +148,7 @@ internal sealed partial class Rendering2DAssetDocumentProvider
                 }
                 finally
                 {
-                    EditorUiSession.current.widgets.EndBoundedCombo();
+                    EditorUISession.current.widgets.EndBoundedCombo();
                 }
             }
 
@@ -157,7 +157,7 @@ internal sealed partial class Rendering2DAssetDocumentProvider
                 if (sliceIndex != m_selectedSlice)
                     continue;
                 SpriteAtlasSlice2D slice = m_slices[sliceIndex];
-                ImGui.PushId(sliceIndex + 20_000);
+                ImGui.PushID(sliceIndex + 20_000);
                 string name = slice.name ?? string.Empty;
                 int x = (int)slice.pixelRect.x;
                 int y = (int)slice.pixelRect.y;
@@ -213,7 +213,7 @@ internal sealed partial class Rendering2DAssetDocumentProvider
                     changed = true;
                 }
 
-                ImGui.PopId();
+                ImGui.PopID();
             }
 
             if (m_assetId != Guid.Empty && Assets.TryLoad(m_assetId, out SpriteAtlas2DAsset? published) && published is { isMissing: false } && published.pages.Length > 0)
@@ -222,7 +222,7 @@ internal sealed partial class Rendering2DAssetDocumentProvider
                 ImGui.Text($"Published page · {page.width} × {page.height}");
                 if (previews.TryGetTextureArtifact(published.GetPageTexture(0), page.width, page.height, out EditorPreviewHandle handle))
                 {
-                    float scale = MathF.Min(MathF.Max(1, ImGui.GetContentRegionAvailable().X) / page.width, 320f * EditorUiSession.current.widgets.style.zoom / page.height);
+                    float scale = MathF.Min(MathF.Max(1, ImGui.GetContentRegionAvailable().X) / page.width, 320f * EditorUISession.current.widgets.style.zoom / page.height);
                     previews.Draw(handle, new System.Numerics.Vector2(page.width * scale, page.height * scale));
                 }
             }

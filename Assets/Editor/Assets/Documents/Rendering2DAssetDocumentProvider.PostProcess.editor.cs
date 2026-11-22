@@ -60,7 +60,7 @@ internal sealed partial class Rendering2DAssetDocumentProvider
             IInspectionPropertyEditService edits,
             bool readOnly
         ) {
-            if (EditorUiSession.current.widgets.SectionHeader("Color and Tone", "Exposure, contrast, saturation, and tone mapping shape the complete camera result."))
+            if (EditorUISession.current.widgets.SectionHeader("Color and Tone", "Exposure, contrast, saturation, and tone mapping shape the complete camera result."))
             {
                 Property("exposure", "Exposure", () => m_exposure, value => m_exposure = value);
                 Property("contrast", "Contrast", () => m_contrast, value => m_contrast = value, minimum: 0.0001);
@@ -68,7 +68,7 @@ internal sealed partial class Rendering2DAssetDocumentProvider
                 Property("toneMapping", "Tone Mapping", () => m_toneMapping, value => m_toneMapping = value);
             }
 
-            if (EditorUiSession.current.widgets.SectionHeader("Bloom", "Bloom extracts bright pixels and spreads them through a bounded downsample pyramid."))
+            if (EditorUISession.current.widgets.SectionHeader("Bloom", "Bloom extracts bright pixels and spreads them through a bounded downsample pyramid."))
             {
                 Property("bloomIntensity", "Intensity", () => m_bloomIntensity, value => m_bloomIntensity = value, minimum: 0);
                 Property("bloomThreshold", "Threshold", () => m_bloomThreshold, value => m_bloomThreshold = value, minimum: 0);
@@ -76,7 +76,7 @@ internal sealed partial class Rendering2DAssetDocumentProvider
                 Property("bloomScatter", "Scatter", () => m_bloomScatter, value => m_bloomScatter = value, minimum: 0, maximum: 1);
             }
 
-            if (EditorUiSession.current.widgets.SectionHeader("Screen Effects", "These operations are evaluated after color and bloom composition."))
+            if (EditorUISession.current.widgets.SectionHeader("Screen Effects", "These operations are evaluated after color and bloom composition."))
             {
                 Property("vignette", "Vignette", () => m_vignette, value => m_vignette = value, minimum: 0, maximum: 1);
                 Property("pixelation", "Pixelation", () => m_pixelation, value => m_pixelation = value, minimum: 1);

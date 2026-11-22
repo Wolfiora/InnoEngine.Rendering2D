@@ -7,7 +7,7 @@ namespace Inno.Rendering2D;
 /// <summary>
 /// Stores camera-stack post-process settings without prescribing a rendering backend.
 /// </summary>
-[StableTypeId("8d3fcd93-0cd6-4ac7-b560-52ed6a10f2cb")]
+[StableTypeID("8d3fcd93-0cd6-4ac7-b560-52ed6a10f2cb")]
 public sealed class PostProcessProfile2DAsset : AssetObject
 {
     /// <summary>

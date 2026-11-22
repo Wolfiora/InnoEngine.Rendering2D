@@ -11,7 +11,7 @@ public sealed partial class SpritePreviewPipeline
     private byte[] m_thumbnailInstances = [];
     private long m_thumbnailRevision;
 
-    internal static RenderDataChannelId thumbnailChannel => new(pipelineId + "/thumbnail");
+    internal static RenderDataChannelID thumbnailChannel => new(pipelineId + "/thumbnail");
 
     private bool TryPrepareThumbnail(
         RenderPipelineContext context,

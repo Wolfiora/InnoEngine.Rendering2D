@@ -57,7 +57,7 @@ internal sealed partial class Rendering2DAssetDocumentProvider
             if (!TryFrames(out SpriteAnimationFrame2D[] frames))
                 return;
             m_selectedFrame = Math.Clamp(m_selectedFrame, 0, frames.Length - 1);
-            if (EditorUiSession.current.widgets.SectionHeader("Frame Sprite", "Choose its artwork. Preview playback does not dispatch gameplay events."))
+            if (EditorUISession.current.widgets.SectionHeader("Frame Sprite", "Choose its artwork. Preview playback does not dispatch gameplay events."))
             {
                 context.properties.DrawValue(context.editorContext, this, "animation.frame.sprite", "Sprite", typeof(SpriteReference2D), () => SelectedFrame().sprite, value => ReplaceFrame(SelectedFrame()with { sprite = value is SpriteReference2D sprite ? sprite : default }), edits, readOnly);
             }
@@ -116,10 +116,10 @@ internal sealed partial class Rendering2DAssetDocumentProvider
         internal override bool Draw(IEditorPreviewService previews)
         {
             bool changed = false;
-            if (EditorUiSession.current.widgets.SectionHeader("Clips", "Names are editable; the playback identity stays stable."))
+            if (EditorUISession.current.widgets.SectionHeader("Clips", "Names are editable; the playback identity stays stable."))
             {
                 string title = m_clips.Length == 0 ? "No clips" : Rendering2DComponentInspectionDrawer.ClipName(m_clips[Math.Clamp(m_selectedClip, 0, m_clips.Length - 1)]);
-                if (EditorUiSession.current.widgets.BeginBoundedCombo("##clips", title))
+                if (EditorUISession.current.widgets.BeginBoundedCombo("##clips", title))
                 {
                     try
                     {
@@ -135,7 +135,7 @@ internal sealed partial class Rendering2DAssetDocumentProvider
                     }
                     finally
                     {
-                        EditorUiSession.current.widgets.EndBoundedCombo();
+                        EditorUISession.current.widgets.EndBoundedCombo();
                     }
                 }
 
@@ -160,13 +160,13 @@ internal sealed partial class Rendering2DAssetDocumentProvider
 
             if (m_clips.Length == 0)
             {
-                EditorUiSession.current.widgets.Hint("Add a clip, add frames, choose their sprites, then Save.");
+                EditorUISession.current.widgets.Hint("Add a clip, add frames, choose their sprites, then Save.");
                 return changed;
             }
 
             m_selectedClip = Math.Clamp(m_selectedClip, 0, m_clips.Length - 1);
             SpriteAnimationClip2D clip = m_clips[m_selectedClip];
-            if (EditorUiSession.current.widgets.SectionHeader("Selected Clip", "Changing the name preserves the clip identity used by Animator components."))
+            if (EditorUISession.current.widgets.SectionHeader("Selected Clip", "Changing the name preserves the clip identity used by Animator components."))
             {
                 string name = clip.name ?? "";
                 bool loop = clip.loop;
@@ -197,7 +197,7 @@ internal sealed partial class Rendering2DAssetDocumentProvider
             }
 
             SpriteAnimationFrame2D[] frames = clip.frames ?? [];
-            if (EditorUiSession.current.widgets.SectionHeader("Timeline", "Click to select. Drag a frame horizontally to resize its duration."))
+            if (EditorUISession.current.widgets.SectionHeader("Timeline", "Click to select. Drag a frame horizontally to resize its duration."))
             {
                 if (ImGui.Button(m_playing ? "Pause" : "Play"))
                     m_playing = !m_playing;
@@ -231,7 +231,7 @@ internal sealed partial class Rendering2DAssetDocumentProvider
 
                 if (duration > 0f)
                     _ = ImGui.SliderFloat("##playhead", ref m_playhead, 0f, duration);
-                EditorUiSession.current.widgets.Hint($"{m_playhead:0.000} / {duration:0.000} s · {frames.Length} frames");
+                EditorUISession.current.widgets.Hint($"{m_playhead:0.000} / {duration:0.000} s · {frames.Length} frames");
                 changed |= DrawTimeline(frames);
             }
 
@@ -248,7 +248,7 @@ internal sealed partial class Rendering2DAssetDocumentProvider
 
             if (frames.Length == 0)
             {
-                EditorUiSession.current.widgets.Hint("Add a frame to begin. Assign its sprite before saving.");
+                EditorUISession.current.widgets.Hint("Add a frame to begin. Assign its sprite before saving.");
                 return changed;
             }
 
@@ -343,8 +343,8 @@ internal sealed partial class Rendering2DAssetDocumentProvider
                     break;
                 if (used > 0f)
                     ImGui.SameLine(0, 2);
-                ImGui.PushId(index);
-                if (ImGui.Button($"{index + 1}" + (string.IsNullOrEmpty(frames[index].eventId) ? "" : " *"), new Vector2(MathF.Min(itemWidth, width), 42f * EditorUiSession.current.widgets.style.zoom)))
+                ImGui.PushID(index);
+                if (ImGui.Button($"{index + 1}" + (string.IsNullOrEmpty(frames[index].eventId) ? "" : " *"), new Vector2(MathF.Min(itemWidth, width), 42f * EditorUISession.current.widgets.style.zoom)))
                 {
                     m_selectedFrame = index;
                     m_playhead = start;
@@ -373,7 +373,7 @@ internal sealed partial class Rendering2DAssetDocumentProvider
                     changed = true;
                 }
 
-                ImGui.PopId();
+                ImGui.PopID();
                 start += frames[index].duration;
                 used += itemWidth + 2;
             }

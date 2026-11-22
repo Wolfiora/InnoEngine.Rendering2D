@@ -25,7 +25,7 @@ namespace Inno.Rendering2D;
 public sealed class Rendering2DComponentInspectionDrawer(SceneEdits edits) : InspectionDrawer<GameBehavior>
 {
     /// <inheritdoc/>
-    public override string icon => ImGuiIcon.File;
+    public override string icon => ImGuiIcon.C_FILE;
 
     /// <inheritdoc/>
     protected override (string, Action<string>? ) BindName(
@@ -41,10 +41,10 @@ public sealed class Rendering2DComponentInspectionDrawer(SceneEdits edits) : Ins
         {
             DrawProperties(context, ["sprite", "primitive", "drawMode", "size", "pivot", "pixelsPerUnit", "flipX", "flipY", "sampling", "material", "color", "blendMode"]);
             if (sprite.material is null || sprite.material.isMissing)
-                EditorUiSession.current.widgets.Hint("Assign a Sprite Material to render this object.");
+                EditorUISession.current.widgets.Hint("Assign a Sprite Material to render this object.");
             DrawSorting(context, target, sprite.sortingLayer, value => sprite.sortingLayer = value);
             DrawProperties(context, ["orderInLayer", "maskInteraction", "receiveLighting", "normalMap", "emissionMap", "emissionColor", "lightBlendStyles"]);
-            if (EditorUiSession.current.widgets.SectionHeader("Advanced", "Culling padding and pointer occlusion do not change the sprite artwork."))
+            if (EditorUISession.current.widgets.SectionHeader("Advanced", "Culling padding and pointer occlusion do not change the sprite artwork."))
                 DrawProperties(context, ["boundsPadding", "pointerPassThrough"]);
             return;
         }
@@ -54,10 +54,10 @@ public sealed class Rendering2DComponentInspectionDrawer(SceneEdits edits) : Ins
             DrawProperties(context, ["animation"]);
             if (animator.animation is SpriteAnimation2DAsset animation && !animation.isMissing)
             {
-                EditorUiSession.current.widgets.PropertyRow("animation-clip", "Clip", () =>
+                EditorUISession.current.widgets.PropertyRow("animation-clip", "Clip", () =>
                 {
                     string label = animation.TryGetClip(animator.clipId, out SpriteAnimationClip2D clip) ? ClipName(clip) : "Choose a clip";
-                    if (!EditorUiSession.current.widgets.BeginBoundedCombo("##clip", label))
+                    if (!EditorUISession.current.widgets.BeginBoundedCombo("##clip", label))
                         return;
                     try
                     {
@@ -68,11 +68,11 @@ public sealed class Rendering2DComponentInspectionDrawer(SceneEdits edits) : Ins
                         }
 
                         if (animation.clips.Length == 0)
-                            EditorUiSession.current.widgets.Hint("The animation library is empty. Open it to create a clip.");
+                            EditorUISession.current.widgets.Hint("The animation library is empty. Open it to create a clip.");
                     }
                     finally
                     {
-                        EditorUiSession.current.widgets.EndBoundedCombo();
+                        EditorUISession.current.widgets.EndBoundedCombo();
                     }
                 });
                 if (ImGui.Button("Edit Animation"))
@@ -81,7 +81,7 @@ public sealed class Rendering2DComponentInspectionDrawer(SceneEdits edits) : Ins
 
             DrawProperties(context, ["playOnStart", "speed"]);
             if (!animator.gameObject.TryGetComponent<SpriteRenderer2D>(out _))
-                EditorUiSession.current.widgets.Hint("Add a Sprite Renderer to this GameObject to display its animation.");
+                EditorUISession.current.widgets.Hint("Add a Sprite Renderer to this GameObject to display its animation.");
             return;
         }
 
@@ -107,7 +107,7 @@ public sealed class Rendering2DComponentInspectionDrawer(SceneEdits edits) : Ins
             DrawProperties(context, ["sprite", "primitive", "material", "size", "pivot", "pixelsPerUnit", "flipX", "flipY", "sampling", "alphaCutoff"]);
             DrawSorting(context, target, mask.sortingLayer, value => mask.sortingLayer = value);
             DrawProperties(context, ["frontOrder", "backOrder"]);
-            if (EditorUiSession.current.widgets.SectionHeader("Advanced", "Padding expands culling bounds without changing mask coverage."))
+            if (EditorUISession.current.widgets.SectionHeader("Advanced", "Padding expands culling bounds without changing mask coverage."))
                 DrawProperties(context, ["boundsPadding"]);
             return;
         }
@@ -152,9 +152,9 @@ public sealed class Rendering2DComponentInspectionDrawer(SceneEdits edits) : Ins
                 label = layer.name;
         }
 
-        EditorUiSession.current.widgets.PropertyRow("sorting-layer", "Sorting Layer", () =>
+        EditorUISession.current.widgets.PropertyRow("sorting-layer", "Sorting Layer", () =>
         {
-            if (!EditorUiSession.current.widgets.BeginBoundedCombo("##layer", label))
+            if (!EditorUISession.current.widgets.BeginBoundedCombo("##layer", label))
                 return;
             try
             {
@@ -164,11 +164,11 @@ public sealed class Rendering2DComponentInspectionDrawer(SceneEdits edits) : Ins
                         edits.ChangeProperty(target, "sortingLayer", () => assign(layer.localId), "Change Sorting Layer");
                 }
 
-                EditorUiSession.current.widgets.Hint("Manage layers in Project Settings → Rendering → 2D.");
+                EditorUISession.current.widgets.Hint("Manage layers in Project Settings → Rendering → 2D.");
             }
             finally
             {
-                EditorUiSession.current.widgets.EndBoundedCombo();
+                EditorUISession.current.widgets.EndBoundedCombo();
             }
         });
     }

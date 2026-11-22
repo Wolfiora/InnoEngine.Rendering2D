@@ -11,7 +11,7 @@ namespace Inno.Rendering2D;
 /// <summary>
 /// Simulates a deterministic reusable 2D particle effect through the scene lifecycle.
 /// </summary>
-[StableTypeId("db4c2130-c022-412a-a326-9e63cdf9297b")]
+[StableTypeID("db4c2130-c022-412a-a326-9e63cdf9297b")]
 public sealed class ParticleSystem2D : GameBehavior
 {
     private ParticleEffect2DAsset? m_allocatedEffect;

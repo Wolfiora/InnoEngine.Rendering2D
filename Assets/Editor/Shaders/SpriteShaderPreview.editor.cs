@@ -32,13 +32,13 @@ public sealed partial class SpritePreviewPipeline : RenderPipeline
     /// Identifies the Editor-only preview pipeline; runtime packages do not carry this implementation.
     /// </summary>
     public const string pipelineId = "inno.rendering.2d.sprite-preview";
-    private static readonly RenderBindingId s_materialBinding = new("u_spriteMaterial");
-    private static readonly RenderBindingId s_spriteTextureBinding = new("s_spriteTexture");
-    private static readonly RenderBindingId s_normalTextureBinding = new("s_normalTexture");
-    private static readonly RenderBindingId s_emissionTextureBinding = new("s_emissionTexture");
-    private static readonly RenderBindingId[] s_lightColorBindings =
+    private static readonly RenderBindingID s_materialBinding = new("u_spriteMaterial");
+    private static readonly RenderBindingID s_spriteTextureBinding = new("s_spriteTexture");
+    private static readonly RenderBindingID s_normalTextureBinding = new("s_normalTexture");
+    private static readonly RenderBindingID s_emissionTextureBinding = new("s_emissionTexture");
+    private static readonly RenderBindingID[] s_lightColorBindings =
         [new("s_lightColor0"), new("s_lightColor1"), new("s_lightColor2"), new("s_lightColor3")];
-    private static readonly RenderBindingId[] s_lightDirectionBindings =
+    private static readonly RenderBindingID[] s_lightDirectionBindings =
         [new("s_lightDirection0"), new("s_lightDirection1"), new("s_lightDirection2"), new("s_lightDirection3")];
     private readonly RenderVertexLayout m_vertices = new([new(RenderVertexSemantic.Position, RenderVertexFormat.Float2)]);
     private readonly RenderVertexLayout m_instances = new([
@@ -55,7 +55,7 @@ public sealed partial class SpritePreviewPipeline : RenderPipeline
     /// <summary>
     /// Gets the frame-only domain preview input channel.
     /// </summary>
-    public static RenderDataChannelId channel => new(pipelineId);
+    public static RenderDataChannelID channel => new(pipelineId);
 
     /// <inheritdoc />
     public override void Build(RenderPipelineContext context)
@@ -75,7 +75,7 @@ public sealed partial class SpritePreviewPipeline : RenderPipeline
             if (!context.request.data.TryGet(channel, out ShaderPreviewContext? preview) || preview is null)
                 throw new InvalidOperationException("Sprite preview input is missing.");
             if (!context.resourceService.TryResolveMaterialArtifact(
-                preview.resourceId,
+                preview.resourceID,
                 preview.artifact,
                 preview.material,
                 Rendering2DIds.spriteContract,
@@ -140,7 +140,7 @@ public sealed partial class SpritePreviewPipeline : RenderPipeline
     private static void SetUniform(
         RenderMaterialPass material,
         RenderCommandEncoder commands,
-        RenderBindingId binding,
+        RenderBindingID binding,
         ReadOnlySpan<byte> value
     ) {
         if (material.UsesBinding(binding, RenderShaderBindingKind.Uniform))
@@ -150,7 +150,7 @@ public sealed partial class SpritePreviewPipeline : RenderPipeline
     private static void BindTexture(
         RenderMaterialPass material,
         RenderCommandEncoder commands,
-        RenderBindingId binding,
+        RenderBindingID binding,
         PersistentTextureHandle texture
     ) {
         if (material.UsesBinding(binding, RenderShaderBindingKind.Texture))

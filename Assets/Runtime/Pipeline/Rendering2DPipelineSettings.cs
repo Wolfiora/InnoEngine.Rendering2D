@@ -8,7 +8,7 @@ namespace Inno.Rendering2D;
 /// <summary>
 /// Stores persistent 2D resource choices inside the configured Pipeline asset.
 /// </summary>
-[StableTypeId("d14002ca-3db2-4f1f-9db6-f3e1379f3d29")]
+[StableTypeID("d14002ca-3db2-4f1f-9db6-f3e1379f3d29")]
 public sealed class Rendering2DPipelineSettings : ISerializable
 {
     /// <summary>

@@ -282,7 +282,7 @@ public struct SpriteRegion2D
 /// <summary>
 /// Stores deterministic multi-page texture and region data used by 2D content.
 /// </summary>
-[StableTypeId("94818e9d-f610-44f7-b4ac-dc240ff1bd85")]
+[StableTypeID("94818e9d-f610-44f7-b4ac-dc240ff1bd85")]
 public sealed class SpriteAtlas2DAsset : AssetObject, IRenderTextureArtifactSource
 {
     private SpriteAtlasSource2D[] m_sources = [];
@@ -582,7 +582,7 @@ public sealed class SpriteAtlas2DAsset : AssetObject, IRenderTextureArtifactSour
         AtlasPageMap2D map
     ) {
         ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(pageIndex, m_pages.Length);
-        Guid atlasId = identity.persistentId;
+        Guid atlasId = identity.persistentID;
         if (atlasId == Guid.Empty)
             throw new InvalidOperationException("Sprite atlas must have a persistent asset identity.");
         string slotId = GetSlotId(m_pages[pageIndex].id, map);

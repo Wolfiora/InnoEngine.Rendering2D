@@ -17,7 +17,7 @@ namespace Inno.Rendering2D;
 public sealed class Rendering2DAssetInspectionDrawer : InspectionDrawer<AssetObject>
 {
     /// <inheritdoc />
-    public override string icon => ImGuiIcon.File;
+    public override string icon => ImGuiIcon.C_FILE;
 
     /// <inheritdoc />
     protected override (string, Action<string>?) BindName(

@@ -137,7 +137,7 @@ public struct TileDefinition2D
 /// <summary>
 /// Stores stable ordinary, animated, and rule-tile definitions.
 /// </summary>
-[StableTypeId("193daaa8-f8d5-47aa-a771-f5f58bb880c2")]
+[StableTypeID("193daaa8-f8d5-47aa-a771-f5f58bb880c2")]
 public sealed class TileSet2DAsset : AssetObject
 {
     private TileDefinition2D[] m_tiles = [];

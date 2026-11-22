@@ -46,7 +46,7 @@ public sealed class Rendering2DAssetDocumentModule(
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(asset);
         Rendering2DAssetDocumentProvider provider = m_provider ?? throw new InvalidOperationException("The 2D asset document provider is unavailable.");
-        EditorDocumentContext document = interactions.documents.Open(asset.assetPath.ToString(), asset.identity.persistentId);
+        EditorDocumentContext document = interactions.documents.Open(asset.assetPath.ToString(), asset.identity.persistentID);
         provider.DrawInspectorHeader(document);
     }
 
@@ -68,7 +68,7 @@ public sealed class Rendering2DAssetDocumentModule(
         ArgumentNullException.ThrowIfNull(context);
         ArgumentNullException.ThrowIfNull(asset);
         Rendering2DAssetDocumentProvider provider = m_provider ?? throw new InvalidOperationException("The 2D asset document provider is unavailable.");
-        EditorDocumentContext document = interactions.documents.Open(asset.assetPath.ToString(), asset.identity.persistentId);
+        EditorDocumentContext document = interactions.documents.Open(asset.assetPath.ToString(), asset.identity.persistentID);
         provider.DrawInspector(document, context);
     }
 

@@ -35,7 +35,7 @@ public sealed class Rendering2DSpritePreviewModule(IEditorPreviewService preview
         }
 
         state.frame = m_frame;
-        size = MathF.Max(1f, MathF.Min(size * EditorUiSession.current.widgets.style.zoom, ImGui.GetContentRegionAvailable().X));
+        size = MathF.Max(1f, MathF.Min(size * EditorUISession.current.widgets.style.zoom, ImGui.GetContentRegionAvailable().X));
         if (state.submittedFrame != m_frame)
         {
             var data = new RenderFrameData();
@@ -49,7 +49,7 @@ public sealed class Rendering2DSpritePreviewModule(IEditorPreviewService preview
         if (state.ready)
             previews.Draw(state.handle, new Vector2(size));
         else if (showStatus)
-            EditorUiSession.current.widgets.Hint("Sprite preview preparing...");
+            EditorUISession.current.widgets.Hint("Sprite preview preparing...");
         return state.ready;
     }
 

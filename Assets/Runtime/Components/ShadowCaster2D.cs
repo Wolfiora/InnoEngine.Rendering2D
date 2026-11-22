@@ -9,7 +9,7 @@ namespace Inno.Rendering2D;
 /// <summary>
 /// Contributes a freeform polygon to the 2D light shadow-occluder set.
 /// </summary>
-[StableTypeId("5c9d90f7-9b65-4a67-97a9-512ca5c114f8")]
+[StableTypeID("5c9d90f7-9b65-4a67-97a9-512ca5c114f8")]
 public sealed class ShadowCaster2D : GameBehavior
 {
 

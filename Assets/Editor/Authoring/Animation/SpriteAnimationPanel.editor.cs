@@ -34,7 +34,7 @@ public sealed class SpriteAnimationPanel(EditorInteractions interactions) : Edit
             path = entry.assetPath.ToString();
         if (path is null || animation is { isMissing: true })
         {
-            EditorUiSession.current.widgets.Hint("Select a Sprite Animation asset or a Sprite Animator. Create one from the File Browser → Create → Rendering 2D → Sprites.");
+            EditorUISession.current.widgets.Hint("Select a Sprite Animation asset or a Sprite Animator. Create one from the File Browser → Create → Rendering 2D → Sprites.");
             return;
         }
 
@@ -44,7 +44,7 @@ public sealed class SpriteAnimationPanel(EditorInteractions interactions) : Edit
         try
         {
             if (visible)
-                EditorUiSession.current.widgets.SectionLayout(() => module.DrawAnimationWorkspace(path, animation?.identity.persistentId ?? Guid.Empty));
+                EditorUISession.current.widgets.SectionLayout(() => module.DrawAnimationWorkspace(path, animation?.identity.persistentID ?? Guid.Empty));
         }
         finally
         {

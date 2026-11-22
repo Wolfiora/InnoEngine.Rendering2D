@@ -8,7 +8,7 @@ internal static class Rendering2DEditorFields
     internal static void ContinueActions(string nextLabel)
     {
         float right = ImGui.GetCursorScreenPosition().X + ImGui.GetContentRegionAvailable().X;
-        float required = ImGui.MeasureText(nextLabel).X + 28f * EditorUiSession.current.widgets.style.zoom;
+        float required = ImGui.MeasureText(nextLabel).X + 28f * EditorUISession.current.widgets.style.zoom;
         if (ImGui.GetItemMaximum().X + required < right)
             ImGui.SameLine();
     }
@@ -21,7 +21,7 @@ internal static class Rendering2DEditorFields
     ) {
         float edited = value;
         bool changed = false;
-        EditorUiSession.current.widgets.PropertyRow(label, label, () => changed = ImGui.InputFloat("##value", ref edited));
+        EditorUISession.current.widgets.PropertyRow(label, label, () => changed = ImGui.InputFloat("##value", ref edited));
         if (!changed || !float.IsFinite(edited))
             return false;
         value = Math.Clamp(edited, minimum, maximum);
@@ -36,7 +36,7 @@ internal static class Rendering2DEditorFields
     ) {
         int edited = value;
         bool changed = false;
-        EditorUiSession.current.widgets.PropertyRow(label, label, () => changed = ImGui.InputInt("##value", ref edited));
+        EditorUISession.current.widgets.PropertyRow(label, label, () => changed = ImGui.InputInt("##value", ref edited));
         if (changed)
             value = Math.Clamp(edited, minimum, maximum);
         return changed;
@@ -48,7 +48,7 @@ internal static class Rendering2DEditorFields
     ) {
         string edited = value;
         bool changed = false;
-        EditorUiSession.current.widgets.PropertyRow(label, label, () => changed = ImGui.InputText("##value", ref edited, 512));
+        EditorUISession.current.widgets.PropertyRow(label, label, () => changed = ImGui.InputText("##value", ref edited, 512));
         value = edited;
         return changed;
     }
@@ -59,7 +59,7 @@ internal static class Rendering2DEditorFields
     ) {
         bool edited = value;
         bool changed = false;
-        EditorUiSession.current.widgets.PropertyRow(label, label, () => changed = ImGui.Checkbox("##value", ref edited));
+        EditorUISession.current.widgets.PropertyRow(label, label, () => changed = ImGui.Checkbox("##value", ref edited));
         value = edited;
         return changed;
     }
@@ -72,9 +72,9 @@ internal static class Rendering2DEditorFields
     {
         T edited = value;
         bool changed = false;
-        EditorUiSession.current.widgets.PropertyRow(label, label, () =>
+        EditorUISession.current.widgets.PropertyRow(label, label, () =>
         {
-            if (!EditorUiSession.current.widgets.BeginBoundedCombo("##value", EditorDisplayNames.Nicify(edited.ToString())))
+            if (!EditorUISession.current.widgets.BeginBoundedCombo("##value", EditorDisplayNames.Nicify(edited.ToString())))
                 return;
             try
             {
@@ -88,7 +88,7 @@ internal static class Rendering2DEditorFields
             }
             finally
             {
-                EditorUiSession.current.widgets.EndBoundedCombo();
+                EditorUISession.current.widgets.EndBoundedCombo();
             }
         });
         value = edited;

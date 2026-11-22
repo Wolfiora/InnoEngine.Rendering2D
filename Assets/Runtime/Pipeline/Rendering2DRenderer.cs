@@ -227,7 +227,7 @@ public sealed class Rendering2DSceneScopeCache
             Identity current = roots[index];
             var previousRuntimeIdentity = previous.runtimeIdentity;
             var currentRuntimeIdentity = current.runtimeIdentity;
-            if (previous.persistentId != current.persistentId
+            if (previous.persistentID != current.persistentID
                 || previousRuntimeIdentity.HasValue != currentRuntimeIdentity.HasValue
                 || (previousRuntimeIdentity.HasValue
                     && previousRuntimeIdentity.GetValueOrDefault()
@@ -266,7 +266,7 @@ public static class Rendering2DRenderer
         {
             lock (S_SETTINGS_LOCK)
             {
-                Guid owner = Settings.ownerId;
+                Guid owner = Settings.ownerID;
                 long revision = Settings.revision;
                 if (s_settings is null || s_settingsOwner != owner || s_settingsRevision != revision)
                 {
@@ -536,7 +536,7 @@ public static class Rendering2DRenderer
         for (int frameIndex = frames.Count - 1; frameIndex >= 0; frameIndex--)
         {
             Rendering2DFrame frame = frames[frameIndex];
-            var view = new RenderView($"2D/{frame.camera.identity.persistentId:D}",
+            var view = new RenderView($"2D/{frame.camera.identity.persistentID:D}",
                 new RenderViewport(0, 0, frame.pixelWidth, frame.pixelHeight),
                 frame.viewTransform, frame.projectionTransform, frame.camera.cullingMask.value);
             for (int drawIndex = frame.sceneDraws.Length - 1; drawIndex >= 0; drawIndex--)
@@ -822,7 +822,7 @@ public static class Rendering2DRenderer
         Camera2D[] candidates = EnumerateCameras(scope)
             .Where(camera => !backbufferOnly || camera.renderToBackbuffer)
             .OrderBy(static camera => camera.priority)
-            .ThenBy(static camera => camera.gameObject.identity.persistentId)
+            .ThenBy(static camera => camera.gameObject.identity.persistentID)
             .ToArray();
         var diagnostics = new List<string>();
         Camera2D[] bases = candidates
@@ -888,7 +888,7 @@ public static class Rendering2DRenderer
             for (int cameraIndex = 0; cameraIndex < cameras.Length; cameraIndex++)
             {
                 Camera2D camera = cameras[cameraIndex];
-                hash.Add(camera.gameObject.identity.persistentId);
+                hash.Add(camera.gameObject.identity.persistentID);
                 hash.Add(camera.gameObject.name);
                 hash.Add(camera.isActiveAndEnabled);
                 hash.Add(camera.renderToBackbuffer);

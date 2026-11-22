@@ -26,7 +26,7 @@ public enum CameraComposition2D
 /// <summary>
 /// Defines one orthographic 2D render view without modifying the engine's scene model.
 /// </summary>
-[StableTypeId("fc1efc8e-54be-4233-83a7-bab21d520f64")]
+[StableTypeID("fc1efc8e-54be-4233-83a7-bab21d520f64")]
 public sealed class Camera2D : GameBehavior
 {
     private bool m_primary = true;

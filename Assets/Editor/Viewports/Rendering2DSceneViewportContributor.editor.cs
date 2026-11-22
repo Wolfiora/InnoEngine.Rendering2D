@@ -66,7 +66,7 @@ public sealed class Rendering2DSceneViewportContributor : EditorViewportContribu
         Rendering2DSceneScope scope = CreateScope(context);
         InitializeNavigation(context.navigation, scope);
         return new EditorViewportNavigationProfile(
-            new EditorViewportNavigationProfileId("inno.rendering.2d.navigation.scene"),
+            new EditorViewportNavigationProfileID("inno.rendering.2d.navigation.scene"),
             EditorViewportNavigationCapabilities.Planar
                 | EditorViewportNavigationCapabilities.FrameSelection,
             EditorViewportNavigationMode.Planar)
@@ -99,7 +99,7 @@ public sealed class Rendering2DSceneViewportContributor : EditorViewportContribu
         camera.pixelPerfect = false;
         m_viewportOptions.clearColorOverride = context.presentation.backgroundColor;
         m_viewportOptions.viewContent = context.viewContent;
-        m_viewportOptions.sessionId = context.viewportId;
+        m_viewportOptions.sessionId = context.viewportID;
         m_viewportOptions.content = context.content;
         m_viewportOptions.frameIndex = context.frameIndex;
         m_latestFrame = Rendering2DRenderer.CreateViewportFrame(

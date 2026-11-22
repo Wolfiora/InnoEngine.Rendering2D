@@ -57,7 +57,7 @@ public enum LightBlendStyle2D
 /// <summary>
 /// Contributes HDR GPU lighting, optional cookies, normal response, and soft shadows to 2D drawables.
 /// </summary>
-[StableTypeId("2d51f3c8-af12-4687-a1d6-a01353d153ba")]
+[StableTypeID("2d51f3c8-af12-4687-a1d6-a01353d153ba")]
 public sealed class Light2D : GameBehavior
 {
     private LightKind2D m_kind = LightKind2D.Point;

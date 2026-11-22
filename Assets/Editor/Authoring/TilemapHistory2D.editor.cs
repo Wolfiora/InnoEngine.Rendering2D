@@ -54,7 +54,7 @@ public static class TilemapHistory2D
         if (!stroke.hasChanges)
             return;
         using EditorHistoryTransaction transaction = history.BeginTransaction(name);
-        history.RecordApplied(name, new EditorHistoryChange(kind, EditorHistoryPayload.FromBytes(Encode(path, tilemap.identity.persistentId, stroke))));
+        history.RecordApplied(name, new EditorHistoryChange(kind, EditorHistoryPayload.FromBytes(Encode(path, tilemap.identity.persistentID, stroke))));
         transaction.Commit();
     }
 
@@ -191,9 +191,9 @@ public sealed class TilemapHistoryHandler2D : EditorHistoryHandler
                 stroke.Redo(tilemap);
             foreach (EditorDocumentContext document in context.interactions.documents.documents)
             {
-                if (document.assetId == assetId || string.Equals(document.assetPath, path, StringComparison.Ordinal))
+                if (document.assetID == assetId || string.Equals(document.assetPath, path, StringComparison.Ordinal))
                 {
-                    context.interactions.documents.SetDirty(document.documentId);
+                    context.interactions.documents.SetDirty(document.documentID);
                 }
             }
 

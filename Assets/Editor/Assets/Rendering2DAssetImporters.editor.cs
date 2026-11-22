@@ -23,7 +23,7 @@ internal abstract class NativeRendering2DAssetImporter<TAsset> : AssetImporter<T
         output.SetAsset(asset);
         foreach (AssetDependency dependency in dependencies)
             output.DependsOnAsset(dependency);
-        await output.WriteArtifactAsync("runtime", context.sourceBytes, cancellationToken);
+        await output.WriteArtifactAsync("runtime", context.sourceBytes, cancellationToken: cancellationToken);
         await WriteAdditionalArtifactsAsync(context, output, asset, cancellationToken);
     }
 
@@ -89,20 +89,20 @@ internal sealed class SpriteAtlas2DImporter : NativeRendering2DAssetImporter<Spr
             await output.WriteArtifactAsync(
                 page.page.colorSourceOutputName,
                 page.colorPngBytes,
-                cancellationToken);
+                cancellationToken: cancellationToken);
             if (page.normalPngBytes is not null)
             {
                 await output.WriteArtifactAsync(
                     page.page.normalSourceOutputName,
                     page.normalPngBytes,
-                    cancellationToken);
+                    cancellationToken: cancellationToken);
             }
             if (page.emissionPngBytes is not null)
             {
                 await output.WriteArtifactAsync(
                     page.page.emissionSourceOutputName,
                     page.emissionPngBytes,
-                    cancellationToken);
+                    cancellationToken: cancellationToken);
             }
         }
     }

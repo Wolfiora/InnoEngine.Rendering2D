@@ -11,7 +11,7 @@ namespace Inno.Rendering2D;
 /// <summary>
 /// Advances stable sprite animation frames through the normal scene behavior lifecycle.
 /// </summary>
-[StableTypeId("39d67e26-7076-4998-8862-2c65d427f668")]
+[StableTypeID("39d67e26-7076-4998-8862-2c65d427f668")]
 public sealed class SpriteAnimator2D : GameBehavior
 {
     private int m_frameIndex;

@@ -165,7 +165,7 @@ public struct ParticleGradient2D
 /// <summary>
 /// Stores deterministic authoring parameters for one reusable 2D particle effect.
 /// </summary>
-[StableTypeId("5731a3c1-9380-4fb2-85fd-55410384709d")]
+[StableTypeID("5731a3c1-9380-4fb2-85fd-55410384709d")]
 public sealed class ParticleEffect2DAsset : AssetObject
 {
     /// <summary>

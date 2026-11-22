@@ -158,13 +158,13 @@ public static class Rendering2DInternalShaders
 
     internal sealed class Builder(
         string name,
-        ShaderContractId contract,
+        ShaderContractID contract,
         SerializationRegistry serialization,
         SerializationContext references
     ) {
         private readonly GraphDocument m_graph = ShaderGraphDocument.Create(new ShaderDefinition(name, [], [], []), serialization, references);
         private readonly List<ShaderPropertyDefinition> m_properties = [];
-        private readonly List<GraphNodeId> m_stages = [];
+        private readonly List<GraphNodeID> m_stages = [];
         internal GraphDocument graph => m_graph;
 
         internal GraphNodeRecord Stage(
@@ -173,10 +173,10 @@ public static class Rendering2DInternalShaders
             ShaderGraphInputSettings[] inputs,
             (string source, string id, ShaderIrOutputKind kind, string semantic, int location)[] outputs
         ) {
-            if (function.isMissing || function.identity.persistentId == Guid.Empty)
+            if (function.isMissing || function.identity.persistentID == Guid.Empty)
                 throw new ArgumentException("Choose an imported source function.", nameof(function));
             string prefix = stage.ToString();
-            GraphNodeRecord output = Node(prefix, ShaderGraphDocument.outputDefinitionId);
+            GraphNodeRecord output = Node(prefix, ShaderGraphDocument.C_OUTPUT_DEFINITION_ID);
             Set(output, "settings", new ShaderGraphStageSettings
             {
                 stage = stage,
@@ -199,7 +199,7 @@ public static class Rendering2DInternalShaders
         ) {
             GraphNodeRecord call = Node(id, "inno.shader.source");
             Set(call, "stage", stage.ToString());
-            Set(call, "sourceId", function.identity.persistentId);
+            Set(call, "sourceId", function.identity.persistentID);
             Set(call, "sourcePath", function.assetPath.ToString());
             Set(call, "function", function.exports.Single());
             return call;
@@ -221,14 +221,14 @@ public static class Rendering2DInternalShaders
         }
 
         internal GraphDocument Finish(
-            (string name, ShaderPassRoleId role, RenderBlendState blend)[] passes,
+            (string name, ShaderPassRoleID role, RenderBlendState blend)[] passes,
             ShaderDefinition? authored = null
         ) {
             ShaderPropertyDefinition[] properties = MergeProperties(m_properties, authored?.properties ?? []);
             var definition = new ShaderDefinition(name, properties, authored?.keywords ?? [], passes.Select(pass => new ShaderPassDefinition(pass.name, ShaderProgramKind.Raster,
                 renderState: new() { cull = ShaderCullMode.None, depthCompare = ShaderCompareFunction.Always, depthWrite = false, blend = pass.blend, colorWriteMask = 15 })),
                 techniques: [new(new("default"), contract, passes.Select(pass => new ShaderTechniquePass(pass.role, pass.name)))]);
-            m_graph.SetMetadata(ShaderGraphDocument.definitionKey, ShaderGraphDocument.Encode(serialization.Serialize(definition, references), serialization, references));
+            m_graph.SetMetadata(ShaderGraphDocument.C_DEFINITION_KEY, ShaderGraphDocument.Encode(serialization.Serialize(definition, references), serialization, references));
             Layout();
             GraphDocument result = m_graph;
             foreach (var pass in passes)
@@ -280,13 +280,13 @@ public static class Rendering2DInternalShaders
         private void Layout()
         {
             float lane = 60f;
-            foreach (GraphNodeRecord output in m_graph.nodes.Where(node => node.definitionId == ShaderGraphDocument.outputDefinitionId)
+            foreach (GraphNodeRecord output in m_graph.nodes.Where(node => node.definitionID == ShaderGraphDocument.C_OUTPUT_DEFINITION_ID)
                          .OrderBy(node => ShaderGraphDocument.Read(node, "settings", new ShaderGraphStageSettings(), serialization, references).stage))
             {
                 GraphNodeRecord[] nodes = m_graph.nodes.Where(node => node.id == output.id
                     || ShaderGraphDocument.Read(node, "stage", "", serialization, references) == output.id.value).ToArray();
-                GraphNodeRecord[] inputs = nodes.Where(node => node.definitionId == "inno.shader.stage-input").ToArray();
-                GraphNodeRecord[] functions = nodes.Where(node => node.definitionId == "inno.shader.source").ToArray();
+                GraphNodeRecord[] inputs = nodes.Where(node => node.definitionID == "inno.shader.stage-input").ToArray();
+                GraphNodeRecord[] functions = nodes.Where(node => node.definitionID == "inno.shader.source").ToArray();
                 for (int i = 0; i < inputs.Length; i++)
                     inputs[i].position = new(40f, lane + i * 180f);
                 for (int i = 0; i < functions.Length; i++)

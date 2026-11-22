@@ -249,7 +249,7 @@ public static class SpriteAtlasComposer2D
                 : sources[index].name.Trim();
             result[index] = new SpriteAtlasSlice2D
             {
-                id = new SpriteRegionId($"source-{index:D4}-{texture.identity.persistentId:N}"),
+                id = new SpriteRegionId($"source-{index:D4}-{texture.identity.persistentID:N}"),
                 name = label,
                 sourceIndex = index,
                 pixelRect = new Rect(0f, 0f, rasters[index].width, rasters[index].height),

@@ -144,7 +144,7 @@ public static class Rendering2DAssets
         where TAsset : AssetObject
     {
         ArgumentNullException.ThrowIfNull(asset);
-        if (path.source != AssetSourceId.project)
+        if (path.source != AssetSourceID.project)
             throw new InvalidOperationException("Installed Plugin sources are read-only; save 2D assets under project Assets.");
         if (!path.localPath.EndsWith(extension, StringComparison.OrdinalIgnoreCase))
             throw new ArgumentException($"The asset path must use the '{extension}' extension.", nameof(path));

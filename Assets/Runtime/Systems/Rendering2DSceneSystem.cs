@@ -13,7 +13,7 @@ namespace Inno.Rendering2D;
 /// Add exactly one instance to each scene rendered by the 2D Plugin. The system rescans scene structure only
 /// after objects or components change; camera frames read current component values from the retained index.
 /// </remarks>
-[StableTypeId("0dc78d2a-01c8-46e4-a097-01b9c5ef14db")]
+[StableTypeID("0dc78d2a-01c8-46e4-a097-01b9c5ef14db")]
 public sealed class Rendering2DSceneSystem : GameSystem
 {
     private IReadOnlyList<GameObject>? m_indexedObjects;

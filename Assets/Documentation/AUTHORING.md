@@ -50,7 +50,7 @@ using InnoEngine.Scene;
 /// <summary>
 /// Counts authored frame events during one scene lifetime.
 /// </summary>
-[StableTypeId("91c82f7e-34bd-4d73-982f-041e787af123")]
+[StableTypeID("91c82f7e-34bd-4d73-982f-041e787af123")]
 public sealed class FrameCounter : GameBehavior
 {
     private IDisposable? m_subscription;

@@ -15,7 +15,7 @@ namespace Inno.Rendering2D;
 public sealed class Rendering2DAssetSourceInspectionDrawer(IInspectionIconProvider<AssetFileEntry> icons) : InspectionDrawer<AssetFileEntry>
 {
     /// <inheritdoc />
-    public override string icon => ImGuiIcon.File;
+    public override string icon => ImGuiIcon.C_FILE;
 
     /// <inheritdoc />
     protected override bool CanInspect(AssetFileEntry target) => !target.isDirectory && Rendering2DAssetDocumentProvider.Supports(target.extension);

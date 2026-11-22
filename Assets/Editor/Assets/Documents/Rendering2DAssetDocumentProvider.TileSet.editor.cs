@@ -65,7 +65,7 @@ internal sealed partial class Rendering2DAssetDocumentProvider
         internal override bool Draw(IEditorPreviewService previews)
         {
             bool changed = false;
-            EditorUiSession.current.widgets.SectionHeader("Tile Definitions", "Choose tiles by name. Map cells keep their numeric identities when a tile is renamed.");
+            EditorUISession.current.widgets.SectionHeader("Tile Definitions", "Choose tiles by name. Map cells keep their numeric identities when a tile is renamed.");
             _ = Rendering2DEditorFields.Text("New Tile", ref m_newName);
             if (ImGui.Button("Add Tile"))
             {
@@ -89,12 +89,12 @@ internal sealed partial class Rendering2DAssetDocumentProvider
 
             if (m_tiles.Length == 0)
             {
-                EditorUiSession.current.widgets.Hint("Add a tile and assign a sprite. Animated and rule variants are optional.");
+                EditorUISession.current.widgets.Hint("Add a tile and assign a sprite. Animated and rule variants are optional.");
                 return changed;
             }
 
             m_selected = Math.Clamp(m_selected, 0, m_tiles.Length - 1);
-            if (EditorUiSession.current.widgets.BeginBoundedCombo("##tile", TileName(m_tiles[m_selected])))
+            if (EditorUISession.current.widgets.BeginBoundedCombo("##tile", TileName(m_tiles[m_selected])))
             {
                 try
                 {
@@ -106,7 +106,7 @@ internal sealed partial class Rendering2DAssetDocumentProvider
                 }
                 finally
                 {
-                    EditorUiSession.current.widgets.EndBoundedCombo();
+                    EditorUISession.current.widgets.EndBoundedCombo();
                 }
             }
 
@@ -128,8 +128,8 @@ internal sealed partial class Rendering2DAssetDocumentProvider
                 return true;
             }
 
-            EditorUiSession.current.widgets.Hint("Removing a definition preserves its map cells as unresolved tiles.");
-            if (EditorUiSession.current.widgets.SectionHeader("Animation", "Variable-duration frames override the base sprite while the tile is visible."))
+            EditorUISession.current.widgets.Hint("Removing a definition preserves its map cells as unresolved tiles.");
+            if (EditorUISession.current.widgets.SectionHeader("Animation", "Variable-duration frames override the base sprite while the tile is visible."))
             {
                 tile.animation ??= [];
                 if (ImGui.SmallButton("Add Animation Frame"))
@@ -173,7 +173,7 @@ internal sealed partial class Rendering2DAssetDocumentProvider
                 }
             }
 
-            if (EditorUiSession.current.widgets.SectionHeader("Neighbor Rules", "Click neighbor cells to cycle Any / Same / Different / Empty / Occupied. Higher priority wins."))
+            if (EditorUISession.current.widgets.SectionHeader("Neighbor Rules", "Click neighbor cells to cycle Any / Same / Different / Empty / Occupied. Higher priority wins."))
             {
                 tile.rules ??= [];
                 if (ImGui.SmallButton("Add Rule"))
@@ -207,7 +207,7 @@ internal sealed partial class Rendering2DAssetDocumentProvider
                     }
 
                     var conditions = (rule.conditions ?? []).ToList();
-                    float edge = MathF.Min(70f * EditorUiSession.current.widgets.style.zoom, MathF.Max(1f, (ImGui.GetContentRegionAvailable().X - 8f) / 3f));
+                    float edge = MathF.Min(70f * EditorUISession.current.widgets.style.zoom, MathF.Max(1f, (ImGui.GetContentRegionAvailable().X - 8f) / 3f));
                     for (int y = 1; y >= -1; y--)
                     {
                         for (int x = -1; x <= 1; x++)
@@ -253,7 +253,7 @@ internal sealed partial class Rendering2DAssetDocumentProvider
                 }
             }
 
-            if (EditorUiSession.current.widgets.SectionHeader("Gameplay Metadata", "Optional domain data. Rendering does not interpret it."))
+            if (EditorUISession.current.widgets.SectionHeader("Gameplay Metadata", "Optional domain data. Rendering does not interpret it."))
             {
                 string metadata = tile.metadata ?? "";
                 if (Rendering2DEditorFields.Text("Metadata", ref metadata))

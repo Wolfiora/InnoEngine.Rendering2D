@@ -207,7 +207,7 @@ public readonly record struct TilemapCellWrite2D
 /// <summary>
 /// Stores a sparse, layered, chunked tilemap without expanding empty cells.
 /// </summary>
-[StableTypeId("8bb5f309-b750-4555-b26d-63ca793e5ae6")]
+[StableTypeID("8bb5f309-b750-4555-b26d-63ca793e5ae6")]
 public sealed class Tilemap2DAsset : AssetObject
 {
     private TilemapLayer2D[] m_layers = [TilemapLayer2D.CreateDefault()];

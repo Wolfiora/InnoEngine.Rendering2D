@@ -127,7 +127,7 @@ public enum SpriteMaskInteraction2D
 /// <summary>
 /// Renders one texture or atlas region through an open 2D material contract.
 /// </summary>
-[StableTypeId("c4a4e191-4b28-4c62-9890-fe921d5ac8f5")]
+[StableTypeID("c4a4e191-4b28-4c62-9890-fe921d5ac8f5")]
 public sealed class SpriteRenderer2D : GameBehavior
 {
     private SpriteReference2D m_crossFadeSprite;

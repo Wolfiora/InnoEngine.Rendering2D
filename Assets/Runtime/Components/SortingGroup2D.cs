@@ -8,7 +8,7 @@ namespace Inno.Rendering2D;
 /// <summary>
 /// Groups descendant 2D drawables into one deterministic painter-order interval.
 /// </summary>
-[StableTypeId("a4d9d84e-41c3-4b17-8e1f-a63568a89889")]
+[StableTypeID("a4d9d84e-41c3-4b17-8e1f-a63568a89889")]
 public sealed class SortingGroup2D : GameBehavior
 {
     /// <summary>

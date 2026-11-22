@@ -80,7 +80,7 @@ internal sealed partial class Rendering2DAssetDocumentProvider
             IInspectionPropertyEditService edits,
             bool readOnly
         ) {
-            if (EditorUiSession.current.widgets.SectionHeader("Rendering", "Sprite, flipbook, Material, blending, and sampling define particle appearance."))
+            if (EditorUISession.current.widgets.SectionHeader("Rendering", "Sprite, flipbook, Material, blending, and sampling define particle appearance."))
             {
                 Property("sprite", "Sprite", () => m_sprite, value => m_sprite = value);
                 Property("flipbookFrames", "Flipbook Frames", () => m_flipbookFrames, value => m_flipbookFrames = value ?? []);
@@ -90,7 +90,7 @@ internal sealed partial class Rendering2DAssetDocumentProvider
                 Property("sampling", "Sampling", () => m_sampling, value => m_sampling = value);
             }
 
-            if (EditorUiSession.current.widgets.SectionHeader("Emitter", "Emitter shape, capacity, rate, and simulation space define where particles begin."))
+            if (EditorUISession.current.widgets.SectionHeader("Emitter", "Emitter shape, capacity, rate, and simulation space define where particles begin."))
             {
                 Property("shape", "Shape", () => m_shape, value => m_shape = value);
                 Property("simulationSpace", "Simulation Space", () => m_simulationSpace, value => m_simulationSpace = value);
@@ -100,7 +100,7 @@ internal sealed partial class Rendering2DAssetDocumentProvider
                 Property("coneAngle", "Cone Angle", () => m_coneAngle, value => m_coneAngle = value, minimum: 0, maximum: 360);
             }
 
-            if (EditorUiSession.current.widgets.SectionHeader("Lifetime and Motion", "Lifetime, speed, gravity, and noise define deterministic particle movement."))
+            if (EditorUISession.current.widgets.SectionHeader("Lifetime and Motion", "Lifetime, speed, gravity, and noise define deterministic particle movement."))
             {
                 Property("minimumLifetime", "Minimum Lifetime", () => m_minimumLifetime, value => m_minimumLifetime = value, minimum: 0.0001);
                 Property("maximumLifetime", "Maximum Lifetime", () => m_maximumLifetime, value => m_maximumLifetime = value, minimum: 0.0001);
@@ -110,7 +110,7 @@ internal sealed partial class Rendering2DAssetDocumentProvider
                 Property("noiseStrength", "Noise Strength", () => m_noiseStrength, value => m_noiseStrength = value);
             }
 
-            if (EditorUiSession.current.widgets.SectionHeader("Over Lifetime", "Curves and gradients evolve particle size and color over normalized lifetime."))
+            if (EditorUISession.current.widgets.SectionHeader("Over Lifetime", "Curves and gradients evolve particle size and color over normalized lifetime."))
             {
                 Property("sizeOverLifetime", "Size", () => m_sizeOverLifetime, value => m_sizeOverLifetime = value);
                 Property("colorOverLifetime", "Color", () => m_colorOverLifetime, value => m_colorOverLifetime = value);

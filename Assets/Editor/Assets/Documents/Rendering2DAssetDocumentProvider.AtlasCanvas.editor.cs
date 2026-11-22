@@ -64,7 +64,7 @@ internal sealed partial class Rendering2DAssetDocumentProvider
             if (m_sources.Length == 0)
                 return;
             m_sourceIndex = Math.Clamp(m_sourceIndex, 0, m_sources.Length - 1);
-            if (!EditorUiSession.current.widgets.SectionHeader("Selected Source", "Choose a texture using the standard asset selector or drag it from the File Browser."))
+            if (!EditorUISession.current.widgets.SectionHeader("Selected Source", "Choose a texture using the standard asset selector or drag it from the File Browser."))
                 return;
             Property("name", "Name", () => m_sources[m_sourceIndex].name, value => m_sources[m_sourceIndex].name = value);
             Property<TextureAsset?>("texture", "Color Texture", () => m_sources[m_sourceIndex].texture, value => m_sources[m_sourceIndex].texture = value);
@@ -85,14 +85,14 @@ internal sealed partial class Rendering2DAssetDocumentProvider
             if (!TryGetSelectedSource(out TextureAsset? texture) || texture is null || texture.isMissing)
                 return false;
             ImGui.SeparatorText("Source Canvas");
-            EditorUiSession.current.widgets.Hint("Click a sprite to select it. Drag its body to move, or its lower-right corner to resize.");
+            EditorUISession.current.widgets.Hint("Click a sprite to select it. Drag its body to move, or its lower-right corner to resize.");
             if (!previews.TryGetTexture(texture, out EditorPreviewHandle handle))
             {
-                EditorUiSession.current.widgets.Hint("Source preview preparing...");
+                EditorUISession.current.widgets.Hint("Source preview preparing...");
                 return false;
             }
 
-            float scale = MathF.Min(MathF.Max(1f, ImGui.GetContentRegionAvailable().X) / Math.Max(1, texture.width), 320f * EditorUiSession.current.widgets.style.zoom / Math.Max(1, texture.height));
+            float scale = MathF.Min(MathF.Max(1f, ImGui.GetContentRegionAvailable().X) / Math.Max(1, texture.width), 320f * EditorUISession.current.widgets.style.zoom / Math.Max(1, texture.height));
             Vector2 origin = ImGui.GetCursorPosition();
             Vector2 screen = ImGui.GetCursorScreenPosition();
             previews.Draw(handle, new Vector2(Math.Max(1, texture.width) * scale, Math.Max(1, texture.height) * scale));
@@ -118,7 +118,7 @@ internal sealed partial class Rendering2DAssetDocumentProvider
                     Vector2 maximum = screen + new Vector2(right, bottom) * scale;
                     ImGui.SetCursorPosition(origin + new Vector2(x, y) * scale);
                     Vector2 extent = maximum - minimum;
-                    float grip = MathF.Min(10f * EditorUiSession.current.widgets.style.zoom, MathF.Min(extent.X, extent.Y) / 3f);
+                    float grip = MathF.Min(10f * EditorUISession.current.widgets.style.zoom, MathF.Min(extent.X, extent.Y) / 3f);
                     _ = ImGui.Button("##slice:" + slice.id.value, new Vector2(extent.X, MathF.Max(1f, extent.Y - grip)));
                     if (ImGui.IsItemClicked())
                         m_selectedSlice = index;

@@ -112,45 +112,45 @@ public static class Rendering2DIds
     /// <summary>
     /// Gets the material contract implemented by sprite-compatible shaders.
     /// </summary>
-    public static ShaderContractId spriteContract => new("inno.rendering.2d.sprite");
+    public static ShaderContractID spriteContract => new("inno.rendering.2d.sprite");
 
     /// <summary>
     /// Gets the Pipeline-owned fullscreen processing contract.
     /// </summary>
-    public static ShaderContractId postProcessContract => new("inno.rendering.2d.post-process");
+    public static ShaderContractID postProcessContract => new("inno.rendering.2d.post-process");
 
     /// <summary>
     /// Gets the Pipeline-owned MRT light accumulation contract.
     /// </summary>
-    public static ShaderContractId lightContract => new("inno.rendering.2d.light");
+    public static ShaderContractID lightContract => new("inno.rendering.2d.light");
 
     /// <summary>
     /// Gets the independent shadow-volume and stencil utility contract.
     /// </summary>
-    public static ShaderContractId shadowContract => new("inno.rendering.2d.shadow");
+    public static ShaderContractID shadowContract => new("inno.rendering.2d.shadow");
 
     /// <summary>
     /// Gets the straight-alpha pass role.
     /// </summary>
-    public static ShaderPassRoleId alphaRole => new("inno.rendering.2d.alpha");
+    public static ShaderPassRoleID alphaRole => new("inno.rendering.2d.alpha");
 
     /// <summary>
     /// Gets the premultiplied-alpha pass role.
     /// </summary>
-    public static ShaderPassRoleId premultipliedRole => new("inno.rendering.2d.premultiplied");
+    public static ShaderPassRoleID premultipliedRole => new("inno.rendering.2d.premultiplied");
 
     /// <summary>
     /// Gets the additive pass role.
     /// </summary>
-    public static ShaderPassRoleId additiveRole => new("inno.rendering.2d.additive");
+    public static ShaderPassRoleID additiveRole => new("inno.rendering.2d.additive");
 
     /// <summary>
     /// Gets the multiply pass role.
     /// </summary>
-    public static ShaderPassRoleId multiplyRole => new("inno.rendering.2d.multiply");
+    public static ShaderPassRoleID multiplyRole => new("inno.rendering.2d.multiply");
 
     /// <summary>
     /// Gets the opaque pass role.
     /// </summary>
-    public static ShaderPassRoleId opaqueRole => new("inno.rendering.2d.opaque");
+    public static ShaderPassRoleID opaqueRole => new("inno.rendering.2d.opaque");
 }

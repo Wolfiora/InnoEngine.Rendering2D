@@ -27,7 +27,7 @@ public sealed class Rendering2DPipeline : RenderPipeline
     /// <summary>
     /// Gets the frame channel consumed by this pipeline.
     /// </summary>
-    public static RenderDataChannelId frameChannel => new("inno.rendering.2d.frame");
+    public static RenderDataChannelID frameChannel => new("inno.rendering.2d.frame");
 
     /// <inheritdoc />
     protected override void OnConfigure(
@@ -277,7 +277,7 @@ public sealed class Rendering2DPipeline : RenderPipeline
     ) {
         var result = new List<PreparedSceneDraw>(frame.sceneDraws.Length);
         var view = new RenderView(
-            $"2D/{frame.camera.identity.persistentId:D}",
+            $"2D/{frame.camera.identity.persistentID:D}",
             new RenderViewport(0, 0, frame.pixelWidth, frame.pixelHeight),
             frame.viewTransform,
             frame.projectionTransform,
@@ -340,7 +340,7 @@ public sealed class Rendering2DPipeline : RenderPipeline
 
         PersistentBufferHandle persistentInstances = default;
         RenderBufferSlice transientInstances = default;
-        if (batch.persistentInstanceBuffer is RenderPersistentResourceId persistentId)
+        if (batch.persistentInstanceBuffer is RenderPersistentResourceID persistentId)
         {
             persistentInstances = context.resourceService.AcquireBuffer(
                 persistentId,
@@ -1284,7 +1284,7 @@ public sealed class Rendering2DPipeline : RenderPipeline
         PersistentBufferHandle sharedVertices,
         PersistentBufferHandle sharedIndices
     ) {
-        ShaderPassRoleId finalRole = clearTarget ? Rendering2DIds.opaqueRole : Rendering2DIds.premultipliedRole;
+        ShaderPassRoleID finalRole = clearTarget ? Rendering2DIds.opaqueRole : Rendering2DIds.premultipliedRole;
         if (!TryResolveInternalMaterial(context, m_compositeMaterial, Rendering2DIds.postProcessContract, finalRole,
                 out RenderMaterialPass? finalMaterial) || finalMaterial is null)
             return false;
@@ -1378,8 +1378,8 @@ public sealed class Rendering2DPipeline : RenderPipeline
     private bool TryResolveInternalMaterial(
         RenderPipelineContext context,
         MaterialAsset? material,
-        ShaderContractId contract,
-        ShaderPassRoleId role,
+        ShaderContractID contract,
+        ShaderPassRoleID role,
         out RenderMaterialPass? materialPass
     ) {
         materialPass = null;
@@ -1692,7 +1692,7 @@ public sealed class Rendering2DPipeline : RenderPipeline
     private static void SetUniform(
         RenderMaterialPass material,
         RenderCommandEncoder commands,
-        RenderBindingId binding,
+        RenderBindingID binding,
         ReadOnlySpan<byte> value
     ) {
         if (material.UsesBinding(binding, RenderShaderBindingKind.Uniform))
@@ -1702,7 +1702,7 @@ public sealed class Rendering2DPipeline : RenderPipeline
     private static void BindTexture(
         RenderMaterialPass material,
         RenderCommandEncoder commands,
-        RenderBindingId binding,
+        RenderBindingID binding,
         RenderTextureHandle texture,
         RenderSamplerState sampler
     ) {
@@ -1713,7 +1713,7 @@ public sealed class Rendering2DPipeline : RenderPipeline
     private static void BindTexture(
         RenderMaterialPass material,
         RenderCommandEncoder commands,
-        RenderBindingId binding,
+        RenderBindingID binding,
         PersistentTextureHandle texture,
         RenderSamplerState sampler
     ) {
@@ -1769,7 +1769,7 @@ public sealed class Rendering2DPipeline : RenderPipeline
     )
         => BinaryPrimitives.WriteSingleLittleEndian(destination.AsSpan(offset), value);
 
-    private static ShaderPassRoleId GetRole(SpriteBlendMode2D blendMode)
+    private static ShaderPassRoleID GetRole(SpriteBlendMode2D blendMode)
         => blendMode switch
         {
             SpriteBlendMode2D.Alpha => Rendering2DIds.alphaRole,
@@ -1811,33 +1811,33 @@ public sealed class Rendering2DPipeline : RenderPipeline
                 instanceLayout.stride,
                 RenderBufferUsage.Vertex,
                 instanceLayout);
-            phase = new RenderPhaseId("inno.rendering.2d.main");
-            lightPhase = new RenderPhaseId("inno.rendering.2d.light");
-            compositePhase = new RenderPhaseId("inno.rendering.2d.composite");
-            textureBinding = new RenderBindingId("s_spriteTexture");
-            effectTextureBinding = new RenderBindingId("s_effectTexture");
-            normalTextureBinding = new RenderBindingId("s_normalTexture");
-            emissionTextureBinding = new RenderBindingId("s_emissionTexture");
+            phase = new RenderPhaseID("inno.rendering.2d.main");
+            lightPhase = new RenderPhaseID("inno.rendering.2d.light");
+            compositePhase = new RenderPhaseID("inno.rendering.2d.composite");
+            textureBinding = new RenderBindingID("s_spriteTexture");
+            effectTextureBinding = new RenderBindingID("s_effectTexture");
+            normalTextureBinding = new RenderBindingID("s_normalTexture");
+            emissionTextureBinding = new RenderBindingID("s_emissionTexture");
             lightColorBindings =
             [
-                new RenderBindingId("s_lightColor0"),
-                new RenderBindingId("s_lightColor1"),
-                new RenderBindingId("s_lightColor2"),
-                new RenderBindingId("s_lightColor3")
+                new RenderBindingID("s_lightColor0"),
+                new RenderBindingID("s_lightColor1"),
+                new RenderBindingID("s_lightColor2"),
+                new RenderBindingID("s_lightColor3")
             ];
             lightDirectionBindings =
             [
-                new RenderBindingId("s_lightDirection0"),
-                new RenderBindingId("s_lightDirection1"),
-                new RenderBindingId("s_lightDirection2"),
-                new RenderBindingId("s_lightDirection3")
+                new RenderBindingID("s_lightDirection0"),
+                new RenderBindingID("s_lightDirection1"),
+                new RenderBindingID("s_lightDirection2"),
+                new RenderBindingID("s_lightDirection3")
             ];
-            materialEffectBinding = new RenderBindingId("u_spriteMaterial");
+            materialEffectBinding = new RenderBindingID("u_spriteMaterial");
             materialEffectNone = new byte[16];
-            builtinWhiteTextureId = new RenderPersistentResourceId("inno.rendering.2d.builtin.white");
-            builtinNeutralNormalTextureId = new RenderPersistentResourceId("inno.rendering.2d.builtin.neutral-normal");
-            sharedQuadVertexId = new RenderPersistentResourceId("inno.rendering.2d.shared-quad.vertices");
-            sharedQuadIndexId = new RenderPersistentResourceId("inno.rendering.2d.shared-quad.indices");
+            builtinWhiteTextureId = new RenderPersistentResourceID("inno.rendering.2d.builtin.white");
+            builtinNeutralNormalTextureId = new RenderPersistentResourceID("inno.rendering.2d.builtin.neutral-normal");
+            sharedQuadVertexId = new RenderPersistentResourceID("inno.rendering.2d.shared-quad.vertices");
+            sharedQuadIndexId = new RenderPersistentResourceID("inno.rendering.2d.shared-quad.indices");
             sharedQuadVertexDescriptor = new PersistentBufferDescriptor(
                 new RenderBufferDescriptor(4, vertexLayout.stride, RenderBufferUsage.Vertex),
                 vertexLayout);
@@ -1938,21 +1938,21 @@ public sealed class Rendering2DPipeline : RenderPipeline
         internal RenderVertexLayout vertexLayout { get; }
         internal RenderVertexLayout instanceLayout { get; }
         internal RenderBufferUploadDescriptor instanceUpload { get; }
-        internal RenderPhaseId phase { get; }
-        internal RenderPhaseId lightPhase { get; }
-        internal RenderPhaseId compositePhase { get; }
-        internal RenderBindingId textureBinding { get; }
-        internal RenderBindingId effectTextureBinding { get; }
-        internal RenderBindingId normalTextureBinding { get; }
-        internal RenderBindingId emissionTextureBinding { get; }
-        internal RenderBindingId[] lightColorBindings { get; }
-        internal RenderBindingId[] lightDirectionBindings { get; }
-        internal RenderBindingId materialEffectBinding { get; }
+        internal RenderPhaseID phase { get; }
+        internal RenderPhaseID lightPhase { get; }
+        internal RenderPhaseID compositePhase { get; }
+        internal RenderBindingID textureBinding { get; }
+        internal RenderBindingID effectTextureBinding { get; }
+        internal RenderBindingID normalTextureBinding { get; }
+        internal RenderBindingID emissionTextureBinding { get; }
+        internal RenderBindingID[] lightColorBindings { get; }
+        internal RenderBindingID[] lightDirectionBindings { get; }
+        internal RenderBindingID materialEffectBinding { get; }
         internal byte[] materialEffectNone { get; }
-        internal RenderPersistentResourceId builtinWhiteTextureId { get; }
-        internal RenderPersistentResourceId builtinNeutralNormalTextureId { get; }
-        internal RenderPersistentResourceId sharedQuadVertexId { get; }
-        internal RenderPersistentResourceId sharedQuadIndexId { get; }
+        internal RenderPersistentResourceID builtinWhiteTextureId { get; }
+        internal RenderPersistentResourceID builtinNeutralNormalTextureId { get; }
+        internal RenderPersistentResourceID sharedQuadVertexId { get; }
+        internal RenderPersistentResourceID sharedQuadIndexId { get; }
         internal PersistentBufferDescriptor sharedQuadVertexDescriptor { get; }
         internal PersistentBufferDescriptor sharedQuadIndexDescriptor { get; }
         internal byte[] sharedQuadVertices { get; }

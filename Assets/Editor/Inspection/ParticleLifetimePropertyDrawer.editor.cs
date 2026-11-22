@@ -30,7 +30,7 @@ public sealed class ParticleLifetimePropertyDrawer : IPropertyDrawer
         ParticleCurveKey2D[] keys = curve.keys ?? [];
         float maximum = MathF.Max(1f, keys.Length == 0 ? 1f : keys.Max(key => float.IsFinite(key.value) ? key.value : 0f));
         ParticleEditorPoint origin = ImGui.GetCursorScreenPosition();
-        ParticleEditorPoint size = new(MathF.Max(1f, ImGui.GetContentRegionAvailable().X), 72f * EditorUiSession.current.widgets.style.zoom);
+        ParticleEditorPoint size = new(MathF.Max(1f, ImGui.GetContentRegionAvailable().X), 72f * EditorUISession.current.widgets.style.zoom);
         ImGui.Dummy(size);
         ImGui.DrawFilledRectangle(origin, origin + size, ImGui.ToPackedColor(EditorPalette.frame));
         ParticleEditorPoint previous = origin + new ParticleEditorPoint(0, size.Y * (1f - Sample(curve, 0, maximum)));
@@ -42,7 +42,7 @@ public sealed class ParticleLifetimePropertyDrawer : IPropertyDrawer
             previous = next;
         }
 
-        EditorUiSession.current.widgets.Hint("Birth → End of lifetime");
+        EditorUISession.current.widgets.Hint("Birth → End of lifetime");
         int selected = SelectKey(context, keys.Select(key => key.time).ToArray());
         if (selected >= 0)
         {
@@ -82,7 +82,7 @@ public sealed class ParticleLifetimePropertyDrawer : IPropertyDrawer
     ) {
         ParticleGradientKey2D[] keys = gradient.keys ?? [];
         ParticleEditorPoint origin = ImGui.GetCursorScreenPosition();
-        ParticleEditorPoint size = new(MathF.Max(1f, ImGui.GetContentRegionAvailable().X), 24f * EditorUiSession.current.widgets.style.zoom);
+        ParticleEditorPoint size = new(MathF.Max(1f, ImGui.GetContentRegionAvailable().X), 24f * EditorUISession.current.widgets.style.zoom);
         ImGui.Dummy(size);
         for (int index = 0; index < 32; index++)
         {
@@ -131,12 +131,12 @@ public sealed class ParticleLifetimePropertyDrawer : IPropertyDrawer
         int selected = context.TryGetTextState("key", out string? saved) && int.TryParse(saved, out int index) ? index : 0;
         if (times.Length == 0)
         {
-            EditorUiSession.current.widgets.Hint("No keys · constant default");
+            EditorUISession.current.widgets.Hint("No keys · constant default");
             return -1;
         }
 
         selected = Math.Clamp(selected, 0, times.Length - 1);
-        if (EditorUiSession.current.widgets.BeginBoundedCombo("##key", $"Key {selected + 1} · {times[selected]:0.###}"))
+        if (EditorUISession.current.widgets.BeginBoundedCombo("##key", $"Key {selected + 1} · {times[selected]:0.###}"))
         {
             try
             {
@@ -150,7 +150,7 @@ public sealed class ParticleLifetimePropertyDrawer : IPropertyDrawer
             }
             finally
             {
-                EditorUiSession.current.widgets.EndBoundedCombo();
+                EditorUISession.current.widgets.EndBoundedCombo();
             }
         }
 

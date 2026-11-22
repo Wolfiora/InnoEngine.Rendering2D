@@ -46,7 +46,7 @@ public sealed class SpriteShaderTemplate : ShaderGraphTemplate
         Validate(textureNode, nameof(textureNode));
         Validate(surfaceNode, nameof(surfaceNode));
 
-        (string name, ShaderPassRoleId role, RenderBlendState blend)[] passes =
+        (string name, ShaderPassRoleID role, RenderBlendState blend)[] passes =
         [
             ("Alpha", Rendering2DIds.alphaRole, RenderBlendState.alpha),
             ("Premultiplied", Rendering2DIds.premultipliedRole, RenderBlendState.premultiplied),
@@ -136,7 +136,7 @@ public sealed class SpriteShaderTemplate : ShaderGraphTemplate
             360,
             300);
         GraphNodeRecord tint = Node("tint", "inno.shader.stage-input", fragmentOutput.id.value, 40, 600);
-        Set(tint, ShaderGraphDocument.settingsKey, new ShaderGraphInputSettings
+        Set(tint, ShaderGraphDocument.C_SETTINGS_KEY, new ShaderGraphInputSettings
         {
             id = "tint",
             type = new() { id = "float4" },
@@ -177,8 +177,8 @@ public sealed class SpriteShaderTemplate : ShaderGraphTemplate
             float x,
             float y
         ) {
-            GraphNodeRecord node = Node(id, ShaderGraphDocument.outputDefinitionId, id, x, y);
-            Set(node, ShaderGraphDocument.settingsKey, new ShaderGraphStageSettings { stage = stage, outputs = outputs });
+            GraphNodeRecord node = Node(id, ShaderGraphDocument.C_OUTPUT_DEFINITION_ID, id, x, y);
+            Set(node, ShaderGraphDocument.C_SETTINGS_KEY, new ShaderGraphStageSettings { stage = stage, outputs = outputs });
             return node;
         }
 
@@ -191,7 +191,7 @@ public sealed class SpriteShaderTemplate : ShaderGraphTemplate
         ) {
             var node = new GraphNodeRecord(new(id), definitionId) { position = new(x, y) };
             graph.AddNode(node);
-            Set(node, ShaderGraphDocument.stageKey, stage);
+            Set(node, ShaderGraphDocument.C_STAGE_KEY, stage);
             return node;
         }
 
@@ -204,10 +204,10 @@ public sealed class SpriteShaderTemplate : ShaderGraphTemplate
             float x,
             float y
         ) {
-            GraphNodeRecord node = Node(id, ShaderGraphNodes.callDefinitionId, stage, x, y);
-            Set(node, "sourceId", asset.identity.persistentId);
+            GraphNodeRecord node = Node(id, ShaderGraphNodes.C_CALL_DEFINITION_ID, stage, x, y);
+            Set(node, "sourceId", asset.identity.persistentID);
             Set(node, "sourcePath", path);
-            Set(node, ShaderGraphNodes.interfaceKey, nodeInterface);
+            Set(node, ShaderGraphNodes.C_INTERFACE_KEY, nodeInterface);
             return node;
         }
 
@@ -311,7 +311,7 @@ public sealed class SpriteShaderTemplate : ShaderGraphTemplate
         string parameter
     ) {
         ArgumentNullException.ThrowIfNull(asset, parameter);
-        if (asset.isMissing || asset.identity.persistentId == Guid.Empty)
+        if (asset.isMissing || asset.identity.persistentID == Guid.Empty)
             throw new ArgumentException("Choose an imported graph-node Shader.", parameter);
     }
 }

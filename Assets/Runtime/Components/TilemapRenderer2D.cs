@@ -10,7 +10,7 @@ namespace Inno.Rendering2D;
 /// <summary>
 /// Renders visible sparse tilemap cells through the same material and batching contract as sprites.
 /// </summary>
-[StableTypeId("2fd89229-439b-4f23-aa44-355723c4da35")]
+[StableTypeID("2fd89229-439b-4f23-aa44-355723c4da35")]
 public sealed class TilemapRenderer2D : GameBehavior
 {
     private byte m_lightBlendStyles = 0x0f;

@@ -24,7 +24,7 @@ public sealed class Rendering2DProjectSettingsEditor : ProjectSettingEditor<Rend
     {
         m_pipelinePath ??= setting.pipeline?.assetPath.ToString() ?? string.Empty;
         ImGui.Text("Pipeline: " + (setting.pipeline?.name ?? "Not configured"));
-        EditorUiSession.current.widgets.Hint("Use the bundled default, or enter a 2D Pipeline source path.");
+        EditorUISession.current.widgets.Hint("Use the bundled default, or enter a 2D Pipeline source path.");
         _ = Rendering2DEditorFields.Text("Pipeline Source", ref m_pipelinePath);
         if (ImGui.Button("Assign Pipeline"))
         {
@@ -88,7 +88,7 @@ public sealed class Rendering2DSortingLayersProjectSettingsEditor : ProjectSetti
         for (int index = 0; index < layers.Count; index++)
         {
             SortingLayer2DDefinition layer = layers[index];
-            ImGui.PushId(index);
+            ImGui.PushID(index);
             string name = layer.name ?? string.Empty;
             int order = layer.order;
             changed |= Rendering2DEditorFields.Text("Name", ref name);
@@ -103,7 +103,7 @@ public sealed class Rendering2DSortingLayersProjectSettingsEditor : ProjectSetti
                 layers[index] = layer.With(name, order);
             }
 
-            ImGui.PopId();
+            ImGui.PopID();
             ImGui.Separator();
         }
 

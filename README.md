@@ -220,6 +220,6 @@ This project is available under the [MIT License](LICENSE).
 
 ## Editor presentation ownership
 
-Editor controls use `EditorUiSession.current.widgets` during the host's synchronous drawing scope. The host owns transient widget state, native context access and continuous Inspector gestures. Asset document providers record neutral draft changes through the shared History service and forward the active gesture key and edited component metadata. History availability checks resolve the current document; expected source bytes are validated when applying a change, so sequential samples in one transaction remain undoable.
+Editor controls use `EditorUISession.current.widgets` during the host's synchronous drawing scope. The host owns transient widget state, native context access and continuous Inspector gestures. Asset document providers record neutral draft changes through the shared History service and forward the active gesture key and edited component metadata. History availability checks resolve the current document; expected source bytes are validated when applying a change, so sequential samples in one transaction remain undoable.
 
 The plugin keeps its viewport, asset and gameplay logic against logical `InnoEditor.*` / `InnoEngine.*` APIs. It does not access native ImGui pointers or own another event dispatcher or Undo stack.

@@ -51,7 +51,7 @@ public sealed class Rendering2DGameViewportContributor : EditorViewportContribut
     }
 
     private static RenderOutputSession Session(EditorViewportContext context)
-        => new(context.viewportId, context.content,
+        => new(context.viewportID, context.content,
             new RenderViewport(0, 0, context.pixelWidth, context.pixelHeight),
             context.frameIndex, 0f, context.viewContent, context.input);
 }

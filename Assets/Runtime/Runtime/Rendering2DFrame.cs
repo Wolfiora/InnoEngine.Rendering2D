@@ -82,7 +82,7 @@ internal sealed record Rendering2DDrawBatch(
     SpriteSamplingMode2D sampling,
     byte[] instanceBytes,
     int instanceCount,
-    RenderPersistentResourceId? persistentInstanceBuffer,
+    RenderPersistentResourceID? persistentInstanceBuffer,
     long instanceRevision,
     ulong maskSet,
     SpriteMaskInteraction2D maskInteraction,
@@ -232,7 +232,7 @@ internal static class Rendering2DFrameCollector
         hash.Add(pixelWidth);
         hash.Add(pixelHeight);
         hash.Add(Settings.revision);
-        hash.Add(Settings.ownerId);
+        hash.Add(Settings.ownerID);
         AddAsset(ref hash, Rendering2DRenderer.ResolvePipeline());
         AddAsset(ref hash, Rendering2DRenderer.pipelineSettings.defaultSpriteMaterial);
         AddCamera(ref hash, camera);
@@ -253,7 +253,7 @@ internal static class Rendering2DFrameCollector
         for (int entryIndex = 0; entryIndex < scope.entries.Count; entryIndex++)
         {
             Rendering2DSceneEntry entry = scope.entries[entryIndex];
-            hash.Add(entry.scene.identity.persistentId);
+            hash.Add(entry.scene.identity.persistentID);
             Rendering2DSceneSnapshot snapshot = entry.snapshot;
             hash.Add(snapshot.cameras.Length);
             for (int index = 0; index < snapshot.cameras.Length; index++)
@@ -278,7 +278,7 @@ internal static class Rendering2DFrameCollector
         ref Rendering2DFingerprintBuilder hash,
         Camera2D camera
     ) {
-        hash.Add(camera.gameObject.identity.persistentId);
+        hash.Add(camera.gameObject.identity.persistentID);
         hash.Add(camera.isActiveAndEnabled);
         AddTransform(ref hash, camera.transform);
         hash.Add(camera.primary);
@@ -315,7 +315,7 @@ internal static class Rendering2DFrameCollector
         Rendering2DDrawable drawable
     ) {
         GameObject owner = drawable.owner;
-        hash.Add(owner.identity.persistentId);
+        hash.Add(owner.identity.persistentID);
         hash.Add(owner.activeInHierarchy);
         hash.Add(owner.layer.index);
         AddTransform(ref hash, owner.transform);
@@ -393,7 +393,7 @@ internal static class Rendering2DFrameCollector
         ref Rendering2DFingerprintBuilder hash,
         Light2D light
     ) {
-        hash.Add(light.gameObject.identity.persistentId);
+        hash.Add(light.gameObject.identity.persistentID);
         hash.Add(light.isActiveAndEnabled);
         AddTransform(ref hash, light.transform);
         hash.Add((int)light.kind);
@@ -415,7 +415,7 @@ internal static class Rendering2DFrameCollector
         ref Rendering2DFingerprintBuilder hash,
         ShadowCaster2D caster
     ) {
-        hash.Add(caster.gameObject.identity.persistentId);
+        hash.Add(caster.gameObject.identity.persistentID);
         hash.Add(caster.isActiveAndEnabled);
         hash.Add(caster.gameObject.layer.index);
         AddTransform(ref hash, caster.transform);
@@ -429,7 +429,7 @@ internal static class Rendering2DFrameCollector
         Rendering2DMask snapshot
     ) {
         SpriteMask2D mask = snapshot.mask;
-        hash.Add(snapshot.owner.identity.persistentId);
+        hash.Add(snapshot.owner.identity.persistentID);
         hash.Add(snapshot.owner.activeInHierarchy);
         hash.Add(snapshot.owner.layer.index);
         hash.Add(mask.isActiveAndEnabled);
@@ -469,7 +469,7 @@ internal static class Rendering2DFrameCollector
             return;
         }
         hash.Add(true);
-        hash.Add(asset.identity.persistentId);
+        hash.Add(asset.identity.persistentID);
         hash.Add(asset.contentVersion);
     }
 
@@ -526,7 +526,7 @@ internal static class Rendering2DFrameCollector
                 options.content,
                 options.sessionId,
                 new RenderView(
-                    $"2D/{camera.identity.persistentId:D}",
+                    $"2D/{camera.identity.persistentID:D}",
                     new RenderViewport(0, 0, pixelWidth, pixelHeight),
                     cameraState.view,
                     cameraState.projection,
@@ -718,7 +718,7 @@ internal static class Rendering2DFrameCollector
     ) {
         CameraState state = CreateCameraState(camera, width, height,
             GetSettings().defaultPixelsPerUnit);
-        return new RenderView($"2D/{camera.identity.persistentId:D}",
+        return new RenderView($"2D/{camera.identity.persistentID:D}",
             new RenderViewport(0, 0, width, height), state.view, state.projection,
             camera.cullingMask.value);
     }
@@ -1361,7 +1361,7 @@ internal static class Rendering2DFrameCollector
             if (!GetTransformedBounds(owner.transform, localChunkBounds).Overlaps(cameraBounds))
                 continue;
             string? persistentGroup = CanPersistChunk(owner, renderer, map, tileSet, chunk)
-                ? $"inno.rendering2d.tilemap/{map.identity.persistentId:N}/{owner.identity.persistentId:N}/{chunk.layerId}/{chunk.x}/{chunk.y}"
+                ? $"inno.rendering2d.tilemap/{map.identity.persistentID:N}/{owner.identity.persistentID:N}/{chunk.layerId}/{chunk.x}/{chunk.y}"
                 : null;
             int chunkQuadIndex = 0;
             foreach (TilemapCell2D cell in chunk.cells ?? [])
@@ -1438,8 +1438,8 @@ internal static class Rendering2DFrameCollector
         TileSet2DAsset tileSet,
         TilemapChunk2D chunk
     ) {
-        if (map.identity.persistentId == Guid.Empty
-            || owner.identity.persistentId == Guid.Empty)
+        if (map.identity.persistentID == Guid.Empty
+            || owner.identity.persistentID == Guid.Empty)
         {
             return false;
         }
@@ -2091,7 +2091,7 @@ internal static class Rendering2DFrameCollector
             return new Rendering2DSortKey(1,
                 settings.GetSortingLayerOrder(group.sortingLayer), group.orderInLayer,
                 cursor.worldPosition.z, sequence,
-                cursor.gameObject.identity.persistentId,
+                cursor.gameObject.identity.persistentID,
                 settings.GetSortingLayerOrder(layer), order);
         }
         return new Rendering2DSortKey(1, settings.GetSortingLayerOrder(layer), order,
@@ -2133,12 +2133,12 @@ internal static class Rendering2DFrameCollector
             byte[] instanceBytes = new byte[count * C_INSTANCE_STRIDE];
             for (int quadIndex = 0; quadIndex < count; quadIndex++)
                 WriteInstance(instanceBytes, quadIndex, quads[start + quadIndex]);
-            RenderPersistentResourceId? persistentBuffer = null;
+            RenderPersistentResourceID? persistentBuffer = null;
             if (first.persistentGroupId is string groupId)
             {
                 persistentSegments.TryGetValue(groupId, out int segment);
                 persistentSegments[groupId] = segment + 1;
-                persistentBuffer = new RenderPersistentResourceId($"{groupId}/state-{segment}");
+                persistentBuffer = new RenderPersistentResourceID($"{groupId}/state-{segment}");
             }
             result.Add(new Rendering2DDrawBatch(
                 first.material,

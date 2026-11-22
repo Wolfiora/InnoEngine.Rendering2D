@@ -57,7 +57,7 @@ public struct SpriteAnimationClip2D
 /// <summary>
 /// Stores atlas-backed sprite animation clips without retaining runtime callbacks.
 /// </summary>
-[StableTypeId("62cce935-3618-46b9-bfc3-795caafad26b")]
+[StableTypeID("62cce935-3618-46b9-bfc3-795caafad26b")]
 public sealed class SpriteAnimation2DAsset : AssetObject
 {
     private SpriteAnimationClip2D[] m_clips = [];
