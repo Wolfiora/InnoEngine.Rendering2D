@@ -191,7 +191,7 @@ For the full feature contract, authoring APIs, camera composition rules, custom 
 ## Authoring tests
 
 The current authoring UI uses the timeline input API from InnoEngine commit
-`516bb243a35da1800d84622c63c6054e042efb48`. The GPU workflow pins this tested revision by default;
+`0ba6632eb60aff74dd69a2a3c3db92125e677f7b`. The GPU workflow pins this tested revision by default;
 manual runs may supply an explicit matching Engine revision.
 
 `Tools/Test-Authoring.ps1` compiles the current plugin through the formal Build entry, regenerates IDE
